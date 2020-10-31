@@ -1,0 +1,460 @@
+﻿@{
+    ViewBag.Title = "留言";
+    Layout = "~/Views/Shared/_zh-CN_Layout.cshtml";
+}
+@Html.AntiForgeryToken()
+
+<link rel="stylesheet" href="../../Content/eleme-css/index.css">
+<script src="../../Scripts/element-ui.js"></script>
+
+<style>
+  #app{
+    padding:20px;
+  }
+  #areaBox{
+    margin:20px 15px;
+  }
+  .radioWrap{
+    margin:8px 0;
+  }
+  .pd-20{
+    padding:20px;
+  }
+  .pd-15{
+    padding:15px;
+  }
+  .closedMsg{
+    background: #ddd !important;
+  }
+  .submit-btn-wrap{
+    margin:20px;
+    text-align: right;
+  }
+  #chatBody{
+     height:380px;
+     overflow: auto;
+   }
+  .msg-row-servicer{
+    margin:10px 10px;
+    max-width:70%;
+    clear: both;
+    float: left;
+    border: 1px solid #ddd;
+    background: #f1f1f1;
+    border-radius: 5px;
+    padding: 5px 10px;
+  }
+  .msg-row-user{
+    margin:10px 10px;
+    max-width:70%;
+    clear: both;
+    float: right;
+    border: 1px solid #ddd;
+    background: #B2E281;
+    border-radius: 5px;
+    padding: 5px 10px;
+  }
+  .el-rate__icon{
+    line-height: 36px;
+  }
+  .msg-row-user .msg-time{
+    text-align: right;
+  }
+  .msg-time{
+    color: gray;
+  }
+  .msg-content{
+    color: black;
+    word-break: break-all;
+  }
+  .iptBox{
+    margin-top: 15px;
+  }
+  .submitBtn{
+    text-align: right;
+    bottom: -60px;
+    padding: 10px 0;
+  }
+  .close-icon{
+    float: right;
+    font-size: 16px;
+  }
+  /*zhjie*/
+  .done{
+    background: #efefef;
+    color: #999;
+  }
+  .wait{
+    color: #1da1f3;
+  }
+  @@media screen and (max-width: 768px){
+    #app{
+      padding:0;
+    }
+  }
+</style>
+
+<div id="app">
+  <h4 style="padding:10px 15px 5px;">请选择问题类型：</h4>
+  <div
+    class="col-xs-6 radioWrap"
+    v-for="(type,idx) in QuestType">
+    <el-radio
+      v-model="radioVal"
+      :label="type.value"
+      :key="idx"
+    >{{type.text}}</el-radio>
+  </div>
+  <div class="clearfix"></div>
+  <div id="areaBox">
+    <el-input
+      type="textarea"
+      :rows="8"
+      resize="none"
+      :placeholder="radioVal?'请输入问题描述':'请先选择问题类型'"
+      v-model="QuestDetail"
+    ></el-input>
+    <div class="submit-btn-wrap">
+      <el-button
+        type="primary"
+        @@click="addQuest"
+        v-loading="dataLoading.addQuest"
+      >提交留言</el-button>
+    </div>
+  </div>
+  <div class="pd-20">
+    <p>
+      <h4>留言须知:</h4>
+      1. 请不要重复提交同一问题； <br>
+      2. 请不要代他人留言； <br>
+      3. 恶意提交留言者会被冻结账户。 <br>
+    </p>
+  </div>
+  <div class="table-box hidden-xs">
+    <el-table
+      :data="msgList"
+      :row-class-name="tableRowClassName"
+      style="width: 100%;">
+      <el-table-column
+        label="状态"
+        width="84">
+        <template scope="scope">
+          <el-tag
+            :type="scope.row.CloseTime?'gray':'warning'">
+            {{scope.row.CloseTime?'已解决':'未解决'}}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="问题类型"
+        width="94">
+        <template scope="scope">
+          {{questTypeMap[scope.row.QuestId]}}
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="提问内容"
+        prop="Content">
+      </el-table-column>
+      <el-table-column
+        label="操作"
+        width="80">
+        <template scope="scope">
+          <el-button
+            size="small"
+            :type="scope.row.CloseTime?'default':'info'"
+            v-loading="scope.$index === dataLoading.takeMsgDetail"
+            @@click="intoQuest(scope.$index, scope.row)">查看</el-button>
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="提问时间"
+        width="170">
+        <template scope="scope">
+          <small>{{scope.row.SetupTime}}</small>
+        </template>
+      </el-table-column>
+      <div
+        class="linkGetMore"
+        style="padding:20px 0;text-align: center;"
+        slot="append">
+         <a
+            href="javascript:;"
+            @@click="getnextList"
+          >查看更多</a>
+        </div>
+    </el-table>
+  </div>
+  <div class="table hidden-sm hidden-md hidden-lg">
+    <table class="table table-hover table-bordered">
+      <tr>
+        <th style="width: 80px;">问题类型</th>
+        <th>提问内容</th>
+        <th style="width: 130px;">提问时间</th>
+      </tr>
+      <tr v-for="(x,i) in msgList" :class="[x.CloseTime?'done':'wait']" @@click="intoQuest(i,x)">
+        <td>{{questTypeMap[x.QuestId]}}</td>
+        <td style="font-size:95%">{{x.Content |toCut(5)}}</td>
+        <td style="font-size:85%">{{x.SetupTime}}</td>
+      </tr>
+    </table>
+    <div
+      class="linkGetMore"
+      style="padding:20px 0;text-align: center;"
+      slot="append">
+      <a
+        href="javascript:;"
+        @@click="getnextList"
+      >查看更多</a>
+    </div>
+  </div>
+  <!-- modal -->
+  <div class="modal fade" id='md'>
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4>您正在提交关于【{{questTypeMap[currentRow.QuestId]}}】的问题
+            <a href="javascript:;" data-dismiss="modal"><i class="el-icon-close close-icon"></i></a>
+          </h4>
+        </div>
+        <div class="modal-body">
+          <div id="chatBody">
+            <div class="text-center" style="padding: 10px 0;">
+              <a  v-if="isThereMoreMsg" href="javascript:;" @@click="getMoreMsg">查看更早消息</a>
+              <span v-else>没有更多了</span>
+            </div>
+            <div
+              v-for="(msg,i) in chatData" style="clear: both;">
+              <div :class="msg.IsServicer?'msg-row-servicer':'msg-row-user'">
+                <div class="msg-time"><small>{{msg.SetupTime}}</small></div>
+                <div class="msg-content">{{msg.Content}}</div>
+              </div>
+            </div>
+          </div>
+          <div class="iptBox">
+            <el-input
+              v-model="replyMsg"
+              type="textarea"
+              :rows="2"
+              resize="none"
+              :placeholder="currentRow.CloseTime?'该话题已解决，不可回复。':'回复：'"
+              :disabled="!!currentRow.CloseTime"
+            ></el-input>
+          </div>
+          <div class="submitBtn" v-if="!currentRow.CloseTime">
+            <el-button
+              style="float: left;" type="warning"
+              @@click="endQuest">
+              结束并评分
+            </el-button>
+            <el-rate
+              style="float: left;padding: 0 20px;"
+              v-model="rateVal">
+            </el-rate>
+            <el-button
+              type="primary"
+              @@click="msgSubmit"
+            >发送</el-button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- end modal -->
+</div>
+
+<script>
+  $('#md').on('shown.bs.modal',function(){
+    $('.msg-content').last()[0].scrollIntoView()
+  })
+  var app = new Vue({
+    el:'#app',
+    data:{
+      token:getToken(),
+      radioVal:null,
+      QuestType:[
+        {text:'短信服务',value:'SMS'},
+        {text:'账号冻结',value:'Account'},
+        {text:'违规投诉',value:'Complain'},
+        {text:'转账兑换',value:'Exchange'},
+        {text:'结算分红',value:'SettleError'},
+        {text:'更改资料',value:'PersonalInfo'},
+        {text:'其他问题',value:'Other'}
+      ],
+      QuestDetail:'',
+      msgList:[],
+      currentPage:1,
+      detailCurrentPage:1,
+      questTypeMap:{
+        '0':'短信服务',
+        '1':'账号冻结',
+        '2':'违规投诉',
+        '3':'转账兑换',
+        '4':'结算分红',
+        '5':'更改资料',
+        '6':'其他问题'
+      },
+      questIdMap:{
+        'SMS':'0',
+        'Account':'1',
+        'Complain':'2',
+        'Exchange':'3',
+        'SettleError':'4',
+        'PersonalInfo':'5',
+        'Other':'6'
+      },
+      isThereMoreMsg:true,
+      chatData:[],
+      replyMsg:'',
+      currentRow: {},
+      dataLoading:{
+        takeMsgDetail:-1,
+        addQuest: false
+      },
+      rateVal:null
+    },
+    filters:{
+    	toCut:function(val,i){
+    		return val.substring(0,i)+'...';
+      }
+    },
+    methods:{
+      getnextList:function(){
+        $.post('/Account/TakeFeedback',{
+          __RequestVerificationToken:this.token,
+          PageIndex: this.currentPage++,
+          ShowNumber: 10
+        }).then(
+          function(res){
+            res.msg === 'StatusOk'
+              ? res.data.data.length
+                  ? res.data.data.forEach(function(m){
+                      app.msgList.push(m)
+                    })
+                  : $('.linkGetMore').css('display','none')
+              : app.$message.warning('获取历史留言失败，请刷新重试。')
+          }
+        )
+      },
+      tableRowClassName:function(row){
+        return row.CloseTime
+          ?'closedMsg'
+          : ''
+      },
+      intoQuest:function(i,row){
+        this.isThereMoreMsg = true
+        this.dataLoading.takeMsgDetail = i
+        this.chatData = []
+        this.currentRow = row
+        this.detailCurrentPage = 1
+        this.getMoreMsg(true)
+      },
+      getMoreMsg:function(isOpen){
+        $.post('/Account/TakeFeedbackDetail',{
+          __RequestVerificationToken: this.token,
+          FeekbackId: this.currentRow.FeekbackId,
+          PageIndex: this.detailCurrentPage++,
+          ShowNumber: 10
+        }).then(
+          function(res){
+            res.msg === 'StatusOk'
+              ? res.data.data.length
+                ? (
+                    res.data.data.forEach(function(msg){
+                      app.chatData.unshift(msg)
+                    }),
+                    isOpen && $('#md').modal('show')
+                  )
+                : app.isThereMoreMsg = false
+              : app.$message.warning('获取消息失败，请刷新重试。')
+            app.dataLoading.takeMsgDetail = -1
+          }
+        )
+      },
+      msgSubmit:function(){
+        this.replyMsg.length > 4
+          ? $.post('/Account/UpdateFeedbackDetail',{
+              __RequestVerificationToken: this.token,
+              FeekbackId: app.currentRow.FeekbackId,
+              Content: this.replyMsg
+            }).then(
+              function(res){
+                res.msg === 'StatusOk'
+                  ? (
+                  app.$message.success('信息发送成功。'),
+                    app.chatData.push({
+                      Content: this.replyMsg,
+                      IsServicer: false,
+                      SetupTime: this.nowTime()
+                    }),
+                    this.replyMsg = '',
+                    this.$nextTick(function(){
+                      $('.msg-content').last()[0].scrollIntoView()
+                    })
+                )
+                  : app.$message.error('发送错误，请重试。')
+              }.bind(this)
+            )
+          : this.$message.warning('内容长度不能小于 5 。')
+      },
+      nowTime:function(){
+        var now = new Date()
+        return now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate()+' '+now.getHours()+':'+now.getMinutes()+':'+now.getSeconds()
+      },
+      addQuest:function(){
+        if (!this.radioVal) {
+          return app.$message.warning('请先选择问题类型。')
+        }
+        this.QuestDetail.length > 4
+          ? !function(){
+              app.dataLoading.addQuest = true
+              $.post('/Account/AddFeedback',{
+                __RequestVerificationToken: app.token,
+                Type: app.radioVal,
+                Content: app.QuestDetail
+              }).then(
+                function(res){
+                  res.msg === 'StatusOk'
+                    ? (
+                        app.msgList.unshift({
+                          CloseTime:null,
+                          Content:app.QuestDetail,
+                          FeekbackId:res.data,
+                          QuestId:app.questIdMap[app.radioVal],
+                          SetupTime:app.nowTime()
+                        }),
+                          app.$message.success('留言发送成功。'),
+                          app.radioVal = '',
+                          app.QuestDetail = ''
+                      )
+                    : app.$message.warning('发送失败，请重试。')
+                  app.dataLoading.addQuest = false
+                }
+              )
+            }()
+          : this.$message.warning('留言内容长度不能小于 5 。')
+      },
+      endQuest:function(){
+        if(confirm('是否结束话题并提交评分？')){
+          $.post('/Account/RateFeedback',{
+            __RequestVerificationToken: this.token,
+            Type: this.currentRow.QuestId,
+            FeekbackId: this.currentRow.FeekbackId
+          }).then(
+            function(res){
+              res.msg === 'StatusOk'
+                ? (app.$message.success('已结束话题。'),app.currentRow.CloseTime='1')
+                : app.$message.warning('操作失败，请重试。')
+            }
+          )
+          $('#md').modal('hide')
+        } else {
+          app.$message.warning('您已取消操作，话题未结束。')
+        }
+      }
+    },
+    created:function(){
+      this.getnextList()
+    }
+  })
+</script>

@@ -1,0 +1,1824 @@
+﻿@using Host.SettleWeb.Models
+@{
+    ViewBag.Title = "Wallet Transfer";
+    Layout = "~/Views/Shared/_en-US_Layout.cshtml";
+    var queryParameter = ViewData["UrlParameter"] == null ? null : ViewData["UrlParameter"] as UrlExchangeModel;
+    string CoinType = queryParameter == null ? "BTC" : queryParameter.Type;
+    string DestAddr = queryParameter == null ? "" : queryParameter.Addr;
+    decimal Amount = queryParameter == null ? 0 : queryParameter.Amount;
+    string Currenry = queryParameter == null ? "" : queryParameter.Currenry;
+    string Remark = queryParameter == null ? "" : queryParameter.Remark;
+    long Nonce = queryParameter == null ? 0 : queryParameter.Nonce;
+}
+
+<style>
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    input[type="number"] {
+        -moz-appearance: textfield;
+    }
+
+    [v-cloak] {
+        display: none;
+    }
+
+    .c9 {
+        color: #999;
+    }
+
+    .f-10 {
+        font-size: 10px;
+    }
+
+    .c-green {
+        color: #21a121;
+    }
+
+    .pt-10 {
+        padding-top: 10px;
+    }
+
+    .qrcenter {
+        margin-left: auto;
+        margin-right: auto;
+        width: 266px;
+    }
+
+    .form-group .select-wrap {
+        position: absolute;
+        right: 15px;
+        top: 0;
+        height: 100%;
+    }
+
+    .form-group .select-btn {
+        background: transparent;
+        border: 0;
+        box-shadow: 0;
+        height: 100%;
+    }
+
+    .dropdown-menu {
+        min-width: 88px !important;
+    }
+
+    .tf {
+        background-color: #ffffff;
+        margin: 76px 0px 0px 18px;
+        box-shadow: 0px 1px 10px 0 rgba(0, 0, 0, 0.07);
+        border: solid 1px #e1e1e1;
+    }
+
+    .tf-header {
+        margin: 22px;
+    }
+
+        .tf-header .row > div {
+            margin: 0;
+        }
+
+        .tf-header div {
+            padding: 0;
+        }
+
+        .tf-header > div {
+            padding: 0 15px;
+        }
+
+            .tf-header > div > div > div {
+                height: 110px;
+            }
+
+    .tf-main {
+        margin: 50px 0 10px 0;
+    }
+
+    .tf-header .tf-ico-wrapper {
+        text-align: center;
+        padding: 18px;
+    }
+
+    .tf-ico-name {
+        color: white;
+        font-size: 18px;
+        margin-right: 18px;
+        line-height: 73px;
+        vertical-align: middle;
+    }
+
+    .convert-stock > div {
+        position: relative;
+    }
+
+    .convert-name {
+        position: absolute;
+        top: 14px;
+        left: 10%;
+        font-size: 16px
+    }
+
+    .convert-balance {
+        position: absolute;
+        bottom: 14px;
+        left: 10%;
+        font-size: 18px;
+    }
+
+        .convert-balance .unit {
+            margin-left: 10px;
+            font-size: 16px;
+        }
+
+
+    .select-main > div {
+        float: left;
+        margin: 0 5% 0 0;
+        white-space: nowrap;
+    }
+
+
+    .lh-30px {
+        line-height: 30px;
+    }
+
+    .stateDate, .endDate {
+        height: 30px;
+        border: 1px solid #e1e1e1;
+    }
+
+
+    .toggle-select button {
+        width: 75px;
+        border-radius: 0;
+        height: 30px;
+    }
+
+    .screen-select button {
+        width: 100px;
+        border-radius: 0;
+        height: 30px;
+    }
+
+    .btn-group.open .dropdown-toggle {
+        -webkit-box-shadow: none;
+        box-shadow: none;
+    }
+
+    .toggle-select li {
+        text-align: right;
+    }
+
+    .toggle-select .select {
+        position: absolute;
+        top: 28px;
+        min-width: 88px;
+        right: -1px;
+        border-color: #e1e1e1;
+        background-color: #f5f5f5;
+    }
+
+    .select li {
+        line-height: 30px;
+        min-width: 88px;
+        background: #fff;
+        text-align: center;
+    }
+
+    .select-main .filtering {
+        margin-right: 0;
+    }
+
+    .btn-filtering {
+        margin-top: -5px;
+        padding: 6px 12px;
+        min-width: 106px;
+        height: 40px;
+        color: #fff;
+        border: 0;
+        border-radius: 4px;
+        background-color: #1da1f3;
+    }
+
+    .search {
+        line-height: 31px;
+        border-top: none;
+        border-right: none;
+        border-bottom: 1px solid rgb(225, 225, 225);
+        border-left: none;
+    }
+
+        .search:focus {
+            border-top: none;
+            border-right: none;
+            border-bottom: 1px solid #e1e1e1;
+            border-left: none;
+        }
+
+
+    .history {
+        position: relative;
+    }
+
+        .history li {
+            display: inline-block;
+        }
+
+        .history .ban a {
+            color: #999;
+        }
+
+        .history li a {
+            padding: 6px 10px;
+            display: inline-block;
+            border: 1px solid #ddd;
+            background: #fff;
+            color: #0f0f0f;
+        }
+
+            .history li a:hover {
+                background: #eee;
+            }
+
+        .history li.active a {
+            background: #0E90D2;
+            color: #fff;
+        }
+
+    .tf-header .tf-trans > div {
+        width: 48%;
+    }
+
+    .tf-header .tf-trans .fixmar-2 {
+        margin-right: 2%;
+    }
+
+    .tf-header .balance > div {
+        width: 32%;
+        color: #fff;
+    }
+
+    .tf-header .balance .fixmargin-2 {
+        margin: 0 2%;
+    }
+
+    .tf-ico-arrow {
+        width: 79px;
+        height: 73px;
+        vertical-align: middle;
+    }
+
+    .form-group label {
+        text-align: justify;
+    }
+
+    .form-control {
+        border-radius: 0 !important;
+    }
+
+    .centerline {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: white;
+        width: 180px;
+    }
+
+    .p-r-80 {
+        padding-right: 80px;
+    }
+
+    .p-r-90 {
+        padding-right: 90px;
+    }
+
+    .p-r-120 {
+        padding-right: 120px;
+    }
+
+    .p-r-130 {
+        padding-right: 130px;
+    }
+
+    .modal-r-b {
+        position: absolute;
+        top: 0;
+        right: 0;
+        height: 34px;
+        width: 83px;
+        background: #1da1f3;
+        color: #fff;
+    }
+
+
+    @@media screen and (max-width: 1330px) {
+        .tf-ico-arrow {
+            width: 50px;
+            height: 40px;
+            vertical-align: middle;
+        }
+
+        .tf-header .tf-ico-wrapper > div {
+            line-height: 110px;
+        }
+
+        .tf-header .tf-ico-wrapper {
+            padding: 0;
+        }
+
+        .tf-ico-name {
+            font-size: 18px;
+            margin-right: 5px;
+            line-height: 55px;
+            vertical-align: middle;
+        }
+
+        .select-main > div {
+            float: left;
+            margin: 0 5px 0 0;
+            white-space: nowrap;
+        }
+    }
+
+    @@media screen and (max-width: 992px) {
+        .tf {
+            background-color: #ffffff;
+            margin: 0;
+            box-shadow: none;
+            border: 0;
+        }
+
+        .f-10-m {
+            font-size: 10px;
+        }
+
+        .tf-header > div > div > div {
+            height: 55px;
+        }
+
+        .tf-header {
+            margin: 15px;
+        }
+
+            .tf-header .tf-ico-wrapper > div {
+                line-height: 55px;
+            }
+
+            .tf-header .row > div {
+                margin: 0 0 0 0;
+            }
+
+            .tf-header .tf-trans > div {
+                position: relative;
+                width: 100%;
+                margin-bottom: 25px;
+            }
+
+                .tf-header .tf-trans > div .trans-wrapper-r {
+                    position: absolute;
+                    right: 50px;
+                }
+
+                .tf-header .tf-trans > div .trans-wrapper-l {
+                    position: absolute;
+                    left: 50px;
+                }
+
+            .tf-header .tf-trans .fixmargin-1 {
+                margin: 10px 0 25px 0;
+            }
+
+        .balance {
+            display: flex;
+        }
+
+        .tf-header .balance div {
+            flex: 1;
+        }
+
+        .tf-ico-arrow {
+            width: 40px;
+            height: 37px;
+            vertical-align: middle;
+        }
+
+        .tf-header .tf-ico-wrapper {
+            padding: 0;
+        }
+
+        .tf-ico-name {
+            font-size: 16px;
+            margin-right: 5px;
+            line-height: 55px;
+            vertical-align: middle;
+        }
+
+
+        .convert-name {
+            top: 5px;
+            font-size: 10px;
+        }
+
+        .convert-balance {
+            bottom: 5px;
+            font-size: 12px;
+        }
+
+            .convert-balance .unit {
+                font-size: 10px;
+            }
+
+        .tf-main {
+            margin: 10px 0;
+        }
+
+        .select-main > div {
+            float: left;
+            margin: 10px 0 20px 0;
+            white-space: nowrap;
+        }
+
+        .toggle-select button {
+            width: 65px;
+        }
+
+        .datehook {
+            width: 70%;
+        }
+
+        .status {
+            width: 30%;
+        }
+
+        .charater {
+            width: 50%;
+        }
+
+        .filtering {
+            width: 50%;
+        }
+
+            .filtering button {
+                width: 100%;
+            }
+
+        .p-r-120 {
+            padding-right: 65px;
+        }
+    }
+</style>
+<style>
+    .send-container {
+        background: #f5f5f5;
+        height: 100vh;
+    }
+
+    .f-16 {
+        font-size: 16px;
+    }
+
+
+    .mb-15 {
+        margin-bottom: 15px;
+    }
+
+    .text-left {
+        text-align: left;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .send-container p {
+        padding: 24px 0 10px 15px;
+        margin: 0;
+    }
+
+
+    .send-container .btn {
+        height: 44px;
+        padding: 12px 12px !important;
+    }
+
+    .send-container .form-control {
+        border: none;
+        box-shadow: none;
+        height: 44px;
+        padding: 12px 12px;
+    }
+
+    .send-container .btn-group > button {
+        border: none;
+    }
+
+        .send-container .btn-group > button:active {
+            box-shadow: none;
+            background: #fff;
+        }
+
+        .send-container .btn-group > button:hover {
+            box-shadow: none;
+            background: #fff;
+        }
+</style>
+<style>
+    .get-container {
+        background: #f5f5f5;
+        height: 100vh;
+    }
+
+    .f-16 {
+        font-size: 16px;
+    }
+
+    .mt-10 {
+        margin-top: 10px;
+    }
+
+    .mb-15 {
+        margin-bottom: 15px;
+    }
+
+    .tab {
+        display: flex;
+    }
+
+        .tab > div {
+            flex: 1;
+            text-align: center;
+            height: 40px;
+            line-height: 44px;
+            font-size: 16px;
+        }
+
+    .text-left {
+        text-align: left;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .pd-l-30 {
+        padding-left: 30%;
+    }
+
+    .pd-r-30 {
+        padding-right: 30%;
+    }
+
+    .fh {
+        position: relative;
+    }
+
+    .get-container .modal-r-b {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        height: 33px;
+        width: 83px;
+        background: #1da1f3;
+        color: #fff;
+    }
+
+    .get-container .btn-m {
+        width: 78px;
+        height: 25px;
+        border-radius: 15px;
+        color: #1da1f3;
+        background-color: #fcfcfc;
+        border: solid 1px #1da1f3;
+    }
+
+        .get-container .btn-m:focus {
+            background-color: #f1f1f1;
+            outline: none;
+        }
+
+    .get-container .center-line {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 150px;
+    }
+
+
+    .get-container p {
+        padding: 24px 0 10px 15px;
+        margin: 0;
+    }
+
+    .get-container .form-control.p-r-80, .send-container .form-control.p-r-80 {
+        padding-right: 80px;
+    }
+
+    .get-container .form-control.p-r-80, .send-container .form-control.p-r-90 {
+        padding-right: 90px;
+    }
+
+    .get-container .form-control.p-r-120, .send-container .form-control.p-r-120 {
+        padding-right: 120px;
+    }
+
+    .get-container .form-control.p-r-130, .send-container .form-control.p-r-130 {
+        padding-right: 130px;
+    }
+
+    .get-container .btn-group > button {
+        border: none;
+    }
+
+        .get-container .btn-group > button:active {
+            box-shadow: none;
+            background: #fff;
+        }
+
+        .get-container .btn-group > button:hover {
+            box-shadow: none;
+            background: #fff;
+        }
+
+    .get-container .btn {
+        padding: 12px 12px !important;
+    }
+
+    .get-container .form-control {
+        border: none;
+        box-shadow: none;
+        height: 44px;
+        padding: 12px 12px;
+    }
+
+
+    .get-container .form-group .select-wrap, .send-container .btn-group .select-wrap {
+        position: absolute;
+        right: 15px;
+        top: 0;
+        height: 100%;
+    }
+
+    .r-0 {
+        right: 0 !important;
+    }
+
+    .get-container .form-group .select-btn, .send-container .btn-group .select-btn {
+        background: transparent;
+        border: 0;
+        box-shadow: 0;
+        height: 100%;
+    }
+
+    .get-container .dropdown-menu, .send-container .dropdown-menu {
+        min-width: 75px !important;
+    }
+
+    #qrMobile, #qrMobile2 {
+        text-align: center;
+        margin: 24px 0;
+    }
+
+        #qrMobile img, #qrMobile2 img {
+            display: inline-block !important;
+        }
+</style>
+<style>
+    .goBack {
+        position: fixed;
+        left: 16px;
+        top: 12px;
+        padding-right: 50px;
+        z-index: 1001;
+    }
+
+    .acoountSet {
+        display: none;
+    }
+
+    .fixed-tab {
+        width: 160px;
+        left: 50%;
+        transform: translateX(-50%);
+        position: fixed;
+        background: #004a7c;
+        top: 1px;
+        color: #fff;
+        z-index: 1000;
+        font-weight: 200;
+    }
+
+    .fw {
+        font-weight: 400;
+    }
+
+    #showTips, #layoutShowLoading {
+        z-index: 9999;
+    }
+    body.modal-open, .modal-open .navbar-fixed-top, .modal-open .navbar-fixed-bottom {
+        margin-right: 0;
+    }
+</style>
+
+
+<div id="app">
+    <a @@click="back()" class="goBack p-l-14" v-show="getForm||sendForm" style="display: none;">
+        <img class="w-10" src="~/images/Img/goBack.png" />
+    </a>
+    <div v-show="getForm" style="display: none;">
+        <div class="get-container">
+            <div class="tab fixed-tab">
+                <div @@click="tab=true" :class="{fw:tab==true}">Receive</div>
+                <div @@click="tab=false" :class="{fw:tab==false}">Specific</div>
+            </div>
+            <div id="tab1" v-show="tab">
+                <p class="f-16 mt-10">Receive Currency</p>
+
+                <div class="form-group" style="width:100%;position:relative">
+                    <input readonly type="text" v-model="transferR.Addr" class="form-control p-r-80">
+                    <div class="btn-group select-wrap r-0">
+                        <button type="button" class="select-btn btn-default dropdown-toggle" data-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false">
+                            {{transferR.Type}} <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu pull-right">
+                            <li v-for="x in coinType"><a @@click="selectCotype(x.Type,x.Addr)">{{x.Type}}</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <p class="f-16 mt-10">Address</p>
+                <div class="fh">
+                    <input type="text" class="form-control p-r-130" v-model="shareLink">
+                    <img v-show="qrshow" @@click="getqr()" src="../../images/icon/qrcodeico.png"
+                         alt="QR Code" style="width:21px;height: 21px;position: absolute;top: 12px;right: 100px;" />
+                    <button type="button" class="modal-r-b btn-m" @@click="createUrl('qrMobile',true)">Generate</button>
+                </div>
+                <div id="qrMobile"></div>
+            </div>
+            <div id="tab2" v-show="tab==false">
+                <div class="clearfix"
+                     style="border-bottom: 1px solid rgb(151,151,151);position:relative;height:20px;margin-bottom: 30px;">
+                    <span class="center-line text-center" style="background:#f5f5f5">Receive specified quantity</span>
+                </div>
+
+                <div class="form-group clearfix">
+                    <div class="col-sm-10">
+                        <input type="number" v-model="transferR.Amount" class="ctomR form-control p-r-80" placeholder="Please enter the amount...">
+                        <div class="btn-group select-wrap">
+                            <button type="button" class="select-btn btn-default dropdown-toggle" data-toggle="dropdown"
+                                    aria-haspopup="true" aria-expanded="false">
+                                {{transferR.Type}} <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu pull-right">
+                                <li v-for="x in coinType"><a @@click="selectCotype(x.Type,x.Addr)">{{x.Type}}</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mb-15">
+                    <img src="../../images/icon/transferico.png" style="transform: rotateZ(90deg);">
+                </div>
+                <div class="form-group clearfix">
+                    <div class="col-sm-10">
+                        <input type="number" v-model="transferRValue" class="mtocR form-control p-r-80" placeholder="Please enter the amount...">
+                        <div class="btn-group select-wrap">
+                            <button type="button" class="select-btn btn-default dropdown-toggle" data-toggle="dropdown"
+                                    aria-haspopup="true" aria-expanded="false">
+                                {{transferR.Currenry}}  <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu pull-right">
+                                <li v-for="x in Currenry"><a @@click="choiceCurrenry(x)" v-cloak>{{x}}</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <p class="f-16 mt-10">Remarks</p>
+                <div class="fh">
+                    <input type="text" class="form-control" v-model="transferR.Remark" placeholder="Your remarks on the transaction...">
+                </div>
+                <p class="f-16 mt-10">Links</p>
+                <div class="fh">
+                    <input type="text" class="form-control p-r-130" v-model="shareLink">
+                    <img v-show="qrshow" src="../../images/icon/qrcodeico.png"
+                         alt="QR Code" style="width:21px;height: 21px;position: absolute;top: 12px;right: 100px;" />
+                    <button type="button" class="modal-r-b btn-m" @@click="createUrl('qrMobile2',false)">Generate</button>
+                </div>
+                <p class="c-red f-10" v-show="createMsg" v-text="createMsg"></p>
+                <div id="qrMobile2"></div>
+
+            </div>
+        </div>
+    </div>
+    <div v-show="sendForm" style="display: none;">
+        <div class="send-container">
+            <div v-show="otherRemark.length>0" class="clearfix">
+                <div class="col-xs-1" style="padding-left: 15px;padding-right:0"><img src="../../images/icon/remarkico.png" alt="Remarks" /></div>
+                <div class="col-xs-10"><p style="padding:5px">“{{otherRemark}}”</p></div>
+            </div>
+            <p class="f-16 pt-10">Send Address</p>
+            <div class="btn-group" style="width:100%">
+                <input type="text" v-model="transferR.Addr" class="form-control p-r-80">
+                <div class="btn-group select-wrap r-0">
+                    <button type="button" class="select-btn btn-default dropdown-toggle" data-toggle="dropdown"
+                            aria-haspopup="true" aria-expanded="false">
+                        {{transferR.Type}} <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu pull-right">
+                        <li v-for="x in coinType"><a @@click="selectTASubmit(x.Type,x.Addr)">{{x.Type}}</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <p class="f-16">UserName</p>
+            <div class="btn-group" style="width:100%">
+                <input type="text" v-model="QueryName.UserName" class="form-control p-r-90" placeholder="The other Username or UserID">
+                <button style="height:100%" type="button" class="modal-r-b btn-m r-0" @@click="search()">Search</button>
+            </div>
+
+            <p class="f-16">Receive Address</p>
+            <div class="btn-group" style="width:100%">
+                <input type="text" class="col-xs-10 form-control" v-model="transferSubmit.Addr" placeholder="Please choose or enter an address...">
+            </div>
+            <p v-show="noSupport">The currency enter is not available！</p><p v-show="advise.length>0">Commend:<span v-for="x in advise">{{x}}</span></p>
+            <p> </p>
+            <div class="form-group clearfix">
+                <div class="col-sm-10">
+                    <input type="number" v-model="transferSubmit.Amount" class="ctomS form-control p-r-80" placeholder="Please enter the amount...">
+                    <div class="btn-group select-wrap">
+                        <button type="button" class="select-btn btn-default dropdown-toggle" data-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false">
+                            {{transferSubmit.Type}} <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu pull-right">
+                            <li v-for="x in coinType"><a @@click="selectTASubmit(x.Type,x.Addr)">{{x.Type}}</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mb-15">
+                <img src="../../images/icon/transferico.png" style="transform: rotateZ(90deg);">
+            </div>
+            <div class="form-group clearfix">
+                <div class="col-sm-10">
+
+                    <input type="number" v-model="transferSValue" class="mtocS form-control p-r-80" placeholder="Please enter the amount...">
+                    <div class="btn-group select-wrap">
+                        <button type="button" class="select-btn btn-default dropdown-toggle" data-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false">
+                            {{transferSubmit.Currenry}} <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu pull-right">
+                            <li v-for="x in Currenry"><a @@click="choiceCurrenry(x)">{{x}}</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <p class="f-16">Remarks</p>
+            <div>
+                <input type="text" class="form-control" v-model="transferSubmit.Remark" placeholder="Your remarks on the transaction...">
+            </div>
+            <p class="f-16">Transaction Password</p>
+            <div>
+                <input type="password" class="form-control" v-model="transferSubmit.TradePassword" placeholder="Your remarks on the transaction...">
+                <p class="c-red f-10 pt-10" v-show="sendMsg.length>0">{{sendMsg}}</p>
+                <p class="c-green f-10 pt-10" v-show="sendSuccess.length>0">{{sendSuccess}}</p>
+            </div>
+            <p> </p>
+            <div class="clearfix" style="padding: 0 10%;">
+                <button @@click="transferT" class="col-xs-12" style="height:44px;background: #1da1f3;color:white;border: none;border-radius: 5px">Confirm Send</button>
+            </div>
+            <p style="padding: 15px">The transfer of this platform is confirmed immediately, and transferred out of the platform generally confirmed within 2 hours, the longest time is less than 24 hours.</p>
+        </div>
+    </div>
+    <div class="tf" v-show="allWeb">
+        <div class="tf-header row">
+            <div class="col-md-5">
+                <div class="row tf-trans">
+                    <div class="tf-ico-wrapper col-md-6 fixmar-2" @@click="openGet()" style="background:url(../../images/Img/tf-get.png)no-repeat;background-size:100% 100%">
+                        <div class="trans-wrapper-l">
+                            <span class="tf-ico-name">Receive</span>
+                            <img class="tf-ico-arrow" src="../../images/Img/tf-get-ico.png" />
+                        </div>
+                    </div>
+                    <div class="tf-ico-wrapper col-md-6" @@click="openSend()" style="background:url(../../images/Img/tf-send.png)no-repeat;background-size:100% 100%">
+                        <div class="trans-wrapper-r">
+                            <span class="tf-ico-name">Send</span>
+                            <img style="transform: rotateZ(180deg);" class="tf-ico-arrow" src="../../images/Img/tf-get-ico.png" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-md-offset-1">
+                <div class="row balance">
+                    <div class="col-md-4 col-xs-4" style="background:url(../../images/Img/BTCBG.png)no-repeat center;background-size:100% 100%">
+                        <div class="convert-name">BTC Stock</div>
+                        <div class="convert-balance" v-cloak>{{balance.BTC | toFix(4)}}<span class="unit">BTC</span></div>
+                    </div>
+                    <div class="col-md-4 col-xs-4 fixmargin-2" style="background:url(../../images/Img/LTCBG.png)no-repeat;background-size:100% 100%">
+                        <div class="convert-name">LTC Stock</div>
+                        <div class="convert-balance" v-cloak>{{balance.LTC | toFix(4)}}<span class="unit">LTC</span></div>
+                    </div>
+                    <div class="col-md-4 col-xs-4" style="background:url(../../images/Img/SCBG.png)no-repeat;background-size:100% 100%">
+                        <div class="convert-name">SC Stock</div>
+                        <div class="convert-balance" v-cloak>{{balance.SC | toFix(4)}}<span class="unit">SC</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tf-main clearfix">
+            <div class="col-md-2">
+                <span class="lh-30px">Transfer record</span>
+            </div>
+            <div class="col-md-12 col-sm-12 select-main clearfix" style="white-space:nowrap">
+                <div class="datehook">
+                    <span class="">Date:</span>
+                    <div class="iDate date stateDate">
+                        <input id="startTime" type="text" class="c-alalal stateInput c9" title="Start Date">
+                        <button type="button" class="addOn c-alalal"></button>
+                    </div>
+                    <span class="">-</span>
+                    <div class="iDate date endDate">
+                        <input id="endTime" type="text" class="c-alalal endDate c9" title="End Date">
+                        <button type="button" class="addOn c-alalal"></button>
+                    </div>
+                </div>
+                <div class="status">
+                    <span v-show="checkBrowserSize()>=992" >Type:</span>
+                    <div class="screen-select btn-group">
+                        <button type="button" data-toggle="dropdown" class="btn btn-default dropdown-toggle"
+                                style="border-color: #e1e1e1;background-color: #f5f5f5" v-cloak>
+                            {{statusActive}} <span class="caret"></span>
+                        </button>
+                        <ul class="select dropdown-menu pull-right">
+                            <li v-for="x in status" v-show="x.name!=statusActive">
+                                <a @@click="selectStatus(x.name,x.key)" v-cloak>{{x.name}}</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="charater">
+                    <span class="">Nature:</span>
+                    <div class="screen-select btn-group">
+                        <button type="button" data-toggle="dropdown" class="btn btn-default dropdown-toggle"
+                                style="border-color: #e1e1e1;background-color: #f5f5f5" v-cloak>
+                            {{charActive}} <span class="caret"></span>
+                        </button>
+                        <ul class="select dropdown-menu pull-right">
+                            <li v-for="x in char" v-show="x.name!=charActive">
+                                <a @@click="selectChar(x.name,x.key)"
+                                   v-cloak>{{x.name}}</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="filtering">
+                    <button class="btn-filtering" @@click="takeTransferRecord()">Screen</button>
+                </div>
+            </div>
+        </div>
+        <table id="history-tb" class="table table-bordered table-hover">
+            <tr>
+                <th>Date</th>
+                <th>Nature</th>
+                <th>Amount</th>
+                <th>User</th>
+                <th class="hidden-xs">Address</th>
+                <th>Type</th>
+            </tr>
+            <tr v-for="x in history" class="f-10-m" title="You can check your Txid by clicking on View" @@click="showTxid(x.TxId)" >
+                <td style="color:red" v-cloak>
+                    {{x.SetupTime | toCut(0,10)}}
+                    <span v-show="checkBrowserSize()>=992">{{x.SetupTime |toCut(10,x.SetupTime.length)}}</span>
+                </td>
+                <td v-cloak>{{x.IsSender | toDirect}}</td>
+                <td v-cloak>{{x.Amount | toFix(2)}} {{x.CoinType}}</td>
+                <td v-cloak>{{x.UserName}}</td>
+                <td class="hidden-xs" v-text="x.Address"></td>
+                <td v-cloak>{{x.Status | toStatus}}</td>
+            </tr>
+        </table>
+        <div class="text-center" v-show="history==''">No historical record</div>
+        <div class="p-b-80 text-right clearfix" v-show="totalhistory">
+            <page style="white-space:nowrap;float:right" :current="takeRecord.PageIndex" :allpage="totalPage" :showpage="5" @@next="nextPage" @@prev="prevPage" @@goto="gotoPage"></page>
+
+            <div class="btn-group flo-rig">
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" style="border:none;border-bottom:1px solid #e1e1e1;" v-cloak>
+                    {{activeNum}} <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" style="min-width:30px">
+                    <li v-for="item in showNumber"><a @@click="selectNum(item)">{{item}}</a></li>
+                </ul>
+            </div>
+            <span class="hidden-xs" style="white-space:nowrap;margin-right:30px;line-height: 34px;float:right">
+                display <span v-text="startIndex"></span>
+                - <span v-text="endIndex"></span> data/
+                total <span v-text="totalhistory"></span> data
+            </span>
+        </div>
+    </div>
+
+    <div class="modal fade" id="getModal" tabindex="-1" role="dialog" aria-labelledby="Receive" aria-hidden="true">
+        <div class="modal-dialog ps-absolute t50 l50" style="transform: translate(-50%,-50%);">
+            <div class="modal-content p-28">
+                <div class="modal-header">
+                    <button type="button" class="close f-s-28" data-dismiss="modal" aria-hidden="true">
+                        <i class="accountModalIcon modalCloseIcon"></i>
+                    </button>
+                    <h4 class="modal-title c-000 f-s-24" id="myModalLabel">Receive</h4>
+                    <div class="f-s-12 m-t-16 f-s-14 c-666">Receive block chain assets from other wallets!</div>
+                </div>
+                <div class="modal-body">
+                    <div class="row m-t-20">
+                        <form>
+                            <div class="form-group">
+                                <label for="from" class="control-label">Address</label>
+                                <div style="position:relative">
+                                    <input type="text" style="background:#f4f4f4" v-model="transferR.Addr" class="form-control p-r-120">
+                                    <div class="toggle-select btn-group select-wrap r-0">
+                                        <button type="button" class="select-btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            {{transferR.Type}} <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu pull-right">
+                                            <li v-for="x in coinType"><a @@click="selectCotype(x.Type,x.Addr)">{{x.Type}}</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="clearfix" style="border-bottom: 1px solid #e5e5e5;position:relative;height:20px;margin-bottom: 30px;">
+                                <span class="centerline text-center">Receive specified quantity</span>
+                            </div>
+                            <div class="form-group clearfix">
+                                <label class="control-label">Receive Currency</label>
+                                <div>
+                                    <div class="" style="width:45.83%;position: relative;float:left">
+                                        <input type="number" class="ctomR form-control p-r-80" placeholder="Amount..." v-model="transferR.Amount">
+                                        <div class="toggle-select btn-group select-wrap r-0">
+                                            <button type="button" class="select-btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                {{transferR.Type}} <span class="caret"></span>
+                                            </button>
+                                            <ul class="dropdown-menu pull-right">
+                                                <li v-for="x in coinType"><a @@click="selectCotype(x.Type,x.Addr)">{{x.Type}}</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <label for="from" class="col-sm-1 control-label" style="text-align: center;line-height: 30px;"><img src="../../images/icon/transferico.png" alt="transfer" /></label>
+                                    <div class="" style="width:45.83%;position: relative;float:left">
+                                        <input type="number" class="mtocR form-control p-r-80" placeholder="Amount..." v-model="transferRValue">
+                                        <div class="toggle-select btn-group select-wrap r-0">
+                                            <button type="button" class="select-btn btn btn-default dropdown-toggle" data-toggle="dropdown" v-cloak>
+                                                {{transferR.Currenry}} <span class="caret"></span>
+                                            </button>
+                                            <ul class="select dropdown-menu pull-right">
+                                                <li v-for="x in Currenry"><a @@click="choiceCurrenry(x)" v-cloak>{{x}}</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Remarks</label>
+                                <div class="">
+                                    <input type="text" v-model="transferR.Remark" class="form-control" placeholder="Your remarks on the transaction...">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="from" class="control-label">Links</label>
+                                <div style="position:relative">
+                                    <input type="text" class="form-control p-r-120" v-model="shareLink">
+                                    <img v-show="qrshow" data-toggle="modal" data-target="#getScrModal" src="../../images/icon/qrcodeico.png" alt="QR Code" style="width:21px;height: 21px;position: absolute;top: 7px;right: 90px;" />
+                                    <button type="button" class="modal-r-b" @@click="createUrl('transferGetQr',false)">Generate</button>
+                                    <p class="c-red f-10 pt-10" v-show="createMsg" v-text="createMsg"></p>
+                                    <p class="c-green f-10 pt-10" v-show="successMsg" v-text="successMsg"></p>
+                                </div>
+                            </div>
+                        </form>
+                        <div class="m-t-40 hidden-xs">
+                            <div class="text-center c-red" id="UpdateUserInfoAlertBox"></div>
+                            <button style="background:#1da1f3" class="d-s-block w100 h-40 c-255 border-none border-radius-4 m-t-16" @@click="copyLink()">Copy the link</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="sendModal" tabindex="-1" role="dialog" aria-labelledby="Send" aria-hidden="true">
+        <div class="modal-dialog ps-absolute t50 l50" style="transform: translate(-50%,-50%);">
+            <div class="modal-content p-28">
+                <div class="modal-header">
+                    <button type="button" class="close f-s-28" data-dismiss="modal" aria-hidden="true">
+                        <i class="accountModalIcon modalCloseIcon"></i>
+                    </button>
+                    <h4 class="modal-title c-000 f-s-24" id="myModalLabel">Send</h4>
+                    <div class="f-s-12 m-t-16 f-s-14 c-666">The transfer of this platform is confirmed immediately, and transferred out of the platform generally confirmed within 2 hours, the longest time is less than 24 hours.</div>
+                </div>
+                <div class="modal-body">
+                    <div class="row m-t-20">
+
+                        <form class="">
+                            <div v-show="otherRemark.length>0" class="row">
+                                <div class="col-xs-1"><img src="../../images/icon/remarkico.png" alt="Remarks" /></div>
+                                <div class="col-xs-11"><p style="padding:5px">“{{otherRemark}}”</p></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="from" class="control-label">Send Address</label>
+                                <div style="position:relative">
+                                    <input readonly type="text" style="background:#f4f4f4" v-model="transferR.Addr" class="form-control p-r-120">
+                                    <div class="toggle-select btn-group select-wrap r-0">
+                                        <button type="button" class="select-btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            {{transferSubmit.Type}} <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu pull-right">
+                                            <li v-for="x in coinType"><a @@click="selectTASubmit(x.Type,x.Addr)">{{x.Type}}</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="from" class="control-label">UserName</label>
+                                <div style="position:relative">
+                                    <input type="text" class="form-control p-r-120" v-model="QueryName.UserName" placeholder="You can search for the other Username or UserID">
+                                    <button type="button" class="modal-r-b" @@click="search()">Search</button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="from" class="control-label">Receive Address</label>
+                                <input type="text" class="form-control p-r-120" v-model="transferSubmit.Addr" placeholder="Please choose or enter an address">
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Receive Currency</label>
+                                <div class="clearfix">
+                                    <div style="width:45.83%;position:relative;float:left">
+                                        <input type="number" class="ctomS form-control p-r-80" placeholder="Amount..." v-model="transferSubmit.Amount">
+                                        <div class="toggle-select btn-group select-wrap r-0" style="height:34px">
+                                            <button type="button" class="select-btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                {{transferSubmit.Type}} <span class="caret"></span>
+                                            </button>
+                                            <ul class="dropdown-menu pull-right">
+                                                <li v-for="x in coinType"><a @@click="selectTASubmit(x.Type,x.Addr)">{{x.Type}}</a></li>
+                                            </ul>
+                                        </div>
+                                        <span class="c-red f-10" v-show="noSupport">The currency enter is not available！</span><p v-show="advise.length>0">Commend:<span v-for="x in advise">{{x}}</span></p>
+                                    </div>
+                                    <label for="from" class="col-sm-1 control-label" style="text-align: center;line-height:30px"><img src="../../images/icon/transferico.png" alt="Transfer" /></label>
+                                    <div style="width:45.83%;position:relative;float:left">
+                                        <input type="number" class="mtocS form-control p-r-80" placeholder="Amount..." v-model="transferSValue">
+                                        <div class="toggle-select btn-group select-wrap r-0">
+                                            <button type="button" class="select-btn btn btn-default dropdown-toggle" data-toggle="dropdown" v-cloak>
+                                                {{transferSubmit.Currenry}} <span class="caret"></span>
+                                            </button>
+                                            <ul class="select dropdown-menu pull-right">
+                                                <li v-for="x in Currenry"><a @@click="choiceCurrenry(x)" v-cloak>{{x}}</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Remark</label>
+                                <input type="text" v-model="transferSubmit.Remark" class="form-control" placeholder="Your remarks on the transaction...">
+                            </div>
+                            <div class="form-group">
+                                <label for="from" class="control-label">Transaction password</label>
+                                <div>
+                                    <input type="password" class="form-control p-r-120" v-model="transferSubmit.TradePassword">
+                                    <p class="c-red f-10 pt-10" v-show="sendMsg" v-text="sendMsg"></p>
+                                    <p class="c-green f-10 pt-10" v-show="sendSuccess" v-text="sendSuccess"></p>
+                                </div>
+                            </div>
+                            <div class="text-right cursor-pointer" onclick="TakeUserInfo()" data-toggle="modal" data-target="#accountModal">Set transaction password</div>
+                        </form>
+                        <div class="m-t-20">
+                            <div class="text-center c-red" id="UpdateUserInfoAlertBox"></div>
+                            <button style="background:#1da1f3" class="d-s-block w100 h-40 c-255 border-none border-radius-4 m-t-16" @@click="transferT()">Confirm Send</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="getScrModal" tabindex="-1" role="dialog" aria-labelledby="QR Code" aria-hidden="true">
+        <div class="modal-dialog ps-relative t50 translateY-50 l-0">
+            <div class="modal-content p-28">
+                <div class="modal-header">
+                    <button type="button" class="close f-s-28" data-dismiss="modal" aria-hidden="true">
+                        <i class="accountModalIcon modalCloseIcon"></i>
+                    </button>
+                    <h4 class="modal-title c-000 f-s-24" id="myModalLabel">Receive</h4>
+                    <div class="f-s-12 m-t-16 f-s-14 c-666">Receive block chain assets from other wallets!</div>
+                </div>
+                <div class="modal-body">
+                    <div id="transferGetQr" class="row m-t-20 qrcenter">
+                    </div>
+                </div>
+
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+
+    <div class="modal fade" id="sendgoogleModal" tabindex="-1" role="dialog" aria-labelledby="Google" aria-hidden="true">
+        <div class="modal-dialog ps-relative t50 translateY-50 l-0">
+            <div class="modal-content p-28">
+                <div class="modal-header">
+                    <button type="button" class="close f-s-28" data-dismiss="modal" aria-hidden="true">
+                        <i class="accountModalIcon modalCloseIcon"></i>
+                    </button>
+                    <h4 class="modal-title c-000 f-s-24" id="myModalLabel">Send</h4>
+                    <div class="f-s-12 m-t-16 f-s-14 c-666">Send block chain assets to any address!</div>
+                </div>
+                <div class="modal-body">
+                    <div class="row m-t-20 text-center">
+                        your account was turn on Google certified！
+                    </div>
+                    <div class="col-sm-12 m-t-40 c-666">
+                        <input type="text" class="form-control" style="" id="googletoken" placeholder="Please enter your Google certified...">
+                    </div>
+                    <div class="m-t-40 ">
+                        <div class="text-center c-red" id="UpdateUserInfoAlertBox"></div>
+                        <button style="background:#1da1f3" class="d-s-block w100 h-40 c-255 border-none border-radius-4 m-t-16" @@click="copyLink()">Confirm Send</button>
+                    </div>
+                </div>
+
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+    <!-- Txid -->
+    <div class="modal fade" id='detail'>
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4>Txid</h4>
+                </div>
+                <div class="modal-body">
+                    <p v-if="txid" v-text="txid"></p>
+                    <p v-else>Txid does not exist</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- end modal -->
+</div>
+@Html.AntiForgeryToken()
+<script scr="~/Scripts/bootstrap-datetimepicker2.js"></script>
+<script src="~/Scripts/vue-page.js"></script>
+<script>
+
+        var urlEncode = function (param, key, encode) {
+            if (param == null) return '';
+            var paramStr = '';
+            var t = typeof (param);
+            if (t == 'string' || t == 'number' || t == 'boolean') {
+                paramStr += '&' + key + '=' + ((encode == null || encode) ? encodeURIComponent(param) : param);
+            } else {
+                for (var i in param) {
+                    var k = key == null ? i : key + (param instanceof Array ? '[' + i + ']' : '.' + i);
+                    paramStr += urlEncode(param[i], k, encode);
+                }
+            }
+            return paramStr;
+        };
+
+
+        var Unow = Date.now || function () {
+            return new Date().getTime();
+        };
+
+        var debounce = function (func, wait, immediate) {
+            var timeout, args, context, timestamp, result;
+
+            var later = function () {
+                var last = Unow() - timestamp;
+
+                if (last < wait && last >= 0) {
+                    timeout = setTimeout(later, wait - last);
+                } else {
+                    timeout = null;
+                    if (!immediate) {
+                        result = func.apply(context, args);
+                        if (!timeout) context = args = null;
+                    }
+                }
+            };
+
+            return function () {
+                context = this;
+                args = arguments;
+                timestamp = Unow();
+                var callNow = immediate && !timeout;
+                if (!timeout) timeout = setTimeout(later, wait);
+                if (callNow) {
+                    result = func.apply(context, args);
+                    context = args = null;
+                }
+
+                return result;
+            };
+        };
+
+
+
+
+    $(document).ready(function () {
+        if ($(".iDate.date").length > 0) {
+            $(".iDate.date").datetimepicker({
+                defaultDate: null,
+                format: "YYYY-MM-DD",
+                dayViewHeaderFormat: "YYYY MMMM"
+            });
+        }
+    });
+$()
+
+    new Vue({
+        el: '#app',
+        data: {
+	          txid:'',
+            allWeb: true,
+            tab: true,
+            getForm: false,
+            sendForm: false,
+            qrForm:false,
+            balance: {
+                BTC: 0.00,
+                ETH: 0.00,
+                LTC: 0.00,
+                SC: 0.00,
+                VC: 0.00,
+                VS: 0.00,
+                VT: 0.00,
+                VCStock: ''
+            },
+            transferR: {
+                Type: 'SC',
+                Addr: '',
+                Amount: '',
+                Currenry: 'USD',
+                Remark: '',
+                Nonce: getNowTimeStamp()
+            },
+            transferSubmit: {
+                __RequestVerificationToken: getToken(),
+                Type:  '@Html.Raw(CoinType)',
+                Addr: '@Html.Raw(DestAddr)',
+                Amount:@Amount,
+                Currenry:  '@Html.Raw(Currenry)',
+                Remark:  '',
+                Nonce: '@Html.Raw(Nonce)',
+                TradePassword:''
+            },
+            otherRemark:'@Html.Raw(Remark)',
+            coinType: [],
+            coinTypeActive: '',
+            shareLink: '',
+            sendMsg: '',
+            sendSuccess: '',
+            createMsg: '',
+            successMsg: '',
+            advise: '',
+            noSupport: false,
+            qrshow: false,
+            QueryName: {
+                __RequestVerificationToken: getToken(),
+                UserName: '',
+                CoinType:'SC'
+            },
+            MarketCoin: 'sc',
+            MarketCurr: 'usd',
+            transferRValue: '',
+            transferSValue: '',
+            currentPrice: '',
+            takeRecord: {
+                __RequestVerificationToken: getToken(),
+                'Direct': 'A',
+                'Status': '',
+                'StartTime': '',
+                'EndTime':'',
+                'PageIndex': 1,
+                'ShowNumber': 10
+            },
+            status: [
+                { name: 'All', key: '' },
+                { name: 'Successed', key: 'D' },
+                { name: 'Canceled', key: 'C' },
+                { name: 'Waiting', key: 'W' }
+            ],
+            statusActive: 'All',
+            char: [
+                { name: 'All', key: 'A' },
+                { name: 'Send', key: 'S' },
+                { name: 'Receive', key: 'R' }
+            ],
+            Currenry: ['USD', 'CNY'],
+            charActive: 'All',
+            FilteringStart: '',
+            FilteringEnd: '',
+            showNumber: [10, 20],
+            activeNum: 10,
+            showNumber: [10, 20],
+            history: '',
+            totalPage: 0,
+            totalhistory: 0
+        },
+        created:function(){
+            this.getReceiverAddress(true);
+            this.takeTransferRecord();
+        },
+        mounted: function () {
+            var _this = this;
+            this.getBalance();
+
+            if (this.transferSubmit.Type.length > 0 && this.checkBrowserSize()>=768) {
+                this.MarketCoin = this.transferSubmit.Type;
+                this.MarketCurr = this.transferSubmit.Currenry;
+                $('#sendModal').modal('show');
+            }
+            if (this.transferSubmit.Type.length > 0 && this.checkBrowserSize() < 768) {
+                this.sendForm = true;
+                this.allWeb = false;
+            }
+            if (this.transferSubmit.Type.length==0) {
+                this.transferSubmit.Type = 'SC';
+                this.transferSubmit.Currenry = 'USD';
+            }
+            if (this.transferSubmit.Amount > 0) {
+                this.CTM();
+            }
+
+
+            $('.ctomR').keyup(function () {
+                _this.CTM();
+                _this.shareLink = "";
+            });
+            $('.mtocR').keyup(function () {
+                _this.MTC();
+            });
+
+            $('.ctomS').keyup(function () {
+                _this.CTM();
+            });
+            $('.mtocS').keyup(function () {
+                _this.MTC();
+            });
+
+        },
+        filters: {
+            toFix: function (val, decimal) {
+                if (typeof (val) === 'number' && val != 0) {
+                    return val.toFixed(decimal);
+                }
+                return val;
+            },
+            toCut: function (val,start,end) {
+                return val.substring(start, end);
+            },
+            toStatus: function (val) {
+                switch (val) {
+                    case 'D':
+                        return 'finished';
+                        break;
+                    case 'W':
+                        return 'wait';
+                        break;
+                    case 'C':
+                        return 'cancel';
+                        break;
+                    default:
+                        return '';
+                }
+            },
+            toDirect: function (val) {
+                if (val == true) {
+                    return "send";
+                }
+                if (val == false) {
+                    return "receive";
+                }
+            }
+        },
+        computed: {
+            startIndex: function () {
+                var index = this.takeRecord.PageIndex;
+                var sN = this.takeRecord.ShowNumber;
+                return index > 1 ? (index - 1) * sN + 1 : index;
+            },
+            endIndex: function () {
+                return this.takeRecord.PageIndex * this.takeRecord.ShowNumber;
+            }
+        },
+        methods: {
+            getqr: function () {
+
+            },
+            back: function () {
+                if (this.qrForm == true) { this.qrForm == false; return; }
+                this.allWeb = true;
+                this.getForm = false;
+                this.sendForm = false;
+            },
+            checkBrowserSize: function () {
+                return window.innerWidth;
+            },
+            openGet: function () {
+                var size = this.checkBrowserSize();
+                if (size >= 768) {
+                    $('#getModal').modal('show');
+                } else {
+                    this.allWeb = false;
+                    this.getForm = true;
+                }
+            },
+            openSend: function () {
+                var size = this.checkBrowserSize();
+                if (size >= 768) {
+                    $('#sendModal').modal('show');
+                } else {
+                    this.allWeb = false;
+                    this.sendForm = true;
+                }
+            },
+            marketTicker: function (arg,callback) {
+                var _this = this;
+                server.MarketTicker({ symbol: arg }, function (rel) {
+                    var data = rel.data.buy;
+                    if (data) {
+                        _this.currentPrice = data;
+                        callback();
+                    } else {
+                        showTips('The requested price failed. Please refresh and try again');
+                    }
+                });
+            },
+            CTM: debounce(function () {
+                var _this = this;
+                function handleTransfer() {
+                    _this.transferRValue = numToFixed(_this.transferR.Amount * _this.currentPrice, 2);
+                    _this.transferSValue = numToFixed(_this.transferSubmit.Amount * _this.currentPrice, 2);
+                }
+                var arg = (this.MarketCoin + '_' + this.MarketCurr).toLowerCase();
+                if (arg === 'vc_usd') { this.currentPrice = 0.5; handleTransfer();}
+                else if (arg === 'vt_usd' || arg === 'vs_usd') { this.currentPrice = 1; handleTransfer(); }
+                else if (arg === 'vc_cny' || arg === 'vt_cny' || arg === 'vs_cny') { arg = "sc_cny"; this.marketTicker(arg, handleTransfer);} else {
+                    this.marketTicker(arg, handleTransfer);
+                }
+            },500),
+            MTC: debounce(function () {
+                var _this = this;
+                function handleTransfer() {
+                    _this.transferR.Amount = numToFixed(_this.transferRValue / _this.currentPrice,4);
+                    _this.transferSubmit.Amount = numToFixed(_this.transferSValue / _this.currentPrice, 4);
+                }
+                var arg = (this.MarketCoin + '_' + this.MarketCurr).toLowerCase();
+                if (arg === 'vc_usd') { this.currentPrice = 0.5; handleTransfer(); }
+                else if (arg === 'vt_usd' || arg === 'vs_usd') { this.currentPrice = 1; handleTransfer(); }
+                else if (arg === 'vc_cny' || arg === 'vt_cny' || arg === 'vs_cny') { arg = "sc_cny"; this.marketTicker(arg, handleTransfer);} else {
+                    this.marketTicker(arg, handleTransfer);
+                }
+            }, 500),
+            getBalance: function () {
+                var _this = this
+                server.GetBalance({
+                    __RequestVerificationToken: getToken()
+                }, function (rel) {
+                    if (rel.msg === 'StatusOk') {
+                        rel.data.forEach(function (item) {
+                            _this.balance[item.Type] = item.Banlance
+                        });
+                    } else {
+                        showTips(getDescript(rel.msg));
+                    }
+                });
+            },
+            getReceiverAddress: function (flag) {
+                var _this = this;
+                server.GetReceiveAddr({
+                    __RequestVerificationToken: getToken()
+                }, function (rel) {
+                    if (rel.msg === 'StatusOk') {
+                        var arr = rel.data;
+                        _this.coinType = arr.filter(function (item, index) {
+                            if (item.Type === "SC" && flag === true) {
+                                //绑上地址默认值
+                                _this.transferR.Addr = item.Addr
+                            }
+                            return item.Type != 'ETH';
+                        });
+                    } else {
+                        showTips(getDescript(rel.msg));
+                    }
+                });
+            },
+            createUrl: function (id,boo) {
+                var tA = this.transferR.Amount;
+                if (boo == false) {
+                    if (tA == 0 || tA == '') {
+                        showTips("The amount can not be empty，Please try again");
+                        return;
+                    }
+                }
+
+                if (boo == true) {
+                    this.transferR.Amount = '';
+                }
+                this.shareLink = '';
+                showTips("Please copy the link or view QR Code");
+                var local = window.location.href;
+                if (local.indexOf('?') > 0) {
+                    local = local.substring(0, local.indexOf('?'));
+                }
+                this.shareLink = local + '?' + urlEncode(this.transferR);
+                this.qrshow = true;
+                $('#'+id).empty();
+                var qrcode = new QRCode(id, {
+                    text: this.shareLink,
+                    width: 266,
+                    height: 266,
+                    colorDark: '#000000',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            },
+            transferT: function () {
+                this.sendSuccess = '';
+                this.sendMsg = '';
+                this.advise = '';
+                this.noSupport = false;
+                var _this = this;
+
+                function addrCheck(callback) {
+                    server.validateaddress({
+                        __RequestVerificationToken: getToken(),
+                        addr: _this.transferSubmit.Addr,
+                        type: _this.transferSubmit.Type
+                    }, function (rel) {
+                        if (rel.msg === 'StatusOk') {
+                            if (rel.data == 'SystemAddress') {
+                                done();
+                            }
+                            if (rel.data == 'BlockAddress') {
+                                callback()
+                            }
+                        } else {
+                            _this.sendMsg = getDescript(rel.msg);
+                        }
+                    });
+                }
+
+                function typeCheck() {
+                    server.ExchangeCoinValid({
+                        __RequestVerificationToken: getToken(),
+                        Total: _this.transferSubmit.Amount,
+                        CoinType: _this.transferSubmit.Type
+                    }, function (rel) {
+                        if(rel.msg=== "StatusOk"){
+                            if (rel.data.some(function (item) {
+                                    return item === _this.transferSubmit.Type;
+                                })) {//如果币种支持
+                                done();
+                            }
+                        } else {
+                            _this.noSupport = true;
+                            _this.advise = rel.data;
+                        }
+                    });
+                }
+
+                function done() {
+                    server.TransferTo(_this.transferSubmit, function (rel) {
+                        if (rel.msg === "StatusOk") {
+                            _this.sendSuccess = 'Send successfully';
+                            _this.takeTransferRecord();
+                        } else {
+                            _this.sendMsg = getDescript(rel.msg);
+                        }
+                    });
+                }
+                var tA = this.transferSubmit.Addr;
+                var tC = this.transferSubmit.Type;
+                var tN = this.transferSubmit.Amount;
+                var tP = this.transferSubmit.TradePassword;
+                if (tA == '') {
+                    this.sendMsg = 'Please enter a receive address'; return;
+                }
+                if (tC == '') {
+                    this.sendMsg = 'Please select a receive currency'; return;
+                }
+                if (tN <= 0) {
+                    this.sendMsg = 'Please enter the received currency quantity'; return;
+                }
+                if (tP == '' || tP.length < 8) {
+                    this.sendMsg = 'Please enter the transaction password'; return;
+                }
+                var r = confirm("Send Address：" + this.transferSubmit.Addr + "\n Amount：" + this.transferSubmit.Amount + this.transferSubmit.Type);
+                if (r === false) return;
+                addrCheck(typeCheck);
+            },
+            search: function () {
+                var _this = this;
+                this.sendMsg = '';
+                if (this.QueryName.UserName == '') { showTips('Please enter the Username or UserID you want to send out'); return; }
+                server.QueryAddressByName(this.QueryName, function (rel) {
+                    if (rel.msg === 'StatusOk') {
+                        _this.transferSubmit.Addr = rel.data;
+                    } else {
+                        alert(getDescript(rel.msg));
+                    }
+                })
+            },
+            selectTASubmit: function (xt,xa) {
+                this.transferSubmit.Type = xt;
+                this.transferR.Type = xt;
+                this.QueryName.CoinType = xt;
+                this.transferR.Addr = xa;
+                this.MarketCoin = xt;
+                this.CTM();
+            },
+            selectCotype: function (xt, xa) {
+                this.transferR.Type = xt;
+                this.transferR.Addr = xa;
+                this.transferSubmit.Type = xt;
+                this.transferSubmit.Addr = xa;
+                this.shareLink = '';
+                this.MarketCoin = xt;
+                this.CTM();
+                $('#qrMobile').empty();
+                $('#qrMobile2').empty();
+                $('#transferGetQr').empty;
+                this.successMsg = "";
+                this.qrshow = false;
+            },
+            choiceCurrenry: function (x) {
+                this.transferR.Currenry = x;
+                this.transferSubmit.Currenry = x;
+                this.MarketCurr = x;
+                this.MTC();
+                this.shareLink = '';
+                $('#qrMobile').empty();
+                $('#qrMobile2').empty();
+                $('#transferGetQr').empty;
+                this.successMsg = "";
+                this.qrshow = false;
+            },
+            selectStatus: function (xn, xk) {
+                this.statusActive = xn;
+                this.takeRecord.Status = xk;
+            },
+            selectChar: function (xn, xk) {
+                this.charActive = xn;
+                this.takeRecord.Direct = xk;
+            },
+            selectNum: function (index) {
+                this.activeNum = index;
+            },
+            copyLink: function () {
+                alert('Your browser does not support copying to clipboard. Please copy manually');
+            },
+            nextPage: function () {
+                this.takeRecord.PageIndex++;
+                this.takeTransferRecord();
+            },
+            prevPage: function () {
+                this.takeRecord.PageIndex--;
+                this.takeTransferRecord();
+            },
+            gotoPage: function (index) {
+                this.takeRecord.PageIndex = index;
+                this.takeTransferRecord();
+            },
+            selectNum: function (item) {
+                this.takeRecord.PageIndex = 1;
+                this.activeNum = item;
+                this.takeRecord.ShowNumber = item;
+                this.takeTransferRecord();
+            },
+            takeTransferRecord: function () {
+                var _this = this;
+                this.takeRecord.StartTime = $('#startTime').val();
+                this.takeRecord.EndTime = $('#endTime').val();
+                server.TakeTransferRecord (this.takeRecord, function (rel) {
+                    if (rel.msg === 'StatusOk') {
+                        _this.history = rel.data.data;
+                        _this.totalPage = rel.data.page;
+                        _this.totalhistory = rel.data.total;
+                    } else {
+                        showTips(getDescript(rel.msg));
+                    }
+                });
+            },
+	        showTxid:function(id){
+		        this.txid= id;
+		        $('#detail').modal('show');
+	        }
+        },
+        components: {
+            'page': page
+        }
+    });
+</script>

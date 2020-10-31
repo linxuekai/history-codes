@@ -1,0 +1,456 @@
+﻿@{
+Layout = "~/Views/Shared/_en-US_ManageLayout.cshtml";
+ViewBag.Title = "用户管理";
+}
+
+<link href="~/Content/eleme-css/index.css" rel="stylesheet" />
+<style>
+    ::-ms-clear, ::-ms-reveal {
+        display: none;
+    }
+
+    [v-cloak] {
+        display: none !important;
+    }
+
+    .main {
+        width: 1200px;
+        margin: 0 auto;
+        background: #eef1f6;
+    }
+
+    #showTips {
+        z-index: 9999;
+    }
+
+    .el-loading-mask {
+        z-index: 1;
+    }
+    /*table*/
+    table thead tr th div,table tbody tr td div {
+        text-align: center;
+    }
+
+    /*button padding*/
+    .el-table .cell{
+        padding:0 5px;
+    }
+
+    /*手形*/
+    .hand:hover{
+        cursor: pointer;
+    }
+    @@media screen and (max-width: 768px) {
+        .freetime {
+            left:15px !important;
+        }
+        .timepick {
+            left: 640px !important;
+        }
+        .status {
+            left: 905px !important;
+        }
+    }
+</style>
+<style>
+    .spinner {
+        margin: 5px auto 0;
+        width: 150px;
+        text-align: center;
+    }
+
+    .spinner > div {
+        width: 20px;
+        height: 20px;
+        background-color: #004a7c;
+
+        border-radius: 100%;
+        display: inline-block;
+        -webkit-animation: bouncedelay 1.4s infinite ease-in-out;
+        animation: bouncedelay 1.4s infinite ease-in-out;
+        /* Prevent first frame from flickering when animation starts */
+        -webkit-animation-fill-mode: both;
+        animation-fill-mode: both;
+    }
+
+    .spinner .bounce1 {
+        -webkit-animation-delay: -0.32s;
+        animation-delay: -0.32s;
+    }
+
+    .spinner .bounce2 {
+        -webkit-animation-delay: -0.16s;
+        animation-delay: -0.16s;
+    }
+
+    @@-webkit-keyframes bouncedelay {
+         0%, 80%, 100% { -webkit-transform: scale(0.0) }
+         40% { -webkit-transform: scale(1.0) }
+     }
+
+    @@keyframes bouncedelay {
+         0%, 80%, 100% {
+             transform: scale(0.0);
+             -webkit-transform: scale(0.0);
+         } 40% {
+               transform: scale(1.0);
+               -webkit-transform: scale(1.0);
+           }
+     }
+</style>
+<div id="app">
+    <div class="main clearfix">
+        <div style="float:left;padding:15px">
+            <el-date-picker v-model="rangeTime"
+                            type="date"
+                            size="small"
+                            placeholder="冻结到指定日期"
+                            popper-class="freetime"
+                            :picker-options="po">
+            </el-date-picker>
+            <el-button type="primary"
+                       :disabled="!rangeTime ||banOptions.UserNames.length<1"
+                       size="small"
+                       @@click="freezeUser">冻结用户
+            </el-button>
+            <el-button type="info"
+                       :disabled="!userOptions.Freeze || banOptions.UserNames.length>1"
+                       size="small"
+                       @@click="unfreezeUser">解冻用户
+            </el-button>
+        </div>
+        <div style="float:right;padding:15px">
+            <div style="width:180px;display:inline-block"><el-input v-model="userOptions.Name" size="small" placeholder="账号"></el-input></div>
+            <el-date-picker v-model="time"
+                            size="small"
+                            type="daterange"
+                            placeholder="选择日期范围"
+                            popper-class="timepick"
+                            @@change="chooseTime">
+            </el-date-picker>
+            <el-select v-model="userOptions.Freeze" size="small" placeholder="状态（默认所有）" popper-class="status">
+                <el-option v-for="item in options"
+                           :key="item.value"
+                           :label="item.label"
+                           :value="item.value">
+                </el-option>
+            </el-select>
+            <el-button type="danger" size="small" icon="search" @@click="screen1">筛选</el-button>
+        </div>
+        <div v-infinite-scroll="loadMore" infinite-scroll-disabled="busy" infinite-scroll-distance="10">
+            <table class="table table-bordered table-hover f-16">
+                <tr>
+                    <th><el-checkbox v-model="checkAll" @@change="allOrNull"></el-checkbox></th>
+                    <th style="width: 120px">账号</th>
+                    <th style="width: 250px">邮箱</th>
+                    <th style="width: 120px">总充值</th>
+                    <th>套餐等级</th>
+                    <th>直购等级</th>
+                    <th>代数等级</th>
+                    <th>体系等级</th>
+                    <th style="width: 160px;">注册日期</th>
+                    <th style="width: 126px;">密码重置</th>
+                </tr>
+                <tr v-for="(x,i) in userList">
+                    <td><el-checkbox v-model="x.Check" @@change="select"></el-checkbox></td>
+                    <td v-text="x.UserName"></td>
+                    <td v-text="x.Email"></td>
+                    <td v-text="x.TotalCharge"></td>
+                    <td v-text="x.Package"></td>
+                    <td v-text="x.DirectLevel"></td>
+                    <td v-text="x.GenerationLevel"></td>
+                    <td class="hand" @@click="editLeader(i,x,'leader')" title="点击修改" v-text="x.LeaderLevel"></td>
+                    <td v-text="x.SetupDate"></td>
+                    <td>
+                        <el-button size="small"
+                                   type="primary"
+                                   @@click="open(i, x,'login')">登陆</el-button>
+                        <el-button size="small"
+                                   type="primary"
+                                   @@click="open(i, x,'trade')">交易</el-button>
+                    </td>
+                </tr>
+            </table>
+            <div class="spinner" v-if="!busy">
+                <div class="bounce1"></div>
+                <div class="bounce2"></div>
+                <div class="bounce3"></div>
+            </div>
+            <div v-if="over" style="color:#666;text-align: center;" v-text="'以上为所有数据。'"></div>
+        </div>
+
+    </div>
+    <div style="position: fixed;right: 1%;bottom:1%;width: 110px;z-index: 999;">
+        <a href="#top" style="padding: 17px;display: block;border-radius: 50%;background: #fff;margin: 10px auto;width: 50px;height: 50px;">
+            <i class="el-icon-arrow-up"></i>
+        </a>
+        <el-button type="primary" icon="arrow-down" @@click="downloadExl">
+            <span v-text="'导出表格'"></span>
+        </el-button>
+    </div>
+</div>
+@Html.AntiForgeryToken()
+<script src="~/Scripts/element-ui.js"></script>
+<script src="../../Scripts/vue-infinite-scroll.min.js"></script>
+<script src="../../Scripts/xlsx.full.min.js"></script>
+<script src="../../Scripts/fileSaver.min.js"></script>
+<script>
+	//save config
+	function s2ab(s) {
+		if (typeof ArrayBuffer !== 'undefined') {
+			var buf = new ArrayBuffer(s.length);
+			var view = new Uint8Array(buf);
+			for (var i = 0; i != s.length; ++i) view[i] = s.charCodeAt(i) & 0xFF;
+			return buf;
+		} else {
+			var buf = new Array(s.length);
+			for (var i = 0; i != s.length; ++i) buf[i] = s.charCodeAt(i) & 0xFF;
+			return buf;
+		}
+	}
+
+	var wopts = {
+		bookType: 'xlsx',
+		bookSST: false,
+		type: 'binary'
+	};
+</script>
+<script>
+
+	server.ResetAllianceLevel=function(params, callback) {
+		var api = 'Console/ResetAllianceLevel'
+		jqReq('post', api, params, true, callback)
+	};
+	var app=new Vue({
+		el: '#app',
+		data: {
+			po:{
+				disabledDate:function(time){
+					return time.getTime() < Date.now() - 8.64e7;
+				}
+			},
+			busy:false,
+			over:false,
+			time: '',
+			userOptions: {
+				__RequestVerificationToken: getToken(),
+				Name: '',
+				STime: '',
+				ETime: '',
+				Freeze:false,
+				PageIndex: 1,
+				ShowNumber: 20
+			},
+			userList: [],
+			checkAll:'',
+			resetOptions: {
+				__RequestVerificationToken: getToken(),
+				UserName: '',
+				NewPassword:'',
+				Level:''
+			},
+			rangeTime:'',
+			banOptions: {
+				__RequestVerificationToken: getToken(),
+				UserNames: [],
+				FreeTime:''
+			},
+			options: [{
+				value: false,
+				label: '正常用户'
+			}, {
+				value: true,
+				label: '冻结用户'
+			}]
+
+		},
+		methods: {
+			editLeader:function(idx,row,str){
+				var _this = this;
+				if (str === 'leader')type = '体系等级';
+				this.$prompt('请输入数字', '您正在修改 ' + row.UserName + ' 的' + type, {
+					confirmButtonText: '确定',
+					cancelButtonText: '取消',
+					inputPattern: /^[0-6]$/,
+					inputErrorMessage: '格式不正确'
+				}).then(function (obj) {
+					_this.resetOptions.Level = obj.value;
+					_this.resetOptions.UserName = row.UserName;
+					if (str === 'leader') _this.ResetUserLeader(row, obj.value);
+				}).catch(function(){
+					_this.$message({
+						type: 'info',
+						message: '取消输入'
+					});
+				});
+			},
+			open: function (idx, row, str) {
+				var type = '',
+					_this = this;
+				if (str === 'login')type = '用户密码';
+				if (str === 'trade') type = '交易密码';
+				this.$prompt('请输入密码', '您正在修改 ' + row.UserName + ' 的' + type, {
+					confirmButtonText: '确定',
+					cancelButtonText: '取消',
+					inputPattern: /^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]{8,16}$/,
+					inputErrorMessage: '密码格式不正确'
+				}).then(function (obj) {
+					_this.resetOptions.NewPassword = obj.value;
+					_this.resetOptions.UserName = row.UserName;
+					if (str === 'login') _this.ResetUserPassword(row, obj.value);
+					if (str === 'trade') _this.ResetUserTradePassword(row, obj.value);
+				}).catch(function(){
+					_this.$message({
+						type: 'info',
+						message: '取消输入'
+					});
+				});
+			},
+			allOrNull:function(){
+				for (var i = 0, l = this.userList.length; i < l; i++) {
+					this.userList[i].Check=this.checkAll
+				}
+				this.select();
+			},
+			select:function(){
+				this.banOptions.UserNames=[];
+				for (var i = 0, l = this.userList.length; i < l; i++) {
+					if(this.userList[i].Check){
+						this.banOptions.UserNames.push(this.userList[i].UserName)
+					}
+				}
+			},
+			freezeUser: function () {
+				var t = this.rangeTime;
+				this.banOptions.FreeTime = t.getFullYear() + '-' + (t.getMonth() + 1) + '-' + t.getDate();
+				var _this = this;
+				server.FreeUsers(this.banOptions, function (rel) {
+					if (rel.msg === "StatusOk") {
+						showTips('成功冻结');
+						var Userindex=[];
+						_this.banOptions.UserNames.forEach(function (i) {
+							_this.userList.forEach(function (item,index) {
+								if(item.UserName ==i){
+									Userindex.unshift(index);
+								}
+							})
+						})
+						Userindex.forEach(function (item) {
+							_this.userList.splice(item, 1)
+						})
+					} else {
+						showTips(getDescriptM(rel.msg))
+					}
+				});
+			},
+			unfreezeUser: function () {
+				var user=this.banOptions.UserNames[0];
+				var _this = this;
+				server.UnFreeUser({
+					__RequestVerificationToken: getToken(),
+					UserName:user}, function(rel) {
+					if (rel.msg === "StatusOk") {
+						showTips(user+'解冻成功');
+						_this.userList.forEach(function(item,index){
+							if(item.UserName ===user){
+								_this.userList.splice(index,1)
+							}
+						});
+					} else {
+						showTips(getDescriptM(rel.msg))
+					}
+				});
+			},
+			loadMore: function () {
+				var _this = this;
+				_this.busy = true;
+				server.QueryUser(this.userOptions, function (rel) {
+					if (rel.msg === "StatusOk") {
+						rel.data.data.forEach(function(i){
+							i.Check=false;
+							_this.userList.push(i);
+						})
+						_this.userOptions.PageIndex++;
+						_this.$nextTick(function() {
+							_this.busy = _this.over = !rel.data.data.length;
+						})
+					} else {
+						showTips(getDescriptM(rel.msg));
+					}
+				});
+			},
+			ResetUserPassword: function (row, value) {
+				var _this = this;
+				server.ResetUserPassword(this.resetOptions, function (rel) {
+					if (rel.msg === "StatusOk") {
+						_this.$message({
+							type: 'success',
+							message: '重置成功,用户：' + row.UserName + '用户密码为:' + value + '!'
+						})
+					} else {
+						showTips(getDescriptM(rel.msg))
+					}
+				});
+			},
+			ResetUserTradePassword: function (row, value) {
+				var _this = this;
+				server.ResetUserTradePassword(this.resetOptions, function (rel) {
+					if (rel.msg === "StatusOk") {
+						_this.$message({
+							type: 'success',
+							message: '重置成功,用户：' + row.UserName + '交易密码为:' + value+'!'
+						});
+					} else {
+						showTips(getDescriptM(rel.msg))
+					}
+				});
+			},
+			ResetUserLeader: function (row, value) {
+				var _this = this;
+				server.ResetAllianceLevel(this.resetOptions, function (rel) {
+					if (rel.msg === "StatusOk") {
+						row.LeaderLevel=value;
+						_this.$message({
+							type: 'success',
+							message: '修改成功,用户：' + row.UserName + '体系等级为:' + value
+						});
+					} else {
+						showTips(getDescriptM(rel.msg))
+					}
+				});
+			},
+			chooseTime: function (val) {
+				var aT = val ? val.split(' - ') : ['', ''];
+				this.userOptions.STime = aT[0];
+				this.userOptions.ETime = aT[1];
+			},
+			screen1: function () {
+				this.userOptions.PageIndex = 1;
+				if(this.userOptions.Freeze){
+					this.rangeTime = '';
+				}
+				this.userList=[];
+				this.loadMore();
+			},
+			downloadExl:function () {
+				var data= JSON.parse(JSON.stringify(this.userList));
+				data.forEach(function(i,index){
+					delete data[index].Check;
+				});
+				data.log
+				var userName = this.userOptions.Name?this.userOptions.Name:'allUser';
+				var time = this.userOptions.STime?this.userOptions.STime +'to'+ this.userOptions.ETime:'allDate';
+				var fileName=time+'_'+userName+'_UserManager';
+				var wb = {
+					SheetNames: ['Sheet1'],
+					Sheets: {},
+					Props: {}
+				};
+				wb.Sheets['Sheet1'] = XLSX.utils.json_to_sheet(data); //通过json_to_sheet转成单页(Sheet)数据
+				saveAs(new Blob([s2ab(XLSX.write(wb, wopts))], {
+					type: "application/octet-stream"
+				}), fileName + '.' + (wopts.bookType == "biff2" ? "xls" : wopts.bookType));
+			}
+		}
+	});
+</script>

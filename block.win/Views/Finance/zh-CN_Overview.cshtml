@@ -1,0 +1,186 @@
+﻿@{
+ViewBag.Title = "分红概况";
+Layout = "~/Views/Shared/_zh-CN_Layout.cshtml";
+}
+@Html.AntiForgeryToken()
+<style>
+  #app {
+    font-family: "Microsoft YaHei UI", sans-serif;
+    background-color: #fff;
+    padding: 10px;
+  }
+
+  .select-label {
+    line-height: 34px;
+    padding-right: 10px;
+  }
+
+  .select-wrap {
+    width: 100px;
+    margin-right: 15px;
+  }
+
+  .item-wrap {
+    padding: 15px 30px;
+  }
+
+  .data-date {
+    color: orangered;
+  }
+
+  .item-header {
+    padding: 10px 0;
+  }
+
+  .item {
+    padding: 10px 0;
+  }
+
+  .item-label {
+    display: inline-block;
+    width: 100px;
+    text-align: right;
+  }
+
+  .total {
+    line-height: 34px;
+    padding-left: 40px;
+    font-size: 17px;
+  }
+  .top-bar{
+    background: #428bca;
+    box-shadow: 5px 5px 10px grey;
+    color: white;
+    padding: 10px 0;
+    border-radius: 15px;
+  }
+  .month-total{
+    font-weight:bold;
+    font-size: 15px;
+  }
+</style>
+<div id="app">
+  <div class="container-fluid">
+    <div class="row top-bar">
+      <div class="col-sm-6 total">{{selectVal}} 年度总计：${{yearTotal.toFixed(2)}}</div>
+      <div class="col-sm-6 text-right">
+        <span class="dis-inlBlo select-label">分红年度：</span>
+        <div class="flo-rig select-wrap">
+          <select id="select-year"
+                  class="flo-rig form-control"
+                  v-model="selectVal">
+            <option :value="year"
+                    v-for="year in selectableYear"
+                    :key="year">{{year}}
+            </option>
+          </select></div>
+      </div>
+    </div>
+
+    <div class="row">
+      <hr style="margin: 10px 20px;">
+    </div>
+    <div class="row">
+      <div class="item-wrap col-xs-12"
+           v-for="(item, idx) in resData"
+           :key="idx">
+        <div class="item-header">
+          <span>&nbsp;&nbsp;分红月份：&nbsp;&nbsp;</span>
+          <span class="data-date">{{item.year}}年 - {{('0'+item.month).slice(-2)}}月</span>
+        </div>
+        <a :href="'/zh-CN/Finance/Income?'+item.year+'-'+('0'+item.month).slice(-2)+'&01'"
+           title="查看明细"
+           target="_blank">
+          <div class="col-sm-6 col-lg-3 item">
+            <span class="item-label">直购分红&nbsp;&nbsp;</span> ${{item.Invite.toFixed(2)}}
+          </div>
+        </a>
+        <a :href="'/zh-CN/Finance/Income?'+item.year+'-'+('0'+item.month).slice(-2)+'&02'"
+           title="查看明细">
+          <div class="col-sm-6 col-lg-3 item">
+            <span class="item-label">直购差分红&nbsp;&nbsp;</span> ${{item.LeaderInvite.toFixed(2)}}
+          </div>
+        </a>
+        <a :href="'/zh-CN/Finance/Income?'+item.year+'-'+('0'+item.month).slice(-2)+'&02'"
+           title="查看明细">
+          <div class="col-sm-6 col-lg-3 item">
+            <span class="item-label">直代分红&nbsp;&nbsp;</span> ${{item.GenerationProfite.toFixed(2)}}
+          </div>
+        </a>
+        <a :href="'/zh-CN/Finance/Income?'+item.year+'-'+('0'+item.month).slice(-2)+'&15'"
+           title="查看明细">
+          <div class="col-sm-6 col-lg-3 item">
+            <span class="item-label">联队管理分红&nbsp;&nbsp;</span> ${{item.LeaderProfite.toFixed(2)}}
+          </div>
+        </a>
+        <div class="col-sm-6 item month-total">
+          <span class="item-label">当月累计&nbsp;&nbsp;</span>
+          ${{(item.Invite+item.LeaderInvite+item.GenerationProfite+item.LeaderProfite).toFixed(2)}}
+        </div>
+        <div class="clearfix"></div>
+        <hr style="margin: 10px 0;">
+      </div>
+      <div class="col-xs-12 text-center"
+           v-if="!resData.length">
+        很抱歉，{{selectVal}}年度暂无分红记录。
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* global Vue getToken showTips */
+  var app = new Vue({
+    el: '#app',
+    data: {
+      token: getToken(),
+      selectVal: '',
+      resData: [],
+      selectableYear: (function() {
+        var len = new Date().getFullYear() - 2015
+        var years = []
+        for (var i = 0; i < len; i++) {
+          years.unshift((2016 + i) + '')
+        }
+        return years
+      })()
+    },
+    computed: {
+      yearTotal: function() {
+        var total = 0
+        this.resData.forEach(function(item) {
+          total += item.Invite + item.LeaderInvite + item.GenerationProfite + item.LeaderProfite
+        })
+        return total
+      }
+    },
+    watch: {
+      selectVal: function(selectedYear) {
+        this.request(selectedYear)
+      }
+    },
+    methods: {
+      request: function(year) {
+        $.post('/Finance/GetYearStatistics', {
+          __RequestVerificationToken: this.token,
+          Year: year
+        }).then(
+          function(res) {
+            if (res.msg === 'StatusOk') {
+              app.resData = res.data.reverse()
+            } else if (res.msg === 'UserNeedLogin') {
+              showTips('登录信息已失效，请刷新重试。')
+              app.resData = []
+            } else {
+              showTips('网络错误，请刷新重试。')
+              app.resData = []
+            }
+          }
+        )
+      }
+    },
+    created: function() {
+      this.selectVal = new Date().getFullYear()
+    }
+  })
+</script>

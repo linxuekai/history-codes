@@ -1,0 +1,724 @@
+﻿@{
+Layout = "~/Views/Shared/_en-US_ManageLayout.cshtml";
+ViewBag.Title = "首页";
+}
+
+<link href="~/Content/eleme-css/date-picker.css" rel="stylesheet" />
+<link href="~/Content/eleme-css/select.css" rel="stylesheet" />
+<link href="~/Content/eleme-css/loading.css" rel="stylesheet" />
+<link href="~/Content/eleme-css/pagination.css" rel="stylesheet" />
+<link href="~/Content/eleme-css/base.css" rel="stylesheet" />
+<style>
+    ::-ms-clear, ::-ms-reveal {
+        display: none;
+    }
+
+    [v-cloak] {
+        display: none !important;
+    }
+
+    .main {
+        background: #fff;
+        width: 1200px;
+        padding: 10px;
+        margin: 0 auto;
+    }
+
+    #showTips {
+        z-index: 9999;
+    }
+    .el-loading-mask {
+        z-index:1;
+    }
+    /*home*/
+    .deuce {
+        float: left;
+        width: 585px;
+        height: 321px;
+        margin-bottom: 10px;
+        background: #eef1f6;
+    }
+    .deuce:nth-child(odd) {
+        margin-right:10px;
+    }
+    /*image icon cointype*/
+    .imgicon {
+        text-align: center;
+        line-height: 95px;
+        float: left;
+        width: 287px;
+        height: 100px;
+        font-size:18px;
+        color: #fff;
+        margin-bottom: 10px;
+    }
+    .imgicon:nth-child(odd) {
+        margin-right:10px;
+
+    }
+    .imgicon .right-bor {
+        padding-right:13px;
+        margin-right:13px;
+        border-right:1px solid #fff;
+    }
+    /*web info*/
+    .deuce .spend, .deuce .statis {
+        color: #979898;
+    }
+    .spend {
+        float:left;
+    }
+    .home-title {
+        font-size: 18px;
+        margin: 16px 0 0 16px;
+    }
+    .statis table {
+        margin-top: 29px;
+    }
+    .statis .table td {
+        text-align:center;
+        font-size:14px;
+        padding:14px 0;
+    }
+    /*table*/
+    .table{
+        background: #fff;
+        margin-bottom: 0;
+    }
+    /*outlist*/
+    .out-list {
+        width: 297px;
+        padding: 20px 20px 0 20px;
+    }
+    .out-list .date-picker .el-input__inner {
+        height:33px;
+    }
+    .out-list .count {
+        border-bottom: 1px solid #e1e1e1;
+    }
+    .out-list ul {
+        margin-top: 20px;
+        list-style: none;
+        padding-left: 20px;
+    }
+    .out-list ul li{
+        position:relative;
+        line-height:13px;
+        margin-bottom:13px;
+    }
+    .out-list ul li:before {
+        content: '';
+        display: block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        font-size: 14px;
+        background: #00b0d9;
+        position: absolute;
+        left: -20px;
+        top: 2px;
+    }
+    /*log-title*/
+    .log-title{
+        margin:14px 0 10px 16px;
+    }
+    .log-table tbody tr td {
+        line-height: 1.95;
+    }
+    .log-title .el-date-editor--daterange.el-input {
+        width:204px;
+    }
+    .log-title .el-input__inner {
+        height: 33px;
+    }
+    .log-title .el-button {
+        line-height: 0.7;
+    }
+    /*page*/
+    .pagin {
+        float: right;
+        padding: 2px 33px 5px 0;
+    }
+
+    /*mobile*/
+    @@media screen and (max-width:768px) {
+
+        .el-select-dropdown {
+            left: 650px !important;
+        }
+        .out-time {
+            left:28px !important;
+        }
+        .log-time {
+            left: 441px !important;
+        }
+    }
+</style>
+
+<div id="app">
+    <div class="main clearfix">
+        <div class="deuce" style="background:none">
+            <div v-for="x in Object.keys(SummaryBData)" class="imgicon" :style="'background:url(../../images/console/'+x+'BG.png)0% 0% / 100% 100% no-repeat;'">
+                <span class="right-bor" v-text="SummaryBData[x]"></span><span v-text="x"></span>
+            </div>
+        </div>
+        <div class="deuce">
+            <div class="spend">
+                <p class="home-title">动态支出状况</p>
+                <div id="pieCoin" style="width:237px;height:280px">
+                </div>
+            </div>
+            <div class="statis">
+                <p class="home-title">网站信息统计</p>
+                <div>
+                    <table class="table table-bordered" style="width:330px;height:200px;">
+                        <tr>
+                            <td style="width:164px">注册用户</td>
+                            <td style="width:165px" v-text="SummaryUData.TotalUser"></td>
+                        </tr>
+                        <tr>
+                            <td>已购买套餐数</td>
+                            <td v-text="SummaryUData.PackageUser"></td>
+                        </tr>
+                        <tr>
+                            <td>未购买套餐数</td>
+                            <td v-text="SummaryUData.UnPackageUser"></td>
+                        </tr>
+                        <tr>
+                            <td>冻结用户</td>
+                            <td v-text="SummaryUData.FreeUser"></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="deuce" style="height:493px;width:287px;margin-bottom: 0;">
+            <div class="out-list">
+                <div class="date-picker">
+                    <span class="hid-xs">
+                        <el-date-picker v-model="datedata"
+                                        type="daterange"
+                                        align="left"
+                                        placeholder="选择日期范围"
+                                        popper-class="out-time"
+                                        @@change="takeOutput">
+                        </el-date-picker>
+                    </span>
+                </div>
+                <ul>
+                    <li v-for="x in outputData" class="clearfix">
+                        <span style="float:left" v-cloak>{{x.SummayType | toName}}</span>
+                        <span style="float:right">
+                            <span v-text="x.Amount"></span>
+                        </span>
+                    </li>
+                </ul>
+            </div>
+            <div class="out-list">
+                <div class="count">
+                    <i style="background:url(../../images/icon/count-icon.png)no-repeat;width:26px;height:24px;display:inline-block;vertical-align: text-top;"></i>
+                    <span style="font-size:18px">累计</span>
+                </div>
+                <ul>
+                    <li v-for="x in outputData2" class="clearfix">
+                        <span style="float:left" v-cloak>{{x.SummayType | toName}}</span>
+                        <span style="float:right">
+                            <span v-text="x.Amount"></span>
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="deuce" style="height:493px;width:883px;margin-bottom: 0;">
+            <div class="log-title">
+                <i style="background:url(../../images/icon/log-icon.png) no-repeat;width:23px;height:23px;display:inline-block;vertical-align: middle;"></i>
+                <span style="margin:0 8px;font-size:18px;vertical-align: middle;">日志概览</span>
+                <span class="hid-xs">
+                    <el-date-picker v-model="logTime"
+                                    type="daterange"
+                                    align="left"
+                                    placeholder="选择日期范围"
+                                    popper-class="log-time"
+                                    @@change="takeTime">
+                    </el-date-picker>
+                </span>
+                <el-select v-model="eventSelect" placeholder="事件" style="width: 170px;" @@change="takeEventType">
+                    <el-option v-for="item in eventOptions"
+                               :key="item.value"
+                               :label="item.label"
+                               :value="item.value">
+                    </el-option>
+                </el-select>
+            </div>
+            <div v-loading="!eventData" style="height:434px">
+                <table class="table table-hover log-table" >
+                    <tr v-for="x in eventData">
+                        <td v-text="x.EventTime" style="width:160px;"></td>
+                        <td v-cloak>{{x.EventType | toEvent}}</td>
+                        <td v-text="x.UserName"></td>
+                        <td v-cloak>{{x.EventType | toLog(x)}}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="pagin">
+            <el-pagination @@current-change="handleCurrentChange"
+                           :current-page.sync="eventType.PageIndex"
+                           :page-size="eventType.ShowNumber"
+                           layout="total,prev, pager, next, jumper"
+                           :total="totalpage">
+            </el-pagination>
+        </div>
+    </div>
+</div>
+@Html.AntiForgeryToken()
+<script src="~/Scripts/lib/echarts.min.js"></script>
+<script src="~/Scripts/element-ui.js"></script>
+
+<script>
+	var currentDate = new Date();
+	var GetDateStr = function (year, month) {
+		var day = new Date(year, month, 0);
+		var lastdate = year + '-' + month + '-' + day.getDate();//获取当月最后一天日期
+		//给文本控件赋值。同下
+		return lastdate;
+	}
+	new Vue({
+		el: '#app',
+		data: {
+			logTime: '',
+			eventSelect: '',
+			eventOptions: [{
+				value: '',
+				label: '全部'
+			},{
+				value: 'Charge',
+				label: '充值'
+			}, {
+				value: 'Invtiter',
+				label: '直推'
+			}, {
+				value: 'LevelIniter',
+				label: '直推级差'
+			}, {
+				value: 'Generation',
+				label: '代数'
+			}, {
+				value: 'Perform',
+				label: '绩效'
+			}, {
+				value: 'LevelPerform',
+				label: '体系分红'
+			}, {
+				value: 'Bouns',
+				label: '分红'
+			}, {
+				value: 'GeneraionLevelUp',
+				label: '代数等级升级'
+			}, {
+				value: 'LeaderLevelUp',
+				label: '体系等级升级'
+			}, {
+				value: 'SystemReward',
+				label: '系统奖励'
+			}, {
+				value: 'Exchange',
+				label: '兑换货币'
+			}, {
+				value: 'Transfer',
+				label: '内部转账'
+			}, {
+				value: 'ExhcangeBuyVTS',
+				label: '股票买入交易'
+			}, {
+				value: 'ExhcangeSellVTS',
+				label: '股票卖出交易'
+			}, {
+				value: 'ExhcangeForceSellVTS',
+				label: '股票强制卖出交易'
+			}, {
+				value: 'ExhcangeRationedVTS',
+				label: '股票配股'
+			}, {
+				value: 'Withdraw',
+				label: '提现'
+			}, {
+				value: 'EqualBouns',
+				label: '平级'
+			}],
+			eventType: {//take event data
+				__RequestVerificationToken: getToken(),
+				EventType: '',
+				Stime: '',
+				Etime:'',
+				PageIndex:1,
+				ShowNumber:10
+			},
+			totalpage: 0,
+			datedata:'',
+			outputTime: {//take output data
+				__RequestVerificationToken: getToken(),
+				Stime: '',
+				Etime: ''
+			},
+			outputTime2: {//take output data2
+				__RequestVerificationToken: getToken(),
+				Stime: '',
+				Etime: ''
+			},
+			SummaryBData: {
+				"SC": '0.0000',
+				"VC": '0.0000',
+				"BTC": '0.0000',
+				"VS": '0.0000',
+				"LTC": '0.0000',
+				"VT": '0.0000'
+			},
+			SummaryUData:'',
+			outputData:'',
+			outputData2: [
+				{ SummayType: "VCAward", CoinType: "VC", Amount: '0.0000' },
+				{ SummayType: "VSAward", CoinType: "VS", Amount: '0.0000' },
+				{ SummayType: "Generation", CoinType: "VT", Amount: '0.0000' },
+				{ SummayType: "MonthLeader", CoinType: "VT", Amount: '0.0000' },
+				{ SummayType: "InviterAward", CoinType: "VT", Amount: '0.0000' },
+				{ SummayType: "InviterLevelAward", CoinType: "VT", Amount: '0.0000' }
+			],
+			eventData: '',
+			pieOption: {
+				legend: {
+					orient: 'horizontal',
+					align: 'left',
+					bottom: '15',
+					data: []
+				},
+				series: [
+					{
+						type: 'pie',
+						radius: ['50%', '70%'],
+						center: ['50%', ' 40%'],
+						avoidLabelOverlap: false,
+						label: {
+							normal: {
+								show: false,
+								position: 'center'
+							},
+							emphasis: {
+								show: true,
+								textStyle: {
+									color: '#000',
+									fontSize: '14',
+									fontStyle: 'normal'
+								},
+								formatter: ' {b}\n{c} ({d}%)'
+							}
+						},
+						labelLine: {
+							normal: {
+								show: false
+							}
+						},
+						data: []
+					}
+				]
+			}
+		},
+		filters: {
+			toName: function (val) {
+				switch (val) {
+					case 'VCAward':
+						return 'VC支出';
+						break;
+					case 'VSAward':
+						return 'VS支出';
+						break;
+					case 'Generation':
+						return '代数支出';
+						break;
+					case 'MonthLeader':
+						return '联队管理支出';
+						break;
+					case 'InviterAward':
+						return '直购支出';
+						break;
+					case 'InviterLevelAward':
+						return '直购差支出';
+						break;
+				}
+			},
+			toEvent: function (val) {
+				switch (val) {
+					case "0":
+						return '充值';
+						break;
+					case "1":
+						return '直推';
+						break;
+					case "2":
+						return '直推级差';
+						break;
+					case "3":
+						return '代数';
+						break;
+					case "4":
+						return '绩效分红';
+						break;
+					case "5":
+						return '体系分红';
+						break;
+					case "6":
+						return '分红';
+						break;
+					case "7":
+						return '代数等级升级';
+						break;
+					case "8":
+						return '体系等级升级';
+						break;
+					case "9":
+						return '系统奖励';
+						break;
+					case "10":
+						return '兑换';
+						break;
+					case "11":
+						return '内部转账';
+						break;
+					case "12":
+						return '股票买入交易';
+						break;
+					case "13":
+						return '股票卖出交易';
+						break;
+					case "14":
+						return '股票强制卖出交易';
+						break;
+					case "15":
+						return '股票配股';
+						break;
+					case "16":
+						return '提现';
+						break;
+					case "17":
+						return '平级';
+						break;
+				}
+			},
+			toLog: function (val,x) {
+				switch (val) {
+					case "0": {
+						return  '使用 ' + x.IncomePer + ' ' + x.CoinType + ' 兑换' + x.Income + ' ' + x.DestCoinType;
+						break;
+					}
+					case "1": {
+						return '购买 ' + x.IncomePer + '套餐' + x.DestCoinType + ' 获得收益: ' + x.Income + ' ' + x.CoinType;
+						break;
+					}
+					case "2": {
+						return '购买 ' + x.IncomePer + '套餐' + x.DestCoinType + ' 获得收益: ' + x.Income + ' ' + x.CoinType;
+						break;
+					}
+					case "3": {
+						return '购买 ' + x.IncomePer + '套餐' + x.DestCoinType + ' 产生: ' + x.Income + '代数 ' + x.CoinType;
+						break;
+					}
+					case "4": {
+						return ' 获得: ' + x.Income + ' ' + x.CoinType + '业绩';
+						break;
+					}
+					case "5": {
+						return '购买 ' + x.IncomePer + ' ' + x.DestCoinType + ' 获得收益: ' + x.Income + ' ' + x.CoinType;
+						break;
+					}
+					case "6": {
+						return '购买 ' + x.IncomePer + '套餐' + x.DestCoinType + ' 获得收益: ' + x.Income + ' ' + x.CoinType;
+						break;
+					}
+					case "7": {
+						return  ' 兑换VC 你直购差等级提升到 ' + x.IncomePer;
+						break;
+					}
+					case "8": {
+						return  ' 兑换'+x.Income+x.DestCoinType+' 你的体系等级提升+'+x.IncomePer;
+						break;
+					}
+					case "9": {
+						return ' 购买 ' + x.IncomePer + ' ' + x.CoinType + '套餐，奖励 ' + x.Income + ' ' + x.DestCoinType;
+						break;
+					}
+					case "10": {
+						return ' 使用 ' + x.IncomePer + ' ' + x.CoinType + ' 兑换 ' + x.Income + ' ' + x.DestCoinType;
+						break;
+					}
+					case "11": {
+						return (x.Income>0?'接收':'送出')+(x.Income+'').replace(/-/,'') + x.DestCoinType+(x.IncomePer===1?'':',手续费'+(1-x.IncomePer)*100 +'%');
+						break;
+					}
+					case "12": {
+						return '买入' + x.Income;
+						break;
+					}
+					case "13": {
+						return '卖出' + x.Income;
+						break;
+					}
+					case "14": {
+						return '强制卖出' + x.Income;
+						break;
+					}
+					case "15": {
+						return '配额' + x.Income;
+						break;
+					}
+					case "16": {
+						return '区块转出' + x.Income + ' ' + x.DestCoinType;
+						break;
+					}
+					case "17": {
+						return '获得' + x.IncomePer*100 + '% 收益，共 ' + x.Income+x.DestCoinType;
+						break;
+					}
+				}
+			}
+		},
+		created:function (){
+			this.taskSummary();
+			this.takeOutput();
+			this.takeOutput2();
+			this.takeEvent();
+		},
+		mounted: function () {
+
+		},
+		methods: {
+			takePie: function () {//pie data
+				var pieNode = document.getElementById('pieCoin');
+				var myPie = echarts.init(pieNode);
+
+				myPie.setOption(this.pieOption);
+
+				myPie.dispatchAction({
+					type: 'highlight',
+					seriesIndex: 0,
+					dataIndex: 0
+				});
+				pieNode.addEventListener('mouseleave', function () {
+					myPie.dispatchAction({
+						type: 'highlight',
+						seriesIndex: 0,
+						dataIndex: 0
+					});
+				});
+				pieNode.addEventListener('mouseenter', function () {
+					myPie.dispatchAction({
+						type: 'downplay',
+						seriesIndex: 0,
+						dataIndex: 0
+					});
+				});
+			},
+			taskSummary: function () {
+				var _this = this;
+				server.TaskSummary({ __RequestVerificationToken: getToken()}, function (rel) {
+					if (rel.msg === 'StatusOk') {
+						rel.data.BanlanceRecord.forEach(function (item, index) {
+							_this.SummaryBData[item.CoinType] = item.Balance.toFixed(4);
+							_this.pieOption.legend.data.push({ name: item.CoinType, icon: 'circle' });
+							_this.pieOption.series[0].data.push({ value: item.Balance.toFixed(4), name: item.CoinType });
+						});
+						_this.SummaryUData = rel.data.UserCountRecord[0];
+						_this.takePie();
+					} else {
+						showTips(getDescriptM(rel.msg));
+					}
+				});
+			},
+			takeOutput: function (time) {
+				var _this = this;
+				this.outputData=[
+					{ SummayType: "VCAward", CoinType: "VC", Amount: '0.0000' },
+					{ SummayType: "VSAward", CoinType: "VS", Amount: '0.0000' },
+					{ SummayType: "Generation", CoinType: "VT", Amount: '0.0000' },
+					{ SummayType: "MonthLeader", CoinType: "VT", Amount: '0.0000' },
+					{ SummayType: "InviterAward", CoinType: "VT", Amount: '0.0000' },
+					{ SummayType: "InviterLevelAward", CoinType: "VT", Amount: '0.0000' }
+				];
+				var aT = time ? time.split(' - ') : ['', ''];
+				this.outputTime.Stime = aT[0];
+				this.outputTime.Etime = aT[1];
+				server.TakeOutput(this.outputTime, function (rel) {
+					if (rel.msg === 'StatusOk') {
+						rel.data.forEach(function (item) {
+							for (var i = 0, l = _this.outputData.length; i < l; i++) {
+								if (_this.outputData[i].SummayType == item.SummayType) {
+									_this.outputData[i].Amount = item.Amount;
+								}
+							}
+						});
+
+					} else {
+						showTips(getDescriptM(rel.msg));
+					}
+
+				});
+			},
+			takeOutput2: function () {
+				var _this = this;
+				server.TakeOutput(this.outputTime2, function (rel) {
+					if (rel.msg === 'StatusOk') {
+						rel.data.forEach(function (item, index) {
+							for (var i = 0, l = _this.outputData2.length; i < l; i++) {
+								if (_this.outputData2[i].SummayType == item.SummayType) {
+									_this.outputData2[i].Amount = item.Amount;
+								}
+							}
+						});
+					} else {
+						showTips(getDescriptM(rel.msg));
+					}
+
+				});
+			},
+			takeTime: function (time) {
+				var aT = time ? time.split(' - ') : ['', ''];
+				this.eventType.Stime = aT[0];
+				this.eventType.Etime = aT[1];
+				this.eventType.PageIndex = 1;
+				this.takeEvent();
+			},
+			takeEventType: function (event) {
+				this.eventType.EventType = event?event:'';
+				this.eventType.PageIndex = 1;
+				this.takeEvent();
+			},
+			takeEvent: function () {
+				var _this = this;
+				server.TakeEvent(this.eventType, function (rel) {
+					if (rel.msg === 'StatusOk') {
+						_this.eventData = rel.data.data;
+						_this.totalpage = rel.data.Total;
+						if(rel.data.data.length<1){
+							showTips('加载完成，暂无数据')
+						}
+					} else {
+						showTips(getDescriptM(rel.msg));
+					}
+				});
+			},
+			handleCurrentChange: function (val) {
+				var _this = this;
+				this.eventType.PageIndex = val;
+				server.TakeEvent(this.eventType, function (rel) {
+					if (rel.msg === 'StatusOk') {
+						_this.eventData = rel.data.data;
+						_this.totalpage = rel.data.Total
+					} else {
+						showTips(getDescriptM(rel.msg));
+					}
+				});
+			}
+
+		}
+
+	});
+</script>

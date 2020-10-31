@@ -1,0 +1,279 @@
+﻿@{
+    string Lang = "en-US";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="@Lang">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>LOCKCHAIN CLUB</title>
+    <link href="~/Content/bootstrap.css" rel="stylesheet">
+    <link href="~/Content/global.css" rel="stylesheet">
+    <link href="~/Content/index.css" rel="stylesheet">
+    <link href="~/Content/itzhang.css" rel="stylesheet">
+    <style>
+        .mediaVideo1 {
+            background: url(/images/home-banner.jpg) no-repeat 100% 100%;
+        }
+        .title-tabs-pc >div{
+            line-height: 90px;
+        }
+        .zj-pc > ul > li {
+            float: left;
+            margin-left: 20px;
+        }
+        .login-icon{
+            display: inline-block;
+            margin-top: -4px;
+        }
+        @@media screen and (max-width:767px) {
+            #footer .footer-last-Div .footer-lasts-two {
+                float: none;
+                position: relative;
+                top: -96px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header id="header">
+        <!-- top -->
+        <div class="h-90 m-a clearfix pos-fix t-0 w-100- z-index-999 title-tabs opacity08">
+
+            <!-- top pc -->
+            <div class="title-tabs-pc w-100- h-100-">
+                <div class="col-sm-3">
+                    <img src="/images/blockchain-wrate-text.png" alt="LOCKCHAIN CLUB" style="max-width: 220px;">
+                </div>
+                <div class="col-sm-9 zj-pc">
+                    <ul class="clearfix" style="float: right">
+                        <li><a href="/@Lang/Account/Entry" class="c-f">PRODUCTS</a></li>
+                        <li><a href="javascript:;" class="c-f">NEWS</a></li>
+                        <li><a href="javascript:;" class="c-f">TEAM</a></li>
+                        <li><a href="javascript:;" class="c-f">SUPPORT</a></li>
+                        <!-- 语言 -->
+                        <li>
+                            <span class="langular-title-lis m-r-12 langular-title-user">
+                                <img src="/images/USA-langular.png" alt="" class="m-r-6 m-t--2">
+                                <a href="javascript:;" class="c-f langular">English</a>
+                            </span>
+                            <ul class="dis-none choose-langular">
+                                <li class="langular-lis"><img src="/images/China-langular.png" alt="" class="m-r-6 m-t--2"><a href="/Home/SwithLang?Lang=zh-CN" class="c-799eb2">中文简体</a></li>
+                                <li class="langular-lis"><img src="/images/USA-langular.png" alt="" class="m-r-6 m-t--2"><a href="/Home/SwithLang?Lang=en-US" class="c-799eb2">English</a></li>
+                                <li class="langular-lis"><img src="/images/Indonesia-langular.png" alt="" class="m-r-6 m-t--2"><a href="/Home/SwithLang?Lang=id-ID" class="c-799eb2">Indonesian</a></li>
+                            </ul>
+                        </li>
+                        <li>
+                            @if (User.Identity != null && User.Identity.IsAuthenticated)
+                            {
+                            <a href="/@Lang/Finance/Package" class="login-icon">@User.Identity.Name</a>
+                            }
+                            else
+                            {
+                            <a href="/@Lang/Account/Entry" class="login-icon">Sign in</a>
+                            }
+                        </li>
+
+                    </ul>
+                </div>
+            </div>
+
+            <!-- top mob -->
+            <div class="dis-none title-tabs-mob w-100- h-100- pos-rel">
+                <div class="l-h-90 c-f f26 dis-inlBlo flo-lef m-l-3-"><img src="/images/blockchain-blue-text.png" alt="LOCKCHAIN CLUB" class="w-230 top-imgs-pc"></div>
+                <!-- language -->
+                <div class="flo-rig l-h-90 c-f m-r-14">
+                    <img src="/images/USA-langular.png" alt="English" title="English" class="m-r-6 m-t--2 w-16 pos-rel langular-title-user m-r-8 m-l-8 langular-title-mob">
+
+                    <ul class="choose-langular pos-rel m-t--24 dis-none">
+                        <li class="langular-lis" style="margin:0;"><a href="/Home/SwithLang?Lang=zh-CN"><img src="/images/China-langular.png" alt="中文简体" title="中文简体" class="m-t--2" style="margin-right:0;"></a></li>
+                        <li class="langular-lis" style="margin:0;"><a href="/Home/SwithLang?Lang=en-US"><img src="/images/USA-langular.png" alt="English" title="English" class="m-t--2" style="margin-right:0;"></a></li>
+                        <li class="langular-lis" style="margin:0;"><a href="/Home/SwithLang?Lang=id-ID"><img src="/images/Indonesia-langular.png" alt="Indonesian" title="Indonesian" class="m-t--2" style="margin-right:0;"></a></li>
+                    </ul>
+
+                </div>
+
+                <div class="flo-rig l-h-90 c-f m-r-4- mob-show-tab">
+                    <img src="/images/tap-ionic-blur.png" alt="" class="w-18 top-imgs-mob">
+                </div>
+
+                <ul class="c-f w-100- flo-lef b-caccce top-ul-mob dis-none pos-rel z-index-999">
+                    @*<li><a href="javascript:;" class="c-799eb2">PRODUCTS</a></li>
+                    <li><a href="javascript:;" class="c-799eb2">NEWS</a></li>
+                    <li><a href="javascript:;" class="c-799eb2">TEAM</a></li>
+                    <li class="m-b-10"><a href="javascript:;" class="c-799eb2">SUPPORT</a></li>*@
+                    <li class="t-c" style="margin-bottom:14px;margin-top:10px;">
+                        @if (User.Identity != null && User.Identity.IsAuthenticated)
+                        {
+                            <a href="/@Lang/Finance/Package" class="login-icon" style="margin:auto;color:#fff">@User.Identity.Name</a>
+                        }
+                        else
+                        {
+                            <a href="/@Lang/Account/Entry" class="login-icon" style="margin:auto;color:#fff">SIGN IN</a>
+                        }
+
+                    </li>
+
+                </ul>
+            </div>
+
+        </div>
+
+        <!-- img -->
+        <div class="t-0 imgHeight">
+            <div class=" m-a w-100- m-a t-c c-f p-t-14- pos-abs " id="aideoPlay1">
+                <h1 class="f-72 f-ExtraLight header_font_title m-b-36 m-t--24">
+                    THE WORLD IS NOW <br> OPEN FOR BUSINESS
+                </h1>
+                <p class="w-45- f18 c-91c6e6 m-t-20 m-a f-ExtraLight p-t-20 m-t-24">We are on a mission to build a more open, accessible, and fair financial future, one piece of software at a time. <span class="header-titles-hide">Our technology is revolutionizing the financial services industry by empowering millions across the globe to authenticate and transact immediately and without costly intermediaries.</span></p>
+                <img src="/images/aideo-ionic.png" alt="" class="m-t-24" style="width: 44px;top:28%;left: 50%;opacity: 0.4">
+            </div>
+
+            <div class="w-100- mediaVideo1 h-100-">
+                <video src="@Url.Content("/Content/Video/ad1.mp4")" class="videosONE" poster="/images/home-banner_opacaty0.png" id='media' type="video/mp4">
+                    Your browser does not support playback, please use other browsers
+                </video>
+
+            </div>
+
+        </div>
+    </header>
+    <!--header end-->
+    <!--main star-->
+    <main id="main" class="m-t--51">
+        <div class="p-b-40 b-f4f6f7">
+
+            <div class="h-80 pos-rel b-0 l-h-80 clearfix m-a t-c main-top-pc">
+                <div class="w-50- h-100- b-123962 flo-lef c-f f24 f-Regular">1 BTC = <span class="ticker"></span>  USD</div>
+                <div class="w-50- h-100- b-2754ba flo-lef c-f f24 f-Regular">100M+ TRANSACTIONS</div>
+            </div>
+
+            <div class="container clearfix p-t-60 main-two-active">
+                <div class="flo-lef w-50- t-c m-a m-t-2- main-first-font">
+                    <div class="f-48 l-h-60 f-ExtraLight c-0">WE ARE LIVING IN<br /> A DIGITAL WORLD</div>
+                    <div class="m-t-34 f18 c-123962 f-Regular pc-hide p-t-20">It's time money caught up. Bitcoin is the first implementation of a <br />digital asset and is the only block chain protocol in widespread use. It<br /> allows users to transact directly without any third-party intermediary.</div>
+                </div>
+                <div class="w-50- flo-rig main-first-img">
+                    <div class="pos-rel">
+                        <video src="@Url.Content("/Content/Video/old-ad.mp4")" class="w-100-" poster="/images/index_seccedk.png" id="media2" type="video/mp4">
+                            Your browser does not support playback, please use other browsers
+                        </video>
+                        <div class="h-54 p-l-30- video-icon-2 m-t-20" id="video2-play">
+                            <div class=" video-img f14 c-123962 p-l-62 l-h-54">See How This Technology Works</div>
+                            <div class="video-img-stop f14 c-123962 p-l-62 l-h-54" style="display: none;">See How This Technology Works</div>
+                        </div>
+
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="container clearfix m-b-5- main-three-active">
+            <span class="f24 m-t-46 m-b-36 dis-inlBlo c-123962 l-h-28 f-ExtraLight w-100-">Millions of users and hundreds of thousands of merchants <br />use bitcoin. Here’s what it means for a few of them</span>
+            <div class="main-three-img">
+                <div class="w-50- flo-lef">
+                    <img src="/images/index_threeOne.png" alt="" class="w-100-">
+                    <div class=" w-100- b-123962 f-s-18 c-fff p-l-24 h-28 l-h-28">THE UNCOMMONS</div>
+                    <div class=" w-100- b-123962 f-s-18 c-fff p-l-24 h-28 l-h-28">NEW YORK, NY</div>
+                </div>
+                <div class="w-50- flo-lef">
+                    <img src="/images/index_threeTwo.png" alt="" class="w-100-">
+                    <div class=" w-100- b-2754ba f-s-18 c-fff p-l-24 h-28 l-h-28">LAY NAY FERME</div>
+                    <div class=" w-100- b-2754ba f-s-18 c-fff p-l-24 h-28 l-h-28">PROVO, UT</div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!--main end-->
+
+    <footer id="footer" class="b-e0edf2 p-t-40">
+        <div class="copyright bg-footer-blue pv-40 ph-10">
+            <div class="container">
+                <div class="row upper">
+                    <div class="col-md-3 col-sm-3">
+                        <img src="/images/blockchain-blue-text.png" class="w-170">
+                    </div>
+
+                    @*<div class="col-md-2 col-sm-2">
+                        <div class="products footer-hover">
+                            <p class="ls-label c-00aee6">PRODUCTS</p>
+                            <p><a href="" class="c-799eb2">BULLETIN</a></p>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-2">
+                        <div class="company footer-hover">
+                            <p class="ls-label c-00aee6">TEAM BUILDING</p>
+                            <p><a href="" class="c-799eb2">NEWS</a></p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2 col-sm-2">
+                        <div class="news footer-hover">
+                            <p class="ls-label c-00aee6">Q & A</p>
+                            <p><a href="" class="c-799eb2">BLOGS</a></p>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-2">
+                        <div class="news footer-hover">
+                            <p class="ls-label c-00aee6">SUPPORT</p>
+                            <p><a href="" class="c-799eb2">ABOUT</a></p>
+                        </div>
+                    </div>*@
+
+                    <div class="col-md-3 col-sm-3">
+                    </div>
+                </div>
+            </div>
+            <div class="container footer-last-Div">
+
+                <div class="p-t-60 w-50- flo-lef footer-lasts footer-lasts-one">
+                    <span class="" style="font-size: 10px;">
+                        <span class="">©2017 Blockchain Club Technology Co., LTD</span>
+                        <br class="visible-xs">
+                        <a class="" href="./privacy">Privacy</a>
+                        <a class="" href="./terms">Terms</a>
+                        <a class="" href="./legal">Law Enforcement Guide</a>
+                    </span>
+                </div>
+
+                <div class="p-t-50 w-50- flo-lef footer-lasts footer-lasts-two">
+                    <div class="flo-rig footer-lasts-right">
+                        <a href="" rel="" class="dis-inlBlo m-r-10"><img class="" src="/images/facebook.png" alt=""></a>
+                        <a href="" rel="" class="dis-inlBlo m-r-10"><img class="" src="/images/linkedin.png" alt=""></a>
+                        <a href="" rel="" class="dis-inlBlo m-r-10"><img class="" src="/images/twitter.png" alt=""></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script src="~/Scripts/vue.min.js"></script>
+    <script src="~/Scripts/server.js"></script>
+    <script src="~/Scripts/jquery-1.10.2.min.js"></script>
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <script src="~/Scripts/index.js"></script>
+    <script>
+        (function aaa() {
+            server.MarketTicker({
+                symbol: 'btc_usd'
+            }, function (rel) {
+                if (rel.type == 'btc_usd') {
+                    $('#main .ticker').text(rel.data.buy.toFixed(2));
+                }
+            });
+        })();
+        setInterval(function aaa() {
+            server.MarketTicker({
+                symbol: 'btc_usd'
+            }, function (rel) {
+                if (rel.type == 'btc_usd') {
+                    $('#main .ticker').text(rel.data.buy.toFixed(2));
+                }
+            });
+        }, 5000);
+    </script>
+</body>
+</html>

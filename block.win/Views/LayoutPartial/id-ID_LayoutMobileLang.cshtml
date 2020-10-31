@@ -1,0 +1,48 @@
+﻿
+@{
+    ViewBag.Title = "Republik Indonesia";
+    Layout = "~/Views/Shared/_id-ID_Layout.cshtml";
+}
+
+<style>
+    .goBack {
+        position: fixed;
+        left: 16px;
+        top: 12px;
+        padding-right: 50px;
+        z-index: 1000;
+    }
+
+    .acoountSet {
+        display: none;
+    }
+</style>
+<a href="../Account/MyInvitation" class="goBack p-l-14">
+    <img class="w-10" src="~/images/Img/goBack.png" />
+</a>
+
+<div id="app">
+    <a class="c-000 f-s-14 p-lr-16 h-40 l-h-40 bg-255 ps-relative b-b-e1e1e1 d-s-block" v-for="item in lang" @@click="SwithLang(item.value)">
+        <img :src="item.icon" class="w-27 h-27" />
+        <span v-text="item.lang"></span>
+    </a>
+</div>
+
+@Html.AntiForgeryToken()
+
+<script>
+    var app = new Vue({
+        host:host,
+        el: '#app',
+        data: {
+            host:host,
+            lang:Lang,
+        },
+        methods: {
+            SwithLang: function (lang) {
+                window.location.href = host+'Home/SwithLang?Lang='+lang;
+                //SwithLang(lang);
+            }
+        }
+    })
+</script>

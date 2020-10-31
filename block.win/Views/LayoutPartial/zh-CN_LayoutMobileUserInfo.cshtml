@@ -1,0 +1,171 @@
+﻿@{
+    ViewBag.Title = "我的账户";
+    Layout = "~/Views/Shared/_zh-CN_Layout.cshtml";
+}
+
+<style>
+    .goBack {
+        position: fixed;
+        left: 16px;
+        top: 12px;
+        padding-right: 50px;
+        z-index: 1000;
+    }
+
+    .acoountSet {
+        display: none;
+    }
+
+    .uploaderBtn div:nth-last-child(1) {
+        height:40px !important;
+    }
+    .iDate {
+         width: 100% !important; 
+    }
+    .iDate > input {
+        width: auto !important; 
+        height:39px !important;
+    }
+    .avImg {
+        position: fixed;
+        right: 16px;
+        top: 76px;
+    }
+</style>
+<a href="../Account/MyInvitation" class="goBack p-l-14">
+    <img class="w-10" src="~/images/Img/goBack.png" />
+</a>
+<div id="app" class="bg-f5f5f5 h100">
+    
+    <a class="c-000 f-s-14 p-lr-16 m-t-16 h-40 l-h-40 bg-255 uploaderBtn d-s-block">
+        头像
+        <img class=" ps-absolute r-16 w-27 h-28 t-12 border-radius50 m-t--14 avImg" onclick="upLoadImg()" :src="userInfo.Logo"/>
+    </a>
+
+    <div class="c-000 f-s-14 p-lr-16 m-t-16 h-40 l-h-40 bg-255 ps-relative b-b-e1e1e1">
+        <span>ID</span>
+        <input type="text" class="f-r text-right border-none h-39 bg-255" disabled="disabled" v-model="userInfo.UserName" name="name" placeholder="ID" />
+    </div>
+    <div class="c-000 f-s-14 p-lr-16 h-40 l-h-40 bg-255 ps-relative">
+        <span>邮箱</span>
+        <input type="text" class="f-r text-right border-none h-39 bg-255" disabled="disabled" v-model="userInfo.Email" name="name" placeholder="邮箱" />
+    </div>
+
+    <div class="c-000 f-s-14 p-lr-16 m-t-16 h-40 l-h-40 bg-255 ps-relative b-b-e1e1e1">
+        <span>昵称</span>
+        <input type="text" class="f-r text-right border-none h-39 c-666" v-model="userInfo.NickName" name="name" placeholder="昵称" />
+    </div>
+    <div class="c-000 f-s-14 p-lr-16 h-40 l-h-40 bg-255 ps-relative b-b-e1e1e1">
+        <span>地址</span>
+        <input type="text" class="f-r text-right border-none h-39 c-666" v-model="userInfo.Addr" name="name" placeholder="地址" />
+    </div>
+    <div class="c-000 f-s-14 p-lr-16 h-40 l-h-40 bg-255 ps-relative b-b-e1e1e1">
+        <span>手机</span>
+        <input type="text" class="f-r text-right border-none h-39 c-666" v-model="userInfo.PhoneNumber" name="name" placeholder="手机" />
+    </div>
+    <div class="iDate date stateDate c-000 f-s-14 p-lr-16 h-40 l-h-40 bg-255 ps-relative">
+        <span>生日</span>
+        <input type="text" class="c-alalal stateInput f-r text-right border-none h-39 c-666" id="mobileBirth" v-model="userInfo.Birth">
+        <button type="button" class="addOn c-alalal"></button>
+    </div>
+
+    <div class="m-t-50 p-lr-16">
+        <button class="h-40 f-s-14 c-255 w100 d-s-i-b border-none bg-10ADE4 " @@click="UpdateUserInfo">提交</button>
+    </div>
+
+
+</div>
+
+@Html.AntiForgeryToken();
+
+<link href="~/Content/chooseDate.css" rel="stylesheet" />
+<script src="~/Scripts/moment.js"></script>
+<script src="~/Scripts/bootstrap-datetimepicker.js"></script>
+
+<script>
+    function upLoadImg() {
+        $('.webuploader-element-invisible').eq(1).trigger('click');
+    };
+
+    var app = new Vue({
+        el: '#app',
+        data: {
+            userInfo: {
+                Addr: '',
+                Birth: '',
+                Country: '',
+                DefaultLang: '',
+                Email: '',
+                Logo: host+'@Session["Logo"]',
+                NickName: '',
+                PhoneNumber: '',
+                UserName: '',
+            }
+        },
+     
+        mounted: function () {
+            var _this = this;
+            server.TakeUserInfo({
+                __RequestVerificationToken: getToken()
+            }, function (rel) {
+                switch (rel.msg) {
+                    case 'StatusOk': {
+                        if (rel.data.Birth) {
+                            rel.data.Birth = parseTimeGetDate(rel.data.Birth);
+                        }
+                        _this.userInfo = rel.data;
+                        break;
+                    }
+                    case rel.msg: {
+                        break
+                        ;
+                    }
+                }
+
+            })
+            //日期时间选择
+            if ($(".iDate.date").length > 0) {
+                $(".iDate.date").datetimepicker({
+                    locale: "zh-cn",
+                    format: "YYYY-MM-DD",
+                    dayViewHeaderFormat: "YYYY年 MMMM"
+                });
+            }
+            $('.stateDate').click(function () {
+                $(this).find('.addOn').text('');
+            })
+        },
+      
+        methods: {
+            
+            UpdateUserInfo: function () {
+                var _this = this;
+                server.UpdateUserInfo({
+                    __RequestVerificationToken: getToken(),
+                    LogoPath: _this.userInfo.Logo,
+                    NickName: _this.userInfo.NickName,
+                    Addr: _this.userInfo.Addr,
+                    Lang: 'null',
+                    Birth: $('#mobileBirth').val(),
+                }, function (rel) {
+                    switch (rel.msg) {
+                        case 'StatusOk': {
+                            showTips('修改成功');
+                            break;
+                        }
+                        case rel.msg: {
+                            showTips(getDescript(rel.msg));
+                            break;
+                        }
+                        default: {
+                            showTips(rel.msg);
+                        }
+                    }
+                })
+            }
+           
+        }
+    })
+</script>
+
+

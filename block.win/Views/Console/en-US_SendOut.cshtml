@@ -1,0 +1,698 @@
+﻿
+@{
+Layout = "~/Views/Shared/_en-US_ManageLayout.cshtml";
+ViewBag.Title = "送出";
+}
+
+<link href="~/Content/eleme-css/index.css" rel="stylesheet" />
+<style>
+    ::-ms-clear, ::-ms-reveal {
+        display: none;
+    }
+
+    [v-cloak] {
+        display: none !important;
+    }
+    .main {
+        width: 1200px;
+        margin: 0 auto;
+        background: #eef1f6;
+    }
+    .main .table {
+        background: #fff;
+    }
+    /*statistic*/
+    .statistic{
+        color:white;
+    }
+    .statistic p {
+        font-size: 18px;
+        border-bottom: 1px solid rgba(255,255,255,.1);
+        margin: 0;
+    }
+    .statistic > div {
+        width:386px;
+        padding: 10px;
+        float:left;
+        border-radius: 6px;
+    }
+    .statistic > div:nth-child(1) {
+        margin:0 10px;
+        background: url(../../images/console/receive-bg.png) 0% 0% / 100% 100% no-repeat;
+    }
+    .statistic > div:nth-child(2) {
+        margin-right:10px;
+        background: url(../../images/console/send-bg.png) 0% 0% / 100% 100% no-repeat;
+    }
+    .statistic > div:nth-child(3) {
+        width: 386px;
+        background: url(../../images/console/send-bg.png) 0% 0% / 100% 100% no-repeat;
+    }
+    .statistic ul {
+        list-style:none;
+        padding:0;
+        margin:0;
+    }
+    .statistic ul li {
+        width: 50%;
+        font-size: 14px;
+        line-height: 40px;
+        float: left;
+        border-bottom: 1px solid rgba(255,255,255,.1);
+    }
+    /*sendout*/
+    .sendout {
+        padding-top: 10px;
+        border-bottom: 1px solid #dddddd;
+    }
+    .sendout p,.transfer p{
+        margin:4px;
+        font-size:16px;
+        font-weight:bold;
+        text-align:center;
+    }
+    #showTips{
+        z-index:9999;
+    }
+    .el-loading-mask {
+        z-index: 1;
+    }
+    /*table*/
+    .table {
+        margin-bottom: 0 !important;
+    }
+    .table tbody tr th, .table tbody tr td {
+        text-align: center;
+    }
+    /*pagin*/
+
+    .pagin {
+        float: right;
+        padding: 2px 33px 5px 0;
+    }
+    @@media screen and (max-width: 768px) {
+        .timepick1 {
+            left: 10px !important;
+        }
+        .timepick2 {
+            left: 194px !important;
+        }
+        .status{
+            left: 418px !important;
+        }
+        .char{
+            left:636px !important;
+        }
+        .pro {
+            left: 482px !important;
+        }
+    }
+</style>
+<style>
+    .spinner {
+        margin: 5px auto 0;
+        width: 150px;
+        text-align: center;
+    }
+
+    .spinner > div {
+        width: 20px;
+        height: 20px;
+        background-color: #004a7c;
+
+        border-radius: 100%;
+        display: inline-block;
+        -webkit-animation: bouncedelay 1.4s infinite ease-in-out;
+        animation: bouncedelay 1.4s infinite ease-in-out;
+        /* Prevent first frame from flickering when animation starts */
+        -webkit-animation-fill-mode: both;
+        animation-fill-mode: both;
+    }
+
+    .spinner .bounce1 {
+        -webkit-animation-delay: -0.32s;
+        animation-delay: -0.32s;
+    }
+
+    .spinner .bounce2 {
+        -webkit-animation-delay: -0.16s;
+        animation-delay: -0.16s;
+    }
+
+    @@-webkit-keyframes bouncedelay {
+         0%, 80%, 100% { -webkit-transform: scale(0.0) }
+         40% { -webkit-transform: scale(1.0) }
+     }
+
+    @@keyframes bouncedelay {
+         0%, 80%, 100% {
+             transform: scale(0.0);
+             -webkit-transform: scale(0.0);
+         } 40% {
+               transform: scale(1.0);
+               -webkit-transform: scale(1.0);
+           }
+     }
+</style>
+<div id="app">
+    <div class="main">
+        <div style="padding: 10px;">
+            <el-date-picker v-model="time"
+                            size="small"
+                            type="daterange"
+                            placeholder="查询统计日期范围"
+                            popper-class="timepick1"
+                            @@change="chooseTime1">
+            </el-date-picker>
+        </div>
+        <div class="statistic clearfix">
+            <div>
+                <p v-text="nameR"></p>
+                <ul class="clearfix">
+                    <li v-for="x in statisticR"><span v-text="x.CoinType+':'"></span> <span v-text="x.Total"></span></li>
+                </ul>
+            </div>
+            <div>
+                <p v-text="nameWS"></p>
+                <ul class="clearfix">
+                    <li v-for="x in statisticWS"><span v-text="x.CoinType+':'"></span> <span v-text="x.Total"></span></li>
+                </ul>
+            </div>
+            <div>
+                <p v-text="nameIS"></p>
+                <ul class="clearfix">
+                    <li v-for="x in statisticIS"><span v-text="x.CoinType+':'"></span> <span v-text="x.Total"></span></li>
+                </ul>
+            </div>
+        </div>
+        <div class="trans-total"></div>
+        <div class="sendout clearfix">
+            <p>订单处理</p>
+            <el-table
+              :data="OrderData"
+              border
+              style="width: 100%">
+                <el-table-column
+                  prop="UserName"
+                  label="账号"
+                  width="120">
+                </el-table-column>
+                <el-table-column
+                  prop="CoinType"
+                  label="币种"
+                  width="80">
+                </el-table-column>
+                <el-table-column
+                  prop="Amount"
+                  label="转出数量">
+                </el-table-column>
+                <el-table-column
+                  prop="Address"
+                  label="转出地址"
+                  width="350">
+                </el-table-column>
+                <el-table-column
+                  prop="Remark"
+                  label="备注">
+                </el-table-column>
+                <el-table-column
+                  prop="SetupTime"
+                  label="日期"
+                  width="170">
+                </el-table-column>
+                <el-table-column label="操作" width="140">
+                    <template scope="scope">
+                        <el-button
+                          size="small"
+                          @@click="Confirm(scope.row.WithdrawId,scope.row.CoinType)">确定</el-button>
+                        <el-button
+                          size="small"
+                          type="danger"
+                          @@click="Cancel(scope.row.WithdrawId)">取消</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+            <div class="pagin">
+                <el-pagination @@current-change="handleCurrentChange"
+                               :current-page.sync="takeRecord.PageIndex"
+                               :page-size="takeRecord.ShowNumber"
+                               layout="total,prev, pager, next, jumper"
+                               :total="totalhistory">
+                </el-pagination>
+            </div>
+        </div>
+        <div class="transfer" style="padding:10px">
+            <p>钱包转账</p>
+            <div style="width:180px;display:inline-block"><el-input v-model="sendOutInOptions.Name" size="small" placeholder="送出账号"></el-input></div>
+            <el-date-picker v-model="time2"
+                            size="small"
+                            type="daterange"
+                            placeholder="选择日期范围"
+                            popper-class="timepick2"
+                            @@change="chooseTime2">
+            </el-date-picker>
+            <el-select v-model="sendOutInOptions.Status" clearable  size="small" placeholder="状态" popper-class="status">
+                <el-option v-for="item in options1"
+                           :key="item.value"
+                           :label="item.label"
+                           :value="item.value">
+                </el-option>
+            </el-select>
+            <el-select v-model="sendOutInOptions.Direct" clearable  size="small" placeholder="性质" popper-class="char">
+                <el-option v-for="item in options2"
+                           :key="item.value"
+                           :label="item.label"
+                           :value="item.value">
+                </el-option>
+            </el-select>
+            <el-button type="danger" size="small" icon="search" @@click="screen">筛选</el-button>
+        </div>
+        <div class="clearfix" v-infinite-scroll="loadMore" infinite-scroll-disabled="busy" infinite-scroll-distance="10">
+            <table class="table table-bordered table-hover f-16">
+                <tr>
+                    <th>日期</th>
+                    <th>性质</th>
+                    <th>金额</th>
+                    <th>送出账号</th>
+                    <th>接收账号</th>
+                    <th>状态</th>
+                </tr>
+                <tr v-for="x in sendOutInData">
+                    <td style="color:red" v-text="x.SetupTime"></td>
+                    <td v-cloak>{{x.IsSender | toDirect}}</td>
+                    <td v-cloak>{{x.Amount | toFix(2)}} {{x.CoinType}}</td>
+                    <td v-cloak>{{x.SendName}}</td>
+                    <td v-cloak>{{x.ReceiveName}}</td>
+                    <td v-cloak>{{x.Status | toStatus}}</td>
+                </tr>
+            </table>
+            <div class="spinner" v-if="!busy">
+                <div class="bounce1"></div>
+                <div class="bounce2"></div>
+                <div class="bounce3"></div>
+            </div>
+            <div v-if="over" style="color:#666;text-align: center" v-text="'以上为所有数据。'"></div>
+        </div>
+    </div>
+    <div class="modal fade" id="confirmModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close pointer" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="exampleModalLabel">确认？</h4>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="message-text" class="control-label">备注:</label>
+                            <input class="form-control" v-model="sendOut.Comment">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default pointer" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary pointer" @@click="handleSendOut('确定成功',false)">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="confirmScModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close pointer" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">确认？</h4>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label class="control-label">密码:</label>
+                            <input type="password" class="form-control" v-model="sendOut.Password">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">手续费:</label>
+                            <input type="number" class="form-control" v-model="sendOut.Fee" placeholder="0-100000000">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">备注:</label>
+                            <input class="form-control" v-model="sendOut.Comment">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default pointer" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary pointer" @@click="handleSendOut('确定成功',true)">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="cancelModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close pointer" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="exampleModalLabel">取消？</h4>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="message-text" class="control-label">备注:</label>
+                            <textarea class="form-control" v-model="sendOut.Reason"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default pointer" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary pointer" @@click="handleSendOut('取消成功')">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div style="position: fixed;right: 1%;bottom:1%;width: 110px">
+        <a href="#top" style="padding: 17px;display: block;border-radius: 50%;background: #fff;margin: 10px auto;width: 50px;height: 50px;">
+            <i class="el-icon-arrow-up"></i>
+        </a>
+        <el-button type="primary" icon="arrow-down" @@click="downloadExl">
+            <span v-text="'导出表格'"></span>
+        </el-button>
+    </div>
+</div>
+
+@Html.AntiForgeryToken()
+<script src="~/Scripts/element-ui.js"></script>
+<script src="../../Scripts/vue-infinite-scroll.min.js"></script>
+<script src="../../Scripts/xlsx.full.min.js"></script>
+<script src="../../Scripts/fileSaver.min.js"></script>
+<script>
+	//save config
+	function s2ab(s) {
+		if (typeof ArrayBuffer !== 'undefined') {
+			var buf = new ArrayBuffer(s.length);
+			var view = new Uint8Array(buf);
+			for (var i = 0; i != s.length; ++i) view[i] = s.charCodeAt(i) & 0xFF;
+			return buf;
+		} else {
+			var buf = new Array(s.length);
+			for (var i = 0; i != s.length; ++i) buf[i] = s.charCodeAt(i) & 0xFF;
+			return buf;
+		}
+	}
+
+	var wopts = {
+		bookType: 'xlsx',
+		bookSST: false,
+		type: 'binary'
+	};
+</script>
+<script>
+	new Vue({
+		el: "#app",
+		data: {
+			time: '',
+			time2:'',
+			busy:false,
+			over:false,
+			OrderData:'',
+			takeRecord: {//维护取订单
+				__RequestVerificationToken: getToken(),
+				PageIndex: 1,
+				ShowNumber:10
+			},
+			activeNum: 10,//当前显示数
+			showNumber: [10, 20,1],     //每页展示数量
+			totalPage: 0,//送出总页数
+			totalhistory: 0,//总历史条数
+			sendOut: {//维护订单处理
+				__RequestVerificationToken: getToken(),
+				OrderId: '',
+				CoinType:'',
+				Password:'',
+				Fee: '0.01',
+				Confirm: '',
+				Comment:''
+			},
+			statisticOptions: {
+				__RequestVerificationToken: getToken(),
+				STime: '',
+				ETime:''
+			},
+			statisticR: [],
+			statisticWS: [],
+			statisticIS: [],
+			nameR: '总接收',
+			nameWS: '总送出',
+			nameIS: '内部送出',
+			sendOutInOptions: {
+				__RequestVerificationToken: getToken(),
+				Name:'',
+				STime: '',
+				ETime: '',
+				Status: '',
+				Direct: '',
+				PageIndex: 1,
+				ShowNumber: 20
+			},
+			sendOutInData:[],
+			options1: [{
+				value: 'D',
+				label: '已完成'
+			}, {
+				value: 'C',
+				label: '已取消'
+			}, {
+				value: 'W',
+				label: '等待中'
+			}],
+			options2: [{
+				value: 'R',
+				label: '接收'
+			},{
+				value: 'WS',
+				label: '外部送出'
+			}, {
+				value: 'IS',
+				label: '内部送出'
+			}],
+			totalSend: '',
+			pageSend:''
+		},
+		filters: {
+			toFix: function (val, decimal) {
+				if (typeof (val) === 'number' && val !== 0) {
+					return val.toFixed(decimal);
+				}
+				return val;
+			},
+			toDirect: function (val) {
+				return val?"送出":"接收";
+			},
+			toStatus: function (val) {
+				switch (val) {
+					case 'D':
+						return '完成';
+						break;
+					case 'W':
+						return '等待';
+						break;
+					case 'C':
+						return '取消';
+						break;
+					default:
+						return '';
+				}
+			}
+		},
+		created: function () {
+			this.takeOrder();
+			setInterval(this.takeOrder, 30000);
+			this.queryStatistic();
+		},
+		methods: {
+			Confirm: function (wd,ct) {
+				this.sendOut.OrderId = wd;//得到订单号
+				this.sendOut.CoinType = ct;
+//                if (ct === 'BTC' || ct === 'LTC') {
+//                    this.sendOut.Fee = '';//清空手续费
+//                }else{
+//	                this.sendOut.Fee = '0.01';//恢复默认手续费
+//                }
+				this.sendOut.Fee = '0.01';//恢复默认手续费
+				this.sendOut.Confirm = true;
+				this.sendOut.Comment = '';
+				if(ct === "SC"){
+					$('#confirmScModal').modal('show');
+					this.sendOut.Password = '';
+				}else{
+					$('#confirmModal').modal('show');
+				}
+			},
+			Cancel: function (wd) {
+				this.sendOut.OrderId = wd;
+				this.sendOut.Confirm = false;
+				$('#cancelModal').modal('show');
+			},
+			takeOrder: function () {
+				var _this = this;
+				server.QueryUnConfirmSendOut(this.takeRecord, function (rel) {
+					if (rel.msg === "StatusOk") {
+						_this.OrderData = rel.data.data;
+						_this.totalhistory = rel.data.total;
+					} else {
+						showTips(getDescriptM(rel.data))
+					}
+				});
+			},
+			handleSendOut: function (text,require) {
+				var _this = this;
+				if (require) {
+					if (this.sendOut.Password.length < 1) {
+						showTips("请输入密码")
+						return;
+					}
+					if (this.sendOut.Fee <= 0 || typeof (parseFloat(this.sendOut.Fee)) !== "number") {
+						showTips("请输入手续费");
+						return;
+					}
+				} else {
+					this.sendOut.Password = 88888888;
+				}
+				server.ConfirmSendOut(this.sendOut, function (rel) {
+					if (rel.msg === "StatusOk") {
+						_this.takeOrder();
+						$('#confirmModal').modal('hide');
+						$('#cancelModal').modal('hide');
+						showTips(text);
+					} else {
+						showTips(getDescriptM(rel.data))
+					}
+				})
+			},
+			handleCurrentChange: function (val) {
+				this.takeRecord.PageIndex = val;
+				this.takeOrder();
+			},
+			handleCurrentChange2: function (val) {
+				this.sendOutInOptions.PageIndex = val;
+				this.querySendOutIn();
+			},
+			queryStatistic: function () {
+				var _this = this;
+				_this.statisticR = []; _this.statisticIS = []; _this.statisticWS = [];//empty
+				this.nameR= '总接收';
+				this.nameWS= '总送出';
+				this.nameIS= '内部送出';
+				if (this.statisticOptions.STime) {
+					var s = this.statisticOptions.STime, e = this.statisticOptions.ETime;
+					this.nameR = s + '~' + e + ' 接收';
+					this.nameWS = s + '~' + e + ' 送出';
+					this.nameIS = s + '~' + e + ' 内部送出';
+				}
+				server.QueryStatisticsendOut(this.statisticOptions, function (rel) {
+					if (rel.msg === "StatusOk") {
+						var data = rel.data;
+						data.forEach(function (item, index) {
+							if (item.Direct === 'R') {
+								_this.statisticR.push(item);
+							} else if (item.Direct === 'IS') {
+								_this.statisticIS.push(item);
+							} else if (item.Direct === 'WS') {
+								_this.statisticWS.push(item);
+							}
+						});
+						if(rel.data.length<1){
+							showTips('加载完成，暂无数据')
+						}
+					} else {
+						showTips(getDescriptM(rel.msg))
+					}
+				});
+			},
+			loadMore:function(){
+				this.busy=true;
+				var _this = this;
+				server.QuerySendOutIn(this.sendOutInOptions, function (rel) {
+					if (rel.msg === "StatusOk") {
+						_this.sendOutInData =_this.sendOutInData.concat(rel.data.data);
+						_this.sendOutInOptions.PageIndex++;
+						_this.$nextTick(function(){
+							_this.busy = _this.over =!rel.data.data.length;
+						})
+					} else {
+						showTips(getDescriptM(rel.msg))
+					}
+				});
+			},
+			screen: function () {
+				this.sendOutInOptions.PageIndex = 1;
+				this.sendOutInData=[];
+				this.loadMore();
+			},
+			downloadExl:function () {
+				var data= this.sendOutInData;//handle data
+				data.forEach(function(item,index,array){
+					switch (item.Status){
+						case "C":
+							array[index].Status="Cancel";
+							break;
+						case "D":
+							array[index].Status="Done";
+							break;
+						case "W":
+							array[index].Status="Wait";
+							break;
+					}
+					array[index].InnerType=parseFloat(item.InnerType)
+				});
+				var a=this.sendOutInOptions;
+				var userName = a.Name?a.Name:'allUser';
+				var time = a.STime?a.STime +'to'+ a.ETime:'allDate';
+				var status = a.Status?a.Status:'allStatus';
+				switch (status){
+					case "C":
+						status="已取消";
+						break;
+					case "D":
+						status="已完成";
+						break;
+					case "W":
+						status="等待中";
+						break;
+				}
+				var direct = a.Direct?a.Direct:'allDirect';
+				switch (direct){
+					case "R":
+						direct="接收";
+						break;
+					case "WS":
+						direct="外部送出";
+						break;
+					case "IS":
+						direct="内部送出";
+						break;
+				}
+				var fileName=time+'_'+userName+'_'+status+'_'+direct+'_SendOut';
+				var wb = {
+					SheetNames: ['Sheet1'],
+					Sheets: {},
+					Props: {}
+				};
+				wb.Sheets['Sheet1'] = XLSX.utils.json_to_sheet(data); //通过json_to_sheet转成单页(Sheet)数据
+				saveAs(new Blob([s2ab(XLSX.write(wb, wopts))], {
+					type: "application/octet-stream"
+				}), fileName + '.' + (wopts.bookType == "biff2" ? "xls" : wopts.bookType));
+			},
+			chooseTime1: function (val) {
+				var aT = val ? val.split(' - ') : ['', ''];
+				this.statisticOptions.STime = aT[0];
+				this.statisticOptions.ETime = aT[1];
+				this.queryStatistic();
+			},
+			chooseTime2: function (val) {
+				var aT = val ? val.split(' - ') : ['', ''];
+				this.sendOutInOptions.STime = aT[0];
+				this.sendOutInOptions.ETime = aT[1];
+			}
+		}
+	});
+
+</script>

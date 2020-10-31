@@ -1,0 +1,384 @@
+﻿@{
+Layout = "~/Views/Shared/_en-US_ManageLayout.cshtml";
+ViewBag.Title = "公告";
+}
+<link rel="stylesheet" href="../../Content/eleme-css/index.css">
+<style>
+    ::-ms-clear, ::-ms-reveal {
+        display: none;
+    }
+
+    [v-cloak] {
+        display: none !important;
+    }
+
+    .main {
+        background: #fff;
+        width: 1200px;
+        padding: 10px;
+        margin: 0 auto;
+    }
+
+    #showTips {
+        z-index: 9999;
+    }
+    .el-loading-mask {
+        z-index:1;
+    }
+    .closetr{
+        color: #ccc;
+    }
+    .table tbody tr th, .table tbody tr td {
+        text-align: center;
+        line-height: 28px;
+    }
+    /*reset element*/
+    .el-dialog__header{
+        text-align: center;
+    }
+    .el-button+.el-button {
+        margin-left: 0;
+    }
+    .pagin {
+        float: right;
+        padding: 2px 33px 5px 0;
+    }
+    @@media screen and (max-width: 768px){
+        .el-dialog--small{
+            width: 98%;
+        }
+        .el-select{
+            display: block;
+        }
+        .lang-select{
+            position: fixed !important;
+            left: auto !important;
+            right: 3.5% ;
+        }
+    }
+    @@media screen and (max-width: 767px){
+        .lang-select{
+            left: 6% !important;
+            right: 6% ;
+            z-index: 9999 !important;
+        }
+    }
+</style>
+
+<div id="app"  v-loading.fullscreen.lock="loading">>
+    <div class="main clearfix">
+        <el-tabs v-model="activeName" @@tab-click="handleClick">
+            <el-tab-pane :label="x.lang" :name="i+1" v-for="(x,i) in tabOptions" >
+                <div class="info">
+                    <p>标题</p>
+                    <el-input v-model="addOptions.Title" :autofocus="true">
+                    </el-input>
+                    <p>内容</p>
+                    <el-input type="textarea" :rows="4" v-model="addOptions.Content">
+                    </el-input>
+                </div>
+                <div class="text-center" style="padding: 5px">
+                    <el-button type="primary" size="small" :loading="loading" @@click="doAdd" :disabled="btnLoading">
+                        <span v-if="!loading" v-cloak>添加公告（{{x.lang}}）</span>
+                        <span v-else>正在添加...</span>
+                    </el-button>
+                </div>
+                <hr />
+                <table class="table table-bordered table-hover">
+                    <tr>
+                        <th>标题</th>
+                        <th>发布人</th>
+                        <th>发布时间</th>
+                        <th>更新时间</th>
+                        <th>取消时间</th>
+                        <th style="width: 160px;">操作</th>
+                    </tr>
+                    <tr v-for="y in x.data" :title="y.AdContent" :class="{closetr:!y.Status}">
+                        <td v-text="y.Title"></td>
+                        <td v-text="y.PublishName"></td>
+                        <td v-text="y.SetupTime"></td>
+                        <td v-text="y.UpdateTime"></td>
+                        <td v-text="y.CancelTime"></td>
+                        <td>
+                            <el-button :disabled="!y.Status" :plain="true" type="success" size="small" @@click="willSet(y.AdId,y.Title,y.AdContent,y.Lang)">编辑</el-button>
+                            <el-button :plain="true" type="danger" size="small" @@click="willDel(y.AdId)">删除</el-button>
+                            <el-button v-if="!y.Status" type="info" size="small" :loading="modal_loading" @@click="doOpen(y.AdId)">开启</el-button>
+                            <el-button v-if="y.Status" type="info" size="small" :loading="modal_loading" @@click="doClose(y.AdId)">关闭</el-button>
+                        </td>
+                    </tr>
+                </table>
+                <div class="pagin">
+                    <el-pagination @@current-change="handleCurrentChange"
+                                   :current-page.sync="x.getOptions.PageIndex"
+                                   :page-size="x.getOptions.Number"
+                                   layout="total,prev, pager, next, jumper"
+                                   :total="x.totalIndex">
+                    </el-pagination>
+                </div>
+            </el-tab-pane>
+        </el-tabs>
+
+        <el-dialog v-model="delModal" width="360">
+
+            <div style="text-align:center;color:#f60;">
+                <i class="el-icon-information"></i>
+                <span>删除确认</span>
+            </div>
+            <div slot="footer">
+                <el-button type="danger" size="small" long :loading="modal_loading" @@click="doDel">删除</el-button>
+            </div>
+        </el-dialog>
+        <el-dialog v-model="setModal" width="360">
+            <span slot="title" style="color:#f60;">
+                <i class="el-icon-information"></i>
+                <span>请修改公告</span>
+            </span>
+            <div style="text-align:center">
+                <el-row :gutter="20">
+                    <el-col :xs="24" :sm="16">
+                        标题
+                        <el-input v-model="changeOptions.Title" :autofocus="true"></el-input>
+                    </el-col>
+                    <el-col :xs="24" :sm="8">
+                        语言(language)
+                        <el-select v-model="changeOptions.Lang" placeholder="更换语言" popper-class="lang-select">
+                            <el-option
+                              v-for="x in tabOptions"
+                              :key="x.getOptions.Lang"
+                              :label="x.lang"
+                              :value="x.getOptions.Lang">
+                            </el-option>
+                        </el-select>
+                    </el-col>
+
+                </el-row>
+                </el-input>
+                <p>内容</p>
+                <el-input type="textarea" :rows="4" v-model="changeOptions.Content">
+                </el-input>
+            </div>
+            <div slot="footer">
+                <el-button type="success" size="small" long :loading="modal_loading" @@click="doSet">确定</el-button>
+            </div>
+        </el-dialog>
+    </div>
+</div>
+@Html.AntiForgeryToken()
+<script src="../../Scripts/element-ui.js"></script>
+<script src="../../Scripts/axios.min.js"></script>
+<script>
+	var urlEncode = function (param, key, encode) {
+		if (param == null) return '';
+		var paramStr = '';
+		var t = typeof (param);
+		if (t == 'string' || t == 'number' || t == 'boolean') {
+			paramStr += '&' + key + '=' + ((encode == null || encode) ? encodeURIComponent(param) : param);
+		} else {
+			for (var i in param) {
+				var k = key == null ? i : key + (param instanceof Array ? '[' + i + ']' : '.' + i);
+				paramStr += urlEncode(param[i], k, encode);
+			}
+		}
+		return paramStr;
+	};//对象转url
+	new Vue({
+		el: '#app',
+		data: {
+			activeName:1,
+			addOptions: {
+				__RequestVerificationToken: getToken(),
+				Title:'',
+				Content:'',
+				Lang:'zh-CN'
+			},
+			tabOptions:[
+				{
+					lang:'中文-Chinese',
+					data:'',
+					getOptions:{
+						__RequestVerificationToken: getToken(),
+						Lang:'zh-CN',
+						PageIndex:1,
+						Number:10
+					},
+					totalIndex:''
+				},
+				{
+					lang:'英文-English',
+					data:'',
+					getOptions:{
+						__RequestVerificationToken: getToken(),
+						Lang:'en-US',
+						PageIndex:1,
+						Number:10
+					},
+					totalIndex:''
+				},
+				{
+					lang:'印尼文-Indonesian',
+					data:'',
+					getOptions:{
+						__RequestVerificationToken: getToken(),
+						Lang:'id-ID',
+						PageIndex:1,
+						Number:10
+					},
+					totalIndex:''
+				}
+			],
+			changeOptions:{
+				__RequestVerificationToken: getToken(),
+				AdId:'',
+				Title:'',
+				Content:'',
+				Lang:''
+			},
+			loading: false,
+			btnLoading: true,
+			delId: '',
+			delModal: false,
+			modal_loading:false,
+			setModal: false,
+			modal_loading2:false
+		},
+		created: function () {
+			this.getAd('获取当前公告信息成功')
+		},
+		methods: {
+			getAd: function (text,target) {
+				var _this = this;
+				var index = target!==undefined?target:_this.activeName-1;
+				axios.post(host + 'Console/TakeAD',urlEncode(this.tabOptions[index].getOptions))
+					.then(function (res) {
+						if (res.data.msg === 'StatusOk') {
+							_this.tabOptions[index].data = res.data.data.data;
+							_this.tabOptions[index].totalIndex = res.data.data.total;
+							if(text){
+								_this.$message({
+									message: text,
+									type: 'success',
+									duration:'1000'
+								});
+							}
+							_this.loading = false;
+							_this.btnLoading = false;
+						} else {
+							_this.$message.error(getDescriptM(res.data.msg))
+						}
+					})
+			},
+			addAdInfo: function () {
+				var _this = this;
+				axios.post(host + 'Console/AddAD' , urlEncode(this.addOptions))
+					.then(function (res) {
+						if (res.data.msg === 'StatusOk') {
+							_this.getAd('添加'+_this.tabOptions[_this.activeName-1].lang+'公告成功');
+						} else {
+							_this.loading = false;
+							_this.$message.error(getDescriptM(res.data.msg));
+						}
+					}).catch(function(e){
+					_this.$message.error('服务器错误'+e)});
+			},
+			doAdd: function () {
+				var b = this.addOptions;
+				if (b.Title && b.Content) {
+					this.addAdInfo();
+					this.loading = true;
+					return;
+				}
+				this.$message.error('请填写所有选项')
+			},
+			willSet:function(id,title,content,lang){
+				this.changeOptions.AdId = id;
+				this.changeOptions.Title = title;
+				this.changeOptions.Content = content;
+				this.changeOptions.Lang = lang;
+				this.setModal = true;
+
+			},
+			doSet: function () {
+				var _this = this;
+				_this.setModal = true;
+				_this.modal_loading2 = true;
+				axios.post(host + 'Console/ChangeAD',urlEncode(this.changeOptions))
+					.then(function (res) {
+						if (res.data.msg === 'StatusOk') {
+							var text='修改成功';
+							if(_this.changeOptions.Lang!==_this.tabOptions[_this.activeName-1].getOptions.Lang){//change language
+								text='';
+								_this.tabOptions.forEach(function(item,index){
+									if(item.getOptions.Lang ===_this.changeOptions.Lang){
+										_this.getAd('修改成功，并将公告已移动至'+item.lang,index)
+									}
+								})
+							}
+							_this.getAd(text);
+							_this.setModal = false;
+							_this.modal_loading2 = false;
+						} else {
+							_this.setModal = false;
+							_this.modal_loading2 = false;
+							_this.$message.error(getDescriptM(res.data.msg));
+						}
+					})
+			},
+			willDel: function (id) {
+				this.delId = id;
+				this.delModal = true;
+			},
+			doDel: function () {
+				var _this = this;
+				this.loading = true;
+				axios.post(host + 'Console/DeleteAd', urlEncode({__RequestVerificationToken: getToken(), 'AdId': this.delId }))
+					.then(function (res) {
+						if (res.data.msg === 'StatusOk') {
+							_this.getAd('删除成功');
+							_this.delModal = false;
+						} else {
+							_this.delModal = false;
+							_this.$message.error(getDescriptM(res.data.msg));
+						}
+					})
+			},
+			doOpen: function (id) {
+				var _this = this;
+				this.loading = true;
+				axios.post(host + 'Console/UpdateADStatus' , urlEncode({__RequestVerificationToken: getToken(), 'AdId':id,'Status':true }))
+					.then(function (res) {
+						if (res.data.msg === 'StatusOk') {
+							_this.getAd('开启成功');
+						} else {
+							_this.$Message.error(getDescriptM(res.data.msg));
+						}
+					})
+			},
+			doClose: function (id) {
+				var _this = this;
+				this.loading = true;
+				axios.post(host + 'Console/UpdateADStatus' , urlEncode({__RequestVerificationToken: getToken(), 'AdId':id,'Status':false }))
+					.then(function (res) {
+						if (res.data.msg === 'StatusOk') {
+							_this.getAd('关闭成功');
+						} else {
+							_this.$message.error(getDescriptM(res.data.msg));
+						}
+					})
+			},
+			handleClick:function(tab){
+				this.addOptions.Lang=this.tabOptions[tab.name-1].getOptions.Lang;
+				if(!this.tabOptions[this.activeName-1].data &&tab.name===1){
+					this.getAd('获取英语公告成功')
+				}else if(!this.tabOptions[this.activeName-1].data &&tab.name===2){
+					this.getAd('获取英语公告成功')
+				}else if(!this.tabOptions[this.activeName-1].data&&tab.name===3){
+					this.getAd('获取印尼语公告成功')
+				}
+			},
+			handleCurrentChange: function (val) {
+				this.tabOptions[this.activeName-1].getOptions.PageIndex = val;
+				this.getAd();
+			}
+		}
+	});
+</script>

@@ -1,0 +1,475 @@
+﻿
+@{
+ViewBag.Title = "Withdraw";
+Layout = "~/Views/Shared/_id-ID_Layout.cshtml";
+}
+<link rel="stylesheet" href="../../Content/eleme-css/index.css">
+<style>
+    ::-ms-clear, ::-ms-reveal {
+        display: none;
+    }
+    [v-cloak] {
+        display: none !important;
+    }
+    #app{
+        padding: 0 10px;
+    }
+    .add-card {
+        cursor: pointer;
+    }
+    .card{
+        color: #fff;
+        box-shadow: 0 1px 8px #666;
+        border-radius: 10px;
+        background: #1e88e5;
+        height: 200px;
+        margin-bottom: 10px;
+        cursor: pointer;
+    }
+    .card p{
+        margin: 0;
+    }
+    .el-form-item__label{
+        padding: 11px 2px 2px 0;
+    }
+    .el-message-box{
+        width: 360px;
+    }
+    .el-dialog__body{
+        overflow: auto;
+    }
+    .record-table{
+        min-width:700px;
+    }
+    @@media screen and (min-width: 767px){
+        #app{
+            background-color: #ffffff;
+            margin: 76px 0 0 18px;
+            padding: 15px;
+            box-shadow: 0 1px 10px 0 rgba(0, 0, 0, 0.07);
+            border: solid 1px #e1e1e1;
+        }
+        .title{
+            font-size: 18px
+        }
+        .add-card{
+            font-size:24px ;
+        }
+        .el-dialog{
+            width:70% !important;
+        }
+    }
+
+</style>
+<style>
+    .spinner {
+        margin: 5px auto 0;
+        width: 150px;
+        text-align: center;
+    }
+
+    .spinner > div {
+        width: 20px;
+        height: 20px;
+        background-color: #004a7c;
+
+        border-radius: 100%;
+        display: inline-block;
+        -webkit-animation: bouncedelay 1.4s infinite ease-in-out;
+        animation: bouncedelay 1.4s infinite ease-in-out;
+        /* Prevent first frame from flickering when animation starts */
+        -webkit-animation-fill-mode: both;
+        animation-fill-mode: both;
+    }
+
+    .spinner .bounce1 {
+        -webkit-animation-delay: -0.32s;
+        animation-delay: -0.32s;
+    }
+
+    .spinner .bounce2 {
+        -webkit-animation-delay: -0.16s;
+        animation-delay: -0.16s;
+    }
+
+    @@-webkit-keyframes bouncedelay {
+         0%, 80%, 100% { -webkit-transform: scale(0.0) }
+         40% { -webkit-transform: scale(1.0) }
+     }
+
+    @@keyframes bouncedelay {
+         0%, 80%, 100% {
+             transform: scale(0.0);
+             -webkit-transform: scale(0.0);
+         } 40% {
+               transform: scale(1.0);
+               -webkit-transform: scale(1.0);
+           }
+     }
+</style>
+<div id="app">
+    <div class="title">
+        <span>You can withdraw</span>
+        <span v-text="balance.VT"></span>
+        <span> VT to your Bank account</span>
+    </div>
+
+    <div class="add-card clearfix">
+        <p @@click="dialogRecord=true" style="float: left">
+            <i class="el-icon-time"></i>
+            Withdraw VT record
+        </p>
+        <p @@click="dialogCard=true" style="float: right">
+            <i class="el-icon-plus"></i>
+            Add Bank account
+        </p>
+    </div>
+    <el-row :gutter="20">
+        <el-col v-for="x in BankList" :xs="24" :md="12" :lg="8">
+            <div class="card">
+                <p style="text-align: center;line-height: 40px;font-size: 24px;font-weight: bold">
+                    <span v-text="x.BankName"></span>
+                    <span style="float: right;padding-right: 10px">
+          <i @@click="delCard(x.CardId)" class="el-icon-circle-cross"></i>
+        </span>
+                </p>
+                <div @@click="dialogCash = true,cash.CardId=x.CardId">
+                    <hr style="margin: 0">
+                    <p style="height: 66px;padding: 10px">Branch：<span v-text="x.Subbranch"></span></p>
+                    <p v-text="x.CardId" style="text-align: center;line-height: 40px;font-size: 32px;font-weight: bold;color: transparent;  -webkit-text-stroke: 1px #fff;"></p>
+                    <p style="text-align: right;padding-right: 10px">Cardholder：<span v-text="x.CardName"></span></p>
+                    <p style="padding: 10px" v-if="x.SwiftCode">SwiftCode: <span v-text="x.SwiftCode"></span></p>
+                </div>
+            </div>
+        </el-col>
+    </el-row>
+    <div v-infinite-scroll="loadMore" infinite-scroll-disabled="busy" infinite-scroll-distance="10">
+    </div>
+    <div class="spinner" v-if="!busy">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
+    </div>
+    <div v-if="over" style="color:#666;text-align: center;" v-text="'loaded.'"></div>
+
+    <el-dialog title="Add Bank account" v-model="dialogCard" size="large" >
+        <el-form :model="form" :rules="rules" ref="form">
+            <el-form-item label="CardId" prop="CardId" label-width="82px">
+                <el-input v-model="form.CardId"></el-input>
+            </el-form-item>
+            <el-form-item label="Card holder" prop="CardName" label-width="82px">
+                <el-input v-model="form.CardName"></el-input>
+            </el-form-item>
+            <el-form-item label="Bank Name" prop="BankName" label-width="82px">
+                <el-input v-model="form.BankName"></el-input>
+            </el-form-item>
+            <el-form-item label="branch" prop="Subbranch" label-width="82px">
+                <el-input v-model="form.Subbranch"></el-input>
+            </el-form-item>
+            <el-form-item label="Swift Code" prop="SwiftCode" label-width="82px">
+                <el-input v-model="form.SwiftCode"></el-input>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button @@click="dialogCard = false" v-text="'Cancel'"></el-button>
+            <el-button type="primary" @@click="addCard('form')" v-text="'confirm'"></el-button>
+        </div>
+    </el-dialog>
+    <el-dialog title="Withdraw" v-model="dialogCash" size="large" >
+        <el-form :model="cash" :rules="cashRules" ref="cash">
+            <el-form-item label="Amount" prop="Amount" label-width="70px">
+                <el-input v-model="cash.Amount"></el-input>
+            </el-form-item>
+            <el-form-item label="Comment" label-width="70px">
+                <el-input v-model="cash.Comment"></el-input>
+            </el-form-item>
+            <el-form-item label="Trade Password" prop="TradePassword" label-width="70px">
+                <el-input type="password" v-model="cash.TradePassword"></el-input>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button @@click="dialogCash = false" v-text="'Cancel'"></el-button>
+            <el-button type="primary" @@click="withdraw()" v-text="'Confirm'"></el-button>
+        </div>
+    </el-dialog>
+    <el-dialog title="Withdraw VT record" v-model="dialogRecord" size="large" custom-class="record-dialog">
+        <table class="record-table table table-bordered table-hover">
+            <tr>
+                <th v-text="'CardId'"></th>
+                <th v-text="'Amount'"></th>
+                <th v-text="'Fee'"></th>
+                <th v-text="'Withdraw Date'"></th>
+                <th v-text="'Comment'"></th>
+                <th v-text="'Status'"></th>
+            </tr>
+            <tr v-for="x in recordList">
+                <td v-text="x.CardId"></td>
+                <td v-text="x.Amount+' '+x.CoinType"></td>
+                <td v-text="x.Fee"></td>
+                <td v-text="x.SetupTime"></td>
+                <td>
+                    <el-tooltip :content="x.ResponeComment" effect="dark" placement="top-start" v-if="x.ResponeComment">
+                        <div>...</div>
+                    </el-tooltip>
+                    <div v-else>无</div>
+                </td>
+                <td v-cloak>{{x.Status|toStatus}}</td>
+            </tr>
+        </table>
+        <div class="clearfix record-table" >
+            <el-pagination
+              @@current-change="handleCurrentChange"
+              :current-page.sync="recordOptions.PageIndex"
+              :page-size="recordOptions.ShowNumber"
+              layout="total, prev, pager, next,jumper"
+              :total="recordTotal"
+              style="float: right">
+            </el-pagination>
+        </div>
+    </el-dialog>
+</div>
+@Html.AntiForgeryToken()
+
+<script src="../../Scripts/vue.js"></script>
+<script src="../../Scripts/element-ui.js"></script>
+<script>
+	server.DisableBankCard=function(params, callback) {
+		var api = 'Finance/DisableBankCard';
+		jqReq('post', api, params, true, callback)
+	};
+	server.NewBankInfo=function(params, callback) {
+		var api = 'Finance/NewBankInfo';
+		jqReqNoLoading('post', api, params, true, callback)
+	};
+	server.TakeBankCards=function(params, callback) {
+		var api = 'Finance/TakeBankCards';
+		jqReqNoLoading('post', api, params, true, callback)
+	};
+	server.WithdrawCoin=function(params, callback) {
+		var api = 'Finance/WithdrawCoin';
+		jqReqNoLoading('post', api, params, true, callback)
+	};
+	server.WithdrawCoinHistory=function(params, callback) {
+		var api = 'Finance/WithdrawCoinHistory';
+		jqReqNoLoading('post', api, params, true, callback)
+	};
+</script>
+<script src="../../Scripts/vue-infinite-scroll.min.js"></script>
+<script>
+	var app = new Vue({
+		el: '#app',
+		data: {
+			busy:false,
+			over:false,
+			balance:{
+				VT:0.00
+			},
+			dialogCard:false,
+			dialogCash:false,
+			dialogRecord:false,
+			form:{
+				__RequestVerificationToken: getToken(),
+				CardId:'',
+				CardName:'',
+				BankName:'',
+				Subbranch:'',
+				SwiftCode:''
+			},
+			rules: {
+				CardId: [
+					{required:true, message: '请输入银行卡号', trigger: 'blur' },
+					{pattern: /^[0-9]{8,128}$/, message: '长度在 8 到 128 的数字', trigger: 'change'}
+				],
+				CardName: [
+					{ required: true, message: '请输入持卡人姓名', trigger: 'blur' },
+					{ min: 2, message: '长度至少2字符', trigger: 'change' }
+				],
+				BankName: [
+					{ required: true, message: '请输入银行名称', trigger: 'blur' },
+					{ min: 2, max: 100, message: '长度在 2 到 100 个字符', trigger: 'change' }
+				],
+				Subbranch: [
+					{ max: 100, message: '长度在 2 到 100 个字符', trigger: 'change' }
+				],
+				SwiftCode: [
+					{ max: 11, message: '长度最多11个字符', trigger: 'change' }
+				]
+			},
+			BankList:[],
+			BankOptions:{
+				__RequestVerificationToken: getToken(),
+				PageIndex:1,
+				ShowNumber:20
+			},
+			recordList:[],
+			recordTotal:'',
+			recordOptions:{
+				__RequestVerificationToken: getToken(),
+				PageIndex:1,
+				ShowNumber:10
+			},
+			cash:{
+				__RequestVerificationToken: getToken(),
+				CardId:'',
+				TradePassword:'',
+				Amount:'',
+				Comment:''
+			},
+			cashRules:{
+				Amount: [
+					{required:true, message: 'Please enter the quantity...', trigger: 'blur' },
+					{pattern: /^[0-9]{1,128}$/, message: 'The Amount between 1 and 128 digits', trigger: 'change'}
+				],
+				TradePassword:[
+					{required:true, message: 'Please enter the transaction password...', trigger: 'blur' },
+					{pattern: /^[@@A-Za-z0-9!_#$%^&*.~]{8,22}$/, message: 'The password does not conform to the format', trigger: 'change'}
+				]
+			}
+		},
+		created: function () {
+			this.getBalance();
+			this.getRecord()
+		},
+		filters: {
+			toStatus: function (val) {
+				switch (val) {
+					case 'D':
+						return '完成';
+						break;
+					case 'W':
+						return '等待';
+						break;
+					case 'C':
+						return '取消';
+						break;
+					default:
+						return '';
+				}
+			}
+		},
+		methods: {
+			getBalance:function(){
+				var _this = this;
+				server.GetBalance({
+					__RequestVerificationToken: getToken()
+				}, function (rel) {
+					if (rel.msg === 'StatusOk') {
+						rel.data.forEach(function (item) {
+							_this.balance[item.Type] = item.AvalBanlance;
+						});
+					} else {
+						_this.$message.error(getDescript(rel.msg))
+					}
+				});
+			},
+			getRecord:function(){
+				var _this=this;
+				server.WithdrawCoinHistory(this.recordOptions,
+					function(rel){
+						if (rel.msg === 'StatusOk') {
+							_this.recordList=rel.data.data;
+							_this.recordTotal=rel.data.total;
+						} else {
+							_this.$message.error(getDescript(rel.msg))
+						}
+					})
+			},
+			addCard:function(formName){
+				var _this=this;
+				this.$refs[formName].validate(function(valid){
+					if (valid) {
+						done()
+					} else {
+						return false;
+					}});
+
+				function done(){
+					server.NewBankInfo(_this.form,
+						function (rel) {
+							if(rel.msg === 'StatusOk'){
+								_this.dialogCard=false;
+								_this.BankList.unshift(JSON.parse(JSON.stringify(_this.form)));
+								_this.$message({
+									type: 'success',
+									message: 'Added successfully'
+								});
+							}else{
+								_this.$message.error(getDescript(rel.msg))
+							}
+						})
+				}
+			},
+			loadMore:function(){
+				var _this = this;
+				_this.busy = true;
+				server.TakeBankCards(this.BankOptions,
+					function(rel){
+						if(rel.msg === 'StatusOk'){
+							_this.BankList=_this.BankList.concat(rel.data.data);
+							_this.BankOptions.PageIndex++;
+							_this.$nextTick(function() {
+								_this.busy = _this.over = !rel.data.data.length;
+							})
+						}else{
+							_this.$message.error(getDescript(rel.msg))
+						}
+					})
+			},
+			delCard:function(card){
+				var _this= this;
+				this.$confirm('Delete:'+card+', continue?', 'tip', {
+					confirmButtonText: 'Yes',
+					cancelButtonText: 'no',
+					type: 'warning'
+				}).then(function(){
+					server.DisableBankCard({CardId:card,__RequestVerificationToken: getToken()},
+						function(rel){
+							if (rel.msg === "StatusOk") {
+								_this.$message({
+									type: 'success',
+									message: 'Deleted：'+card+'!'
+								});
+								_this.BankList=_this.BankList.filter(function(x){
+									return x.CardId !==card
+								})
+							} else {
+								showTips(getDescriptM(rel.msg))
+							}
+						}
+					);
+				}).catch(function(){});
+			},
+			withdraw:function(card){
+				var _this=this;
+				this.$refs['cash'].validate(function(valid){
+					if (valid) {
+						done()
+					} else {
+						return false;
+					}});
+
+				function done(){
+					server.WithdrawCoin(_this.cash,
+						function (rel) {
+							if(rel.msg === 'StatusOk'){
+								_this.dialogCash=false;
+								_this.getBalance();
+								_this.getRecord();
+								_this.$message({
+									type: 'success',
+									message: 'Withdraw successfully'
+								});
+							}else{
+								_this.$message.error(getDescript(rel.msg))
+							}
+						})
+				}
+			},
+			handleCurrentChange:function(val){
+				this.recordOptions.PageIndex = val;
+				this.getRecord()
+			}
+		}
+	})
+</script>
+

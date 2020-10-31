@@ -1,0 +1,672 @@
+﻿@using Host.Settle.DAL;
+@{
+ViewBag.Title = "Home Page";
+Layout = "~/Views/Shared/_id-ID_Layout.cshtml";
+string AdTitle = string.Empty, AdContent = string.Empty, AdSetupTime = string.Empty;
+using (var DbContext = DbContextFactory.GetThreadInstance()){
+var Ad = DbContext.SettleAd.AsNoTracking()
+.OrderByDescending(o => o.SetupTime)
+.Where(w =>w.Lang=="id-ID" && w.Status == true).FirstOrDefault();
+AdTitle = Ad == null ? "" : Ad.Title;
+AdContent = Ad == null ? "" : Ad.AdContent;
+AdSetupTime = Ad == null ? "" : Ad.UpdateTime.ToString("yyyy-MM-dd");
+}
+}
+<style>
+    ::-ms-clear, ::-ms-reveal {
+        display: none;
+    }
+    [v-cloak] {
+        display: none;
+    }
+    .dropdown-menu {
+        min-width: 44px;
+    }
+
+    #zhanghukaikuang .zhgk div {
+        height: 40px;
+        line-height: 40px;
+        border-bottom: 1px solid #e1e1e1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    #zhanghukaikuang .zhgk div.left {
+        width: 40%;
+        float: left;
+    }
+
+    #zhanghukaikuang .zhgk div.right {
+        width: 60%;
+        float: left;
+    }
+
+    .animated {
+        animation-duration: 1s;
+        animation-fill-mode: both;
+    }
+
+    .animated.infinite {
+        animation-iteration-count: infinite;
+    }
+
+    .animated.hinge {
+        animation-duration: 2s;
+    }
+
+    .animated.flipOutX,
+    .animated.flipOutY,
+    .animated.bounceIn,
+    .animated.bounceOut {
+        animation-duration: .75s;
+    }
+
+    .rotateShou {
+        animation-name: rotateShou;
+    }
+
+    @@keyframes rotateShou {
+         from {
+             transform-origin: center;
+         }
+
+         to {
+             transform-origin: center;
+             transform: rotate3d(0, 0, 1, 180deg);
+         }
+     }
+
+    .rotateOpen {
+        animation-name: rotateOpen;
+    }
+
+    @@keyframes rotateOpen {
+         from {
+             transform-origin: center;
+         }
+
+         to {
+             transform-origin: center;
+             transform: rotate3d(0, 0, 1, 180deg);
+         }
+     }
+    tr th{
+        padding:2px !important;
+        font-size:12px;
+    }
+    .generalDD ul::-webkit-scrollbar{
+        display: none;
+    }
+    .generalDD ul {
+        max-height: 150px;
+        overflow: auto;
+        top: -152px;
+        bottom: 34px;
+    }
+    #pageTotalDropDown .dropdown-menu>li>a{
+        padding: 2px 10px;
+    }
+    pre{
+        font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+        border: none;
+        background: transparent;
+        font-size: 14px;
+        padding: 0;
+        margin: 0;
+    }
+</style>
+
+<div id="app" class="p-lr-16">
+
+    <div class="row">
+        <div class="col-lg-8 col-md-12 col-sm-12 col-sm-12 text-center">
+
+            <div class="w100">
+                <div class="w33 p-tb-10 text-center c-255 bg-255 f-l m-rp5 border-radius-4" style="background-image:url('../../images/Img/SCGenarel.png')">
+                    <div class="f-s-18" id="scPrice">0.00</div>
+                    <div class="f-s-12 m-t-10">SC</div>
+                </div>
+                <div class="w33 p-tb-10 text-center c-255 bg-6c6dbc f-l m-rp5 border-radius-4 " style="background-image:url('../../images/Img/BTCGenarel.png')">
+                    <div class="f-s-18" id="btcPrice">0.00</div>
+                    <div class="f-s-12 m-t-10">BTC</div>
+                </div>
+                <div class="w33 p-tb-10 text-center c-255 bg-22b8e3 f-l bTop-radius-4 " style="background-image:url('../../images/Img/LTCGenarel.png')">
+                    <div class="f-s-18" id="ltcPrice">0.00</div>
+                    <div class="f-s-12 m-t-10">LTC</div>
+                </div>
+            </div>
+            <div class="clear"></div>
+            <div class="w100 h-5">
+                <div class="w33 h-6 f-l"></div>
+                <div class="w33-5 h-6 m-rp5 f-l"></div>
+                <div class="w33 h-6  f-l"></div>
+            </div>
+            <div class="clear"></div>
+            <div class="w100">
+                <div class="w33 p-tb-10 text-center c-255 bg-22b8e3 f-l m-rp5 bTop-radius-4 " style="background-image:url('../../images/Img/VCGenarel.png')">
+                    <div class="f-s-18" id="vcPrice">0.00</div>
+                    <div class="f-s-12 m-t-10">VC</div>
+                </div>
+                <div class="w33 p-tb-10 text-center c-255 bg-e4ebeb f-l m-rp5 border-radius-4" style="background-image:url('../../images/Img/VSGenarel.png')">
+                    <div class="f-s-18" id="vsPrice">0.00</div>
+                    <div class="f-s-12 m-t-10">VS</div>
+                </div>
+                <div class="w33 p-tb-10 text-center c-255 bg-22b8e3 f-l bTop-radius-4 " style="background-image:url('../../images/Img/VTGenarel.png')">
+                    <div class="f-s-18" id="vtPrice">0.00</div>
+                    <div class="f-s-12 m-t-10">VT</div>
+                </div>
+            </div>
+            <div class="clear"></div>
+
+
+            <div class="m-t-16 border-radius-4">
+                <div class="bg-fff">
+                    <div class="h-40 f-s-12 c-000 l-h-40 p-lr-16 text-left box-shadow-blue">
+                        <span>Daily Stock Price For VTS</span>
+                        <img src="~/images/scaleup.png" class="w-16 h-16 f-r m-t-16 scaleImg animated" onclick="generalScale(0)" />
+                    </div>
+                    <div id="main" class="w100 h-500 p-lr-16 m-t-8 generalScale"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-12 col-sm-12 col-sm-12">
+            <div class="border-radius-4">
+                <div class="bg-fff">
+                    <div class="h-40 f-s-12 c-000 l-h-40 p-lr-16 text-left box-shadow-blue">
+                        <span>Dynamic Income</span>
+                        <img src="~/images/scaleup.png" class="w-16 h-16 f-r m-t-16 scaleImg animated" onclick="generalScale(1)" />
+                    </div>
+                    <div class="clear"></div>
+                    <div class="generalScale">
+                        <div id="huantu" class="w100  h-300 m-t-8 ">
+
+                        </div>
+                        <table class="table">
+
+                            <thead>
+                            <tr>
+                                <th></th>
+                                <th>DPI</th>
+                                <th>PDA</th>
+                                <th>DBDA</th>
+                                <th>TMP</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>Current Month</td>
+                                <td class="c-3f51b5" id="monthZhiGou" v-cloak>{{monthSstatis.Invite | toFix(2)}}</td>
+                                <td class="c-e84e40" id="monthZhiDai" v-cloak>{{monthSstatis.LeaderInvite | toFix(2)}}</td>
+                                <td class="c-03a9f4" id="monthZhiDaiCha" v-cloak>{{monthSstatis.GenerationProfite | toFix(2)}}</td>
+                                <td class="c-ff9800" id="monthLianDui" v-cloak>{{monthSstatis.LeaderProfite | toFix(2)}}</td>
+                            </tr>
+                            <tr>
+                                <td>Accumulation</td>
+                                <td class="c-3f51b5" id="totalZhiGou" v-cloak>{{totalStatis.Invite | toFix(2)}}</td>
+                                <td class="c-e84e40" id="totalZhiDai" v-cloak>{{totalStatis.LeaderInvite | toFix(2)}}</td>
+                                <td class="c-03a9f4" id="totalZhiDaiCha" v-cloak>{{totalStatis.GenerationProfite | toFix(2)}}</td>
+                                <td class="c-ff9800" id="totalLianDui" v-cloak>{{totalStatis.LeaderProfite | toFix(2)}}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="m-t-16 border-radius-4">
+                <div class="bg-fff">
+                    <div class="h-40 f-s-12 c-000 l-h-40 p-lr-16 bg-fff text-left box-shadow-blue">
+                        <span>Bulletin</span>
+                        <img src="~/images/scaleup.png" class="w-16 h-16 f-r m-t-16 scaleImg animated" onclick="generalScale(2)" />
+                    </div>
+                    <div class="generalScale" style="padding: 8px;">
+                        <p style="margin: 0">@AdTitle</p>
+                        <pre>@AdContent</pre>
+                        <p style="text-align: right">@AdSetupTime</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row m-b-15">
+        <div class="col-lg-12 col-md-12 col-sm-12 col-sm-12">
+            <div class="m-t-16 border-radius-4">
+                <div class="bg-fff">
+                    <div class="h-40 f-s-12 c-000 l-h-40 p-lr-16 text-left box-shadow-blue">
+                        <span>Account Profile</span>
+                        <img src="~/images/scaleup.png" class="w-16 h-16 f-r m-t-16 scaleImg animated" onclick="generalScale(3)" />
+                    </div>
+                    <div class="clear"></div>
+                    <div class="w100 p-lr-16 m-t-8  generalScale" id="zhanghukaikuang">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="m-t-20 m-b-30 text-right d-s-none" id="pageTotalDropDown">
+        <button class="border-none m-r-22" onclick="prevPage()">Page Up</button>
+        <div class="btn-group generalDD">
+            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                <span id="showPages">1</span>
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu"></ul>
+        </div>
+        <button class="border-none m-l-22" onclick="nextPage()">Page Down</button>
+    </div>
+
+
+</div>
+
+@Html.AntiForgeryToken()
+
+<script src="~/Scripts/lib/echarts.js"></script>
+<script src="~/Scripts/lib/jquery.z-pager.js"></script>
+<script>
+	new Vue({
+		el: "#app",
+		data: {
+			monthSstatis: { 'Invite': '0.00', 'LeaderInvite': '0.00', 'GenerationProfite': '0.00', 'LeaderProfite': '0.00' },
+			totalStatis: { 'Invite': '0.00', 'LeaderInvite': '0.00', 'GenerationProfite': '0.00', 'LeaderProfite': '0.00' },
+			takemStatis: {
+				__RequestVerificationToken: getToken()
+			},
+			taketStatis: {
+				__RequestVerificationToken: getToken(),
+				Year: new Date().getFullYear()
+			},
+			Bulletinlist:[]
+		},
+		filters: {
+			toFix: function (val, decimal) {
+				if (typeof (val) === 'number') {
+					return "$ " + val.toFixed(decimal);
+				}
+				return "$ " + val;
+			}
+		},
+		created: function () {
+			this.getStatis();
+			this.getTotalStatis();
+		},
+		methods: {
+			getStatis: function () {
+				var _this = this;
+				server.GetMonthStatistics(this.takemStatis, function (rel) {
+					if (rel.msg === "StatusOk") {
+						if (rel.data[0]) {
+							_this.monthSstatis = rel.data[0];
+						}
+					} else {
+						showTips(getDescript(rel.msg));
+					}
+				});
+			},
+			getTotalStatis: function () {
+				var _this = this;
+				server.GetYearStatistics(this.taketStatis, function (rel) {
+					if (rel.msg === "StatusOk") {
+						if (rel.data[0]) {
+							_this.totalStatis = rel.data[0];
+						}
+					} else {
+						showTips(getDescript(rel.msg));
+					}
+				});
+			}
+		}
+	});
+
+</script>
+<script type="text/javascript">
+	function prevPage() {
+		if (getEventPageIndex == 1) {
+			return;
+		} else {
+			getEventPageIndex--;
+			GetEvent(getEventPageIndex);
+		}
+	}
+	function nextPage() {
+		if (getEventPageIndex >= eventTotalPages) {
+			return;
+		} else {
+			getEventPageIndex++;
+			GetEvent(getEventPageIndex);
+		}
+	}
+	function selPage(ind) {
+		if (getEventPageIndex == ind) {
+			return;
+		} else {
+			getEventPageIndex = ind;
+			GetEvent(getEventPageIndex);
+		}
+	}
+
+	function generalScale(index) {
+		var thisIsShow = $('.generalScale').eq(index).css('display');
+		if (thisIsShow == 'block') {
+			$('.generalScale').eq(index).fadeOut();
+			$('.scaleImg').eq(index).removeClass('rotateOut').addClass('rotateShou');
+		} else {
+			$('.generalScale').eq(index).fadeIn();
+			$('.scaleImg').eq(index).removeClass('rotateShou').addClass('rotateOut');
+		}
+
+	}
+
+	var myChart = echarts.init(document.getElementById('main'));
+	var myChart2 = echarts.init(document.getElementById('huantu'));
+
+	function chart() {
+		option = {
+			legend: {
+				right: 10,
+			},
+			toolbox: {
+				show: true,
+			},
+			xAxis: {
+				type: 'category',
+				boundaryGap: false,
+				data: ['6/1', '6/2', '6/3', '6/4', '6/5', '6/6', '6/7', '6/8', '6/9', '6/10', '6/11']
+			},
+			textStyle: {
+				color: '#999'
+			},
+			yAxis: {
+				type: 'value',
+				axisLabel: {
+					formatter: '{value}'
+				}
+			},
+			backgroundColor: '#fff',
+			series: [
+				{
+					name: '最高气温',
+					type: 'line',
+					data: [0.236, 0.238, 0.388, 0.472, 0.808, 0.944, 1.38, 1.516, 1.652,1.85,2.236],
+					markPoint: {
+						data: [
+							{ type: 'max', name: '最大值' },
+							{ type: 'min', name: '最小值' }
+						]
+					},
+					markLine: {
+						data: [
+							{ type: 'average', name: '平均值' }
+						]
+					}
+				},
+			]
+		};
+		myChart.setOption(option);
+
+	}
+	function chart2(showMarketData) {
+		var marketData = [];
+		for (var key in showMarketData) {
+			marketData.push({ name: key, value: showMarketData[key].buyMarket * showMarketData[key].Banlance });
+		}
+
+		option2 = {
+			tooltip: {
+				trigger: 'item',
+				formatter: "{a} <br/>{b}: {c} ({d}%)"
+			},
+			legend: {
+				orient: 'vertical',
+				x: 'left',
+			},
+			series: [
+				{
+					name: '访问来源',
+					type: 'pie',
+					selectedMode: 'single',
+					radius: [0, '30%'],
+
+					label: {
+						normal: {
+							position: 'inner'
+						}
+					},
+					labelLine: {
+						normal: {
+							show: false
+						}
+					},
+					data: [ ]
+				},
+				{
+					type: 'pie',
+					radius: ['40%', '55%'],
+					data: marketData
+				}
+			]
+		};
+
+		myChart2.setOption(option2);
+	}
+	chart();
+
+	function e(ec) {
+		setTimeout(function () {
+			window.onresize = function () {
+				myChart.resize();
+				myChart2.resize();
+			}
+		}, 200)
+	}
+	e();
+
+	var showMarketData = {
+		VT: { Banlance: '1', buyMarket:'1'},
+		VC: { Banlance: '1', buyMarket: '1'},
+		VS: { Banlance: '1', buyMarket: '1' },
+		BTC: { Banlance: '1', buyMarket: '1' },
+		ETH: { Banlance: '1', buyMarket: '1' },
+		LTC: { Banlance: '1', buyMarket: '1' },
+		SC: { Banlance: '1', buyMarket: '1' },
+		VTC: { Banlance: '1', buyMarket: '1' },
+	}
+
+	$(document).ready(function () {
+		getBalance();
+		GetMonthStatistics();
+		GetEvent(getEventPageIndex);
+	})
+
+	function GetMonthStatistics() {
+		server.GetMonthStatistics({
+			__RequestVerificationToken: getToken(),
+		}, function (gRel) {
+			if (gRel.length > 0) {
+				gRel.forEach(function (item, index) {
+					var coin = gRel[index].type.toUpperCase().split('_')[0];
+					showMarketData[coin].buyMarket = gRel[index].data.buy;
+				})
+			}
+		})
+	}
+
+	function getBalance() {
+		server.GetBalance({
+			__RequestVerificationToken: getToken(),
+		}, function (gRel) {
+			switch (gRel.msg) {
+				case 'StatusOk': {
+					relCoinList = gRel;
+					if (gRel.data.length > 0) {
+						gRel.data.forEach(function (item, index) {
+							var coin = gRel.data[index].Type.toUpperCase();
+							var lowerCoin = coin.toLowerCase();
+							if ($('#' + lowerCoin + 'Price').length>0) {
+								$('#' + lowerCoin + 'Price').text(gRel.data[index].Banlance);
+							}
+							showMarketData[coin].Banlance = gRel.data[index].Banlance;
+						})
+						getMarketTickerList();
+					}
+				}
+			}
+		})
+	}
+
+	function getMarketTickerList() {
+		server.MarketTickerList({}, function (gRel) {
+			if (gRel.length > 0) {
+				gRel.forEach(function (item, index) {
+					var coin = gRel[index].type.toUpperCase().split('_')[0];
+					showMarketData[coin].buyMarket = gRel[index].data.buy;
+				})
+				chart2(showMarketData);
+			}
+
+		})
+	}
+
+	var zhanghugaikuangHtml = '';
+	var eventTotal = 0;
+	var eventTotalPages = 0;
+	var getEventPageIndex = 1;
+	var getEventPageShowNumber = 5;
+	function GetEvent(pageIndex) {
+		server.GetEvent({
+			__RequestVerificationToken: getToken,
+			PageIndex: pageIndex,
+			ShowNumber:getEventPageShowNumber
+		}, function (eRel) {
+			if (eRel.msg == 'StatusOk') {
+				eventTotal = eRel.data.total;
+				if (eventTotal == 0) {
+					$('#zhanghukaikuang').html("<div class='f-s-14 text-center m-t-20 p-b-16' >No data</div > ");
+				} else {
+					eventTotalPages = eRel.data.page;
+					for (var z = 0, zLen = eRel.data.data.length; z < zLen; z++) {
+						var content = parseEvent(eRel.data.data[z]);
+						zhanghugaikuangHtml += '<div class="left">' + eRel.data.data[z].EventTime+'</div><div class="right" >'+ content+'</div>';
+					}
+					$('#zhanghukaikuang').html('<div class="c-666 f-s-14 zhgk bg-fff">' + zhanghugaikuangHtml + '</div>');
+					$('#pageTotalDropDown').show();
+					var ulHtml = '';
+					for (var l = 1; l < eventTotalPages+1; l++) {
+						ulHtml += "<li onclick='selPage("+l+")'><a>"+l+"</a></li>";
+					}
+					$('#pageTotalDropDown ul').html(ulHtml);
+					$('#showPages').text(getEventPageIndex);
+				}
+			}
+
+		})
+	}
+
+	function parseEvent(data) {
+		var result = '';
+		//eventType[data.EventType].type
+		data.Income = numToFixed(data.Income, 4);
+		data.IncomePer = numToFixed(data.IncomePer, 4);
+		switch (data.EventType) {
+			case "0": {
+				result = data.IncomePer + ' ' + data.CoinType + ' Recharge ' + data.Income + ' ' + data.DestCoinType;
+				break;
+			}
+			case "1": {
+				result = eventType[data.EventType].type + ' ' + data.Income;
+				break;
+			}
+			case "2": {
+				result = eventType[data.EventType].type + ' ' + data.Income;
+				break;
+			}
+			case "3": {
+				result = eventType[data.EventType].type + ' ' + data.Income;
+				break;
+			}
+			case "4": {
+				result = eventType[data.EventType].type + ' ' + data.Income;
+				break;
+			}
+			case "5": {
+				result = eventType[data.EventType].type + ' ' + data.Income;
+				break;
+			}
+			case "6": {
+				result = eventType[data.EventType].type + ' ' + data.Income;
+				break;
+			}
+			case "7": {
+				result = eventType[data.EventType].type + ' ' + data.Income;
+				break;
+			}
+			case "8": {
+				result = eventType[data.EventType].type + ' ' + data.Income;
+				break;
+			}
+			case "9": {
+				result = eventType[data.EventType].type + ' ' + data.Income;
+				break;
+			}
+			case "10": {
+				result = data.IncomePer + ' ' + data.CoinType + ' ' + eventType[data.EventType].type + ' ' + data.Income + ' ' + data.DestCoinType;
+				break;
+			}
+			case "11": {
+				result = data.IncomePer + ' ' + data.CoinTyp + ' ' + eventType[data.EventType].type + ' ' + data.Income + ' ' + data.DestCoinType;
+				break;
+			}
+			case "12": {
+				result = eventType[data.EventType].type + ' ' + data.Income;
+				break;
+			}
+			case "13": {
+				result = eventType[data.EventType].type + ' ' + data.Income;
+				break;
+			}
+			case "14": {
+				result = eventType[data.EventType].type + ' ' + data.Income;
+				break;
+			}
+			case "15": {
+				result = eventType[data.EventType].type + ' ' + data.Income;
+				break;
+			}
+			case "16": {
+				result = eventType[data.EventType].type + ' ' + data.Income;
+				break;
+			}
+			default: {
+				result = data.Name + eventType[data.EventType].type + data.DestCoinType + ',Profilt' + data.IncomePer;
+			}
+		}
+
+		return result;
+	}
+
+	var eventType = {
+		"0": { type: 'Recharge' },
+		"1": { type: 'Direct Recommend ' },
+		"2": { type: 'Recommend Grade' },
+		"3": { type: 'Generation' },
+		"4": { type: 'Performance' },
+		"5": { type: 'Bonus for Team' },
+		"6": { type: 'Bonus' },
+		"7": { type: 'Generation Upgrade' },
+		"8": { type: 'Team Upgrade' },
+		"9": { type: 'System Reward' },
+		"10": { type: 'Exchange Currency' },
+		"11": { type: 'Transfer(Only VT)' },
+		"12": { type: 'Buy' },
+		"13": { type: 'Sell' },
+		"14": { type: 'Forced Sell' },
+		"15": { type: 'Rights Issue' },
+		"16": { type: 'Withdraw Cash' },
+	}
+
+</script>

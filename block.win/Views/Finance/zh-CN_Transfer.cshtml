@@ -1,0 +1,1819 @@
+﻿@using Host.SettleWeb.Models
+@{
+    ViewBag.Title = "钱包转账";
+    Layout = "~/Views/Shared/_zh-CN_Layout.cshtml";
+    var queryParameter = ViewData["UrlParameter"] == null ? null : ViewData["UrlParameter"] as UrlExchangeModel;
+    string CoinType = queryParameter == null ? "BTC" : queryParameter.Type;
+    string DestAddr = queryParameter == null ? "" : queryParameter.Addr;
+    decimal Amount = queryParameter == null ? 0 : queryParameter.Amount;
+    string Currenry = queryParameter == null ? "" : queryParameter.Currenry;
+    string Remark = queryParameter == null ? "" : queryParameter.Remark;
+    long Nonce = queryParameter == null ? 0 : queryParameter.Nonce;
+}
+
+<style>
+    /*维护主页面*/
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    input[type="number"] {
+        -moz-appearance: textfield;
+    }
+
+    [v-cloak] {
+        display: none;
+    }
+
+    .c9 {
+        color: #999;
+    }
+
+    .f-10 {
+        font-size: 10px;
+    }
+
+    .c-green {
+        color: #21a121;
+    }
+
+    .pt-10 {
+        padding-top: 10px;
+    }
+    /*二维码居中*/
+    .qrcenter {
+        margin-left: auto;
+        margin-right: auto;
+        width: 266px;
+    }
+    /*完全通用*/
+    .form-group .select-wrap {
+        position: absolute;
+        right: 15px;
+        top: 0;
+        height: 100%;
+    }
+
+    .form-group .select-btn {
+        background: transparent;
+        border: 0;
+        box-shadow: 0;
+        height: 100%;
+    }
+
+    .dropdown-menu {
+        min-width: 88px !important;
+    }
+
+    .tf {
+        background-color: #ffffff;
+        margin: 76px 0px 0px 18px;
+        box-shadow: 0px 1px 10px 0 rgba(0, 0, 0, 0.07);
+        border: solid 1px #e1e1e1;
+    }
+
+    .tf-header {
+        margin: 22px;
+    }
+
+        .tf-header .row > div {
+            margin: 0;
+        }
+
+        .tf-header div {
+            padding: 0;
+        }
+
+        .tf-header > div {
+            padding: 0 15px;
+        }
+
+            .tf-header > div > div > div {
+                height: 110px;
+            }
+
+    .tf-main {
+        margin: 50px 0 10px 0;
+    }
+
+    .tf-header .tf-ico-wrapper {
+        text-align: center;
+        padding: 18px;
+    }
+
+    .tf-ico-name {
+        color: white;
+        font-size: 18px;
+        margin-right: 18px;
+        line-height: 73px;
+        vertical-align: middle;
+    }
+    /*余额部分*/
+    .convert-stock > div {
+        position: relative;
+    }
+
+    .convert-name {
+        position: absolute;
+        top: 14px;
+        left: 10%;
+        font-size: 16px
+    }
+
+    .convert-balance {
+        position: absolute;
+        bottom: 14px;
+        left: 10%;
+        font-size: 18px;
+    }
+
+        .convert-balance .unit {
+            margin-left: 10px;
+            font-size: 16px;
+        }
+
+    /*筛选部分*/
+    .select-main > div {
+        float: left;
+        margin: 0 5% 0 0;
+        white-space: nowrap;
+    }
+
+
+    .lh-30px {
+        line-height: 30px;
+    }
+
+    .stateDate, .endDate {
+        height: 30px;
+        border: 1px solid #e1e1e1;
+    }
+
+    /*选择框*/
+    .toggle-select button {
+        width: 75px;
+        border-radius: 0;
+        height: 30px;
+    }
+
+    .btn-group.open .dropdown-toggle {
+        -webkit-box-shadow: none;
+        box-shadow: none;
+    }
+
+    .toggle-select li {
+        text-align: right;
+    }
+
+    .toggle-select .select {
+        position: absolute;
+        top: 28px;
+        min-width: 88px;
+        right: -1px;
+        border-color: #e1e1e1;
+        background-color: #f5f5f5;
+    }
+
+    .select li {
+        line-height: 30px;
+        min-width: 88px;
+        background: #fff;
+        text-align: center;
+    }
+
+    .select-main .filtering {
+        margin-right: 0;
+    }
+    /*筛选按钮*/
+    .btn-filtering {
+        margin-top: -5px;
+        padding: 6px 12px;
+        min-width: 106px;
+        height: 40px;
+        color: #fff;
+        border: 0;
+        border-radius: 4px;
+        background-color: #1da1f3;
+    }
+    /*搜索按钮*/
+    .search {
+        line-height: 31px;
+        border-top: none;
+        border-right: none;
+        border-bottom: 1px solid rgb(225, 225, 225);
+        border-left: none;
+    }
+
+        .search:focus {
+            border-top: none;
+            border-right: none;
+            border-bottom: 1px solid #e1e1e1;
+            border-left: none;
+        }
+
+    /*分页*/
+    .history {
+        position: relative;
+    }
+
+        .history li {
+            display: inline-block;
+        }
+
+        .history .ban a {
+            color: #999;
+        }
+
+        .history li a {
+            padding: 6px 10px;
+            display: inline-block;
+            border: 1px solid #ddd;
+            background: #fff;
+            color: #0f0f0f;
+        }
+
+            .history li a:hover {
+                background: #eee;
+            }
+
+        .history li.active a {
+            background: #0E90D2;
+            color: #fff;
+        }
+    /*移动端分辨率之外的样式*/
+    .tf-header .tf-trans > div {
+        width: 48%;
+    }
+
+    .tf-header .tf-trans .fixmar-2 {
+        margin-right: 2%;
+    }
+
+    .tf-header .balance > div {
+        width: 32%;
+        color: #fff;
+    }
+
+    .tf-header .balance .fixmargin-2 {
+        margin: 0 2%;
+    }
+
+    .tf-ico-arrow {
+        width: 79px;
+        height: 73px;
+        vertical-align: middle;
+    }
+    /*表单不换行*/
+    .form-group label {
+        white-space: nowrap;
+        text-align: justify;
+    }
+    /*模态框样式*/
+    /*把模态框掰直*/
+    .form-control {
+        border-radius: 0 !important;
+    }
+
+    .centerline {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: white;
+        width: 150px;
+    }
+    .p-r-80 {
+        padding-right: 80px;
+    }
+
+    .p-r-90 {
+        padding-right: 90px;
+    }
+    .p-r-120 {
+        padding-right: 120px;
+    }
+    .modal-r-b {
+        position: absolute;
+        top: 0;
+        right: 14px;
+        height: 34px;
+        width: 83px;
+        background: #1da1f3;
+        color: #fff;
+    }
+
+    .p-r-120 {
+        padding-right: 120px;
+    }
+    @@media screen and (max-width: 1250px){
+        .tf-ico-arrow {
+            width: 50px;
+            height: 40px;
+            vertical-align: middle;
+        }
+        .tf-header .tf-ico-wrapper >div{
+           line-height:110px;
+        }
+        .tf-header .tf-ico-wrapper {
+            padding: 0;
+        }
+
+        .tf-ico-name {
+            font-size: 18px;
+            margin-right: 5px;
+            line-height: 55px;
+            vertical-align: middle;
+        }
+
+        .select-main > div {
+            float: left;
+            margin: 0 5px 0 0;
+            white-space: nowrap;
+        }
+    }
+    @@media screen and (max-width: 992px) {
+        .tf {
+            background-color: #ffffff;
+            margin: 0;
+            box-shadow: none;
+            border: 0;
+        }
+        .f-10-m {
+            font-size: 10px;
+        }
+        /*移动端*/
+        .tf-header > div > div > div {
+            height: 55px;
+        }
+
+        .tf-header {
+            margin: 15px;
+        }
+            .tf-header .tf-ico-wrapper > div {
+                line-height: 55px;
+            }
+
+            .tf-header .row > div {
+                margin: 0 0 0 0;
+            }
+
+            .tf-header .tf-trans > div {
+                position: relative;
+                width: 100%;
+                margin-bottom: 25px;
+            }
+
+                .tf-header .tf-trans > div .trans-wrapper-r {
+                    position: absolute;
+                    right: 50px;
+                }
+
+                .tf-header .tf-trans > div .trans-wrapper-l {
+                    position: absolute;
+                    left: 50px;
+                }
+
+            .tf-header .tf-trans .fixmargin-1 {
+                margin: 10px 0 25px 0;
+            }
+
+        .balance {
+            display: flex;
+        }
+
+        .tf-header .balance div {
+            flex: 1;
+        }
+
+        .tf-ico-arrow {
+            width: 40px;
+            height: 37px;
+            vertical-align: middle;
+        }
+
+        .tf-header .tf-ico-wrapper {
+            padding: 0;
+        }
+
+        .tf-ico-name {
+            font-size: 16px;
+            margin-right: 5px;
+            line-height: 55px;
+            vertical-align: middle;
+        }
+
+        /*余额部分*/
+        .convert-name {
+            top: 5px;
+            font-size: 10px;
+        }
+
+        .convert-balance {
+            bottom: 5px;
+            font-size: 12px;
+        }
+
+            .convert-balance .unit {
+                font-size: 10px;
+            }
+
+        .tf-main {
+            margin: 10px 0;
+        }
+        /*移动端筛选*/
+        .select-main > div {
+            float: left;
+            margin: 10px 0 20px 0;
+            white-space: nowrap;
+        }
+
+        .toggle-select button {
+            width: 65px;
+        }
+
+        .datehook {
+            width: 70%;
+        }
+
+        .status {
+            width: 30%;
+        }
+
+        .charater {
+            width: 40%;
+        }
+
+        .filtering {
+            width: 60%;
+        }
+
+            .filtering button {
+                width: 100%;
+            }
+        /*移动端内边距*/
+        .p-r-120 {
+            padding-right: 65px;
+        }
+    }
+</style>
+<style>
+    /*维护送出页面*/
+    .send-container {
+        background: #f5f5f5;
+        height: 100vh;
+    }
+
+    .f-16 {
+        font-size: 16px;
+    }
+
+
+    .mb-15 {
+        margin-bottom: 15px;
+    }
+
+    .text-left {
+        text-align: left;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+    /*重置默认*/
+    .send-container p {
+        padding: 24px 0 10px 15px;
+        margin: 0;
+    }
+
+    /*重置bs*/
+    .send-container .btn {
+        height: 44px;
+        padding: 12px 12px !important;
+    }
+
+    .send-container .form-control {
+        border: none;
+        box-shadow: none;
+        height: 44px;
+        padding: 12px 12px;
+    }
+
+    .send-container .btn-group > button {
+        border: none;
+    }
+
+        .send-container .btn-group > button:active {
+            box-shadow: none;
+            background: #fff;
+        }
+
+        .send-container .btn-group > button:hover {
+            box-shadow: none;
+            background: #fff;
+        }
+</style>
+<style>
+    /*维护接收页面*/
+
+
+    .get-container {
+        background: #f5f5f5;
+        height: 100vh;
+    }
+
+    .f-16 {
+        font-size: 16px;
+    }
+
+    .mt-10 {
+        margin-top: 10px;
+    }
+
+    .mb-15 {
+        margin-bottom: 15px;
+    }
+
+    .tab {
+        display: flex;
+    }
+
+        .tab > div {
+            flex: 1;
+            text-align: center;
+            height: 40px;
+            line-height: 44px;
+            font-size: 16px;
+        }
+
+    .text-left {
+        text-align: left;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .pd-l-30 {
+        padding-left: 30%;
+    }
+
+    .pd-r-30 {
+        padding-right: 30%;
+    }
+
+    .fh {
+        position: relative;
+    }
+
+    .get-container .modal-r-b {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        height: 33px;
+        width: 83px;
+        background: #1da1f3;
+        color: #fff;
+    }
+
+    .get-container .btn-m {
+        width: 60px;
+        height: 25px;
+        border-radius: 15px;
+        color: #1da1f3;
+        background-color: #fcfcfc;
+        border: solid 1px #1da1f3;
+    }
+
+        .get-container .btn-m:focus {
+            background-color: #f1f1f1;
+            outline: none;
+        }
+
+    .get-container .center-line {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 150px;
+    }
+
+    /*重置默认*/
+    .get-container p {
+        padding: 24px 0 10px 15px;
+        margin: 0;
+    }
+
+    .get-container .form-control.p-r-80, .send-container .form-control.p-r-80 {
+        padding-right: 80px;
+    }
+    .get-container .form-control.p-r-90, .send-container .form-control.p-r-90 {
+        padding-right: 90px;
+    }
+
+    .get-container .form-control.p-r-120, .send-container .form-control.p-r-120 {
+        padding-right: 120px;
+    }
+    /*重置bs*/
+    .get-container .btn-group > button {
+        border: none;
+    }
+
+        .get-container .btn-group > button:active {
+            box-shadow: none;
+            background: #fff;
+        }
+
+        .get-container .btn-group > button:hover {
+            box-shadow: none;
+            background: #fff;
+        }
+
+    .get-container .btn {
+        padding: 12px 12px !important;
+    }
+
+    .get-container .form-control {
+        border: none;
+        box-shadow: none;
+        height: 44px;
+        padding: 12px 12px;
+    }
+
+    /*完全通用*/
+    .get-container .form-group .select-wrap, .send-container .btn-group .select-wrap {
+        position: absolute;
+        right: 15px;
+        top: 0;
+        height: 100%;
+    }
+
+    .r-0 {
+        right: 0 !important;
+    }
+
+    .get-container .form-group .select-btn, .send-container .btn-group .select-btn {
+        background: transparent;
+        border: 0;
+        box-shadow: 0;
+        height: 100%;
+    }
+
+    .get-container .dropdown-menu, .send-container .dropdown-menu {
+        min-width: 75px !important;
+    }
+    /*二维码相关*/
+    #qrMobile, #qrMobile2 {
+        text-align: center;
+        margin: 24px 0;
+    }
+
+        #qrMobile img, #qrMobile2 img {
+            display: inline-block !important;
+        }
+</style>
+<style>
+    .goBack { /*维护tab栏*/
+        position: fixed;
+        left: 16px;
+        top: 12px;
+        padding-right: 50px;
+        z-index: 1001;
+    }
+
+    .acoountSet {
+        display: none;
+    }
+
+    .fixed-tab {
+        width: 160px;
+        left: 50%;
+        transform: translateX(-50%);
+        position: fixed;
+        background: #004a7c;
+        top: 1px;
+        color: #fff;
+        z-index: 1000;
+        font-weight: 200;
+    }
+
+    .fw {
+        font-weight: 400;
+    }
+    #showTips, #layoutShowLoading{
+        z-index: 9999;
+    }
+    body.modal-open, .modal-open .navbar-fixed-top, .modal-open .navbar-fixed-bottom {
+         margin-right: 0;
+    }
+    
+</style>
+
+
+<div id="app">
+    <a @@click="back()" class="goBack p-l-14" v-show="getForm||sendForm" style="display: none;">
+        <img class="w-10" src="~/images/Img/goBack.png" />
+    </a>
+    <div v-show="getForm" style="display: none;">
+        <div class="get-container">
+            <div class="tab fixed-tab">
+                <div @@click="tab=true" :class="{fw:tab==true}">接收</div>
+                <div @@click="tab=false" :class="{fw:tab==false}">指定</div>
+            </div>
+            <div id="tab1" v-show="tab">
+                <p class="f-16 mt-10">接收币种</p>
+                <!-- Split button -->
+                <div class="form-group" style="width:100%;position:relative">
+                    <input  readonly type="text" v-model="transferR.Addr" class="form-control p-r-80" >
+                    <div class="btn-group select-wrap r-0">
+                        <button type="button" class="select-btn btn-default dropdown-toggle" data-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false">
+                            {{transferR.Type}} <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu pull-right">
+                            <li v-for="x in coinType"><a @@click="selectCotype(x.Type,x.Addr)">{{x.Type}}</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <p class="f-16 mt-10">地址</p>
+                <div class="fh">
+                    <input type="text" class="form-control p-r-120" v-model="shareLink">
+                    <img v-show="qrshow" @@click="getqr()" src="../../images/icon/qrcodeico.png"
+                         alt="二维码" style="width:21px;height: 21px;position: absolute;top: 12px;right: 80px;" />
+                    <button type="button" class="modal-r-b btn-m" @@click="createUrl('qrMobile',true)">生成</button>
+                </div>
+                <div id="qrMobile"></div>
+            </div>
+            <div id="tab2" v-show="tab==false">
+                <div class="clearfix"
+                     style="border-bottom: 1px solid rgb(151,151,151);position:relative;height:20px;margin-bottom: 30px;">
+                    <span class="center-line text-center" style="background:#f5f5f5">接收指定数量</span>
+                </div>
+                <!-- 下拉输入框 -->
+                <div class="form-group clearfix">
+                    <div class="col-sm-10">
+                        <input type="number" v-model="transferR.Amount" class="ctomR form-control p-r-80" placeholder="请输入金额...">
+                        <div class="btn-group select-wrap">
+                            <button type="button" class="select-btn btn-default dropdown-toggle" data-toggle="dropdown"
+                                    aria-haspopup="true" aria-expanded="false">
+                                {{transferR.Type}} <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu pull-right">
+                                <li v-for="x in coinType"><a @@click="selectCotype(x.Type,x.Addr)">{{x.Type}}</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mb-15">
+                    <img src="../../images/icon/transferico.png" style="transform: rotateZ(90deg);">
+                </div>
+                <div class="form-group clearfix">
+                    <div class="col-sm-10">
+                        <input type="number" v-model="transferRValue" class="mtocR form-control p-r-80" placeholder="请输入金额...">
+                        <div class="btn-group select-wrap">
+                            <button type="button" class="select-btn btn-default dropdown-toggle" data-toggle="dropdown"
+                                    aria-haspopup="true" aria-expanded="false">
+                                {{transferR.Currenry}}  <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu pull-right">
+                                <li v-for="x in Currenry"><a @@click="choiceCurrenry(x)" v-cloak>{{x}}</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <p class="f-16 mt-10">备忘</p>
+                <div class="fh">
+                    <input type="text" class="form-control" v-model="transferR.Remark" placeholder="您对该笔交易的备忘...">
+                </div>
+                <p class="f-16 mt-10">链接</p>
+                <div class="fh">
+                    <input type="text" class="form-control p-r-120" v-model="shareLink">
+                    <img v-show="qrshow" src="../../images/icon/qrcodeico.png"
+                         alt="二维码" style="width:21px;height: 21px;position: absolute;top: 12px;right: 80px;" />
+                    <button type="button" class="modal-r-b btn-m" @@click="createUrl('qrMobile2',false)">生成</button>
+                </div>
+                <p class="c-red f-10" v-show="createMsg" v-text="createMsg"></p>
+                <div id="qrMobile2"></div>
+
+            </div>
+        </div><!--手机接收层-->
+    </div>
+    <div v-show="sendForm" style="display: none;">
+        <div class="send-container">
+            <div v-show="otherRemark.length>0" class="clearfix">
+                <div class="col-xs-1" style="padding-left: 15px;padding-right:0"><img src="../../images/icon/remarkico.png" alt="备忘" /></div>
+                <div class="col-xs-11"><p style="padding:5px">“{{otherRemark}}”</p></div>
+            </div>
+            <p class="f-16 pt-10">送出地址</p>
+            <div class="btn-group" style="width:100%">
+                <input type="text" v-model="transferR.Addr" class="form-control p-r-80">
+                <div class="btn-group select-wrap">
+                    <button type="button" class="select-btn btn-default dropdown-toggle" data-toggle="dropdown"
+                            aria-haspopup="true" aria-expanded="false">
+                        {{transferR.Type}} <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu pull-right">
+                        <li v-for="x in coinType"><a @@click="selectTASubmit(x.Type,x.Addr)">{{x.Type}}</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <p class="f-16">用户名</p>
+            <div class="btn-group" style="width:100%">
+                <input type="text" v-model="QueryName.UserName" class="form-control p-r-90" placeholder="您可搜索对方用户名或账号">
+                <button style="height:100%" type="button" class="modal-r-b btn-m r-0" @@click="search()">搜索</button>
+            </div>
+
+            <p class="f-16">接收地址</p>
+            <div class="btn-group" style="width:100%">
+                <input type="text" class="col-xs-10 form-control" v-model="transferSubmit.Addr" placeholder="请选择或输入地址">
+            </div>
+            <p v-show="noSupport">不支持该币种！</p><p v-show="advise.length>0">推荐使用：<span v-for="x in advise">{{x}}</span></p>
+            <!-- 兑换 -->
+            <p> </p>
+            <div class="form-group clearfix">
+                <div class="col-sm-10">
+                    <input type="number" v-model="transferSubmit.Amount" class="ctomS form-control p-r-80" placeholder="请输入金额...">
+                    <div class="btn-group select-wrap">
+                        <button type="button" class="select-btn btn-default dropdown-toggle" data-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false">
+                            {{transferSubmit.Type}} <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu pull-right">
+                            <li v-for="x in coinType"><a @@click="selectTASubmit(x.Type,x.Addr)">{{x.Type}}</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mb-15">
+                <img src="../../images/icon/transferico.png" style="transform: rotateZ(90deg);">
+            </div>
+            <div class="form-group clearfix">
+                <div class="col-sm-10">
+                    <!--suppress HtmlFormInputWithoutLabel -->
+                    <input type="number" v-model="transferSValue" class="mtocS form-control p-r-80" placeholder="请输入金额...">
+                    <div class="btn-group select-wrap">
+                        <button type="button" class="select-btn btn-default dropdown-toggle" data-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false">
+                            {{transferSubmit.Currenry}} <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu pull-right">
+                            <li v-for="x in Currenry"><a @@click="choiceCurrenry(x)">{{x}}</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <p class="f-16">备忘</p>
+            <div>
+                <input type="text" class="form-control" v-model="transferSubmit.Remark" placeholder="您对该笔交易对备忘...">
+            </div>
+            <p class="f-16">交易密码</p>
+            <div>
+                <input type="password" class="form-control" v-model="transferSubmit.TradePassword" placeholder="请输入交易密码...">
+                <p class="c-red f-10 pt-10" v-show="sendMsg.length>0">{{sendMsg}}</p>
+                <p class="c-green f-10 pt-10" v-show="sendSuccess.length>0">{{sendSuccess}}</p>
+            </div>
+            <p> </p>
+            <div class="clearfix" style="padding: 0 10%;">
+                <button @@click="transferT" class="col-xs-12" style="height:44px;background: #1da1f3;color:white;border: none;border-radius: 5px">确认送出</button>
+            </div>
+            <p style="padding: 15px;">内部转账秒确认；外部转账一般2小时内确认，最长不超过24小时。</p>
+        </div>
+    </div>
+    <div class="tf" v-show="allWeb">
+        <div class="tf-header row">
+            <div class="col-md-5">
+                <div class="row tf-trans">
+                    <div class="tf-ico-wrapper col-md-6 fixmar-2" @@click="openGet()" style="background:url(../../images/Img/tf-get.png)no-repeat;background-size:100% 100%">
+                        <div class="trans-wrapper-l">
+                            <span class="tf-ico-name">接收</span>
+                            <img class="tf-ico-arrow" src="../../images/Img/tf-get-ico.png" />
+                        </div>
+                    </div>
+                    <div class="tf-ico-wrapper col-md-6" @@click="openSend()" style="background:url(../../images/Img/tf-send.png)no-repeat;background-size:100% 100%">
+                        <div class="trans-wrapper-r">
+                            <span class="tf-ico-name">送出</span>
+                            <img style="transform: rotateZ(180deg);" class="tf-ico-arrow" src="../../images/Img/tf-get-ico.png" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-md-offset-1">
+                <div class="row balance">
+                    <div class="col-md-4 col-xs-4" style="background:url(../../images/Img/BTCBG.png)no-repeat center;background-size:100% 100%">
+                        <div class="convert-name">BTC存量</div>
+                        <div class="convert-balance" v-cloak>{{balance.BTC | toFix(4)}}<span class="unit">BTC</span></div>
+                    </div>
+                    <div class="col-md-4 col-xs-4 fixmargin-2" style="background:url(../../images/Img/LTCBG.png)no-repeat;background-size:100% 100%">
+                        <div class="convert-name">LTC存量</div>
+                        <div class="convert-balance" v-cloak>{{balance.LTC | toFix(4)}}<span class="unit">LTC</span></div>
+                    </div>
+                    <div class="col-md-4 col-xs-4" style="background:url(../../images/Img/SCBG.png)no-repeat;background-size:100% 100%">
+                        <div class="convert-name">SC存量</div>
+                        <div class="convert-balance" v-cloak>{{balance.SC | toFix(4)}}<span class="unit">SC</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tf-main clearfix">
+            <div class="col-md-2">
+                <span class="lh-30px">转账记录</span>
+            </div>
+            <div class="col-md-12 col-sm-12 select-main clearfix" style="white-space:nowrap">
+                <div class="datehook">
+                    <span class="">日期:</span>
+                    <div class="iDate date stateDate">
+                        <input id="startTime" type="text" class="c-alalal stateInput c9" title="开始日期">
+                        <button type="button" class="addOn c-alalal"></button>
+                    </div>
+                    <span class="">-</span>
+                    <div class="iDate date endDate">
+                        <input id="endTime" type="text" class="c-alalal endDate c9" title="结束日期">
+                        <button type="button" class="addOn c-alalal"></button>
+                    </div>
+                </div>
+                <div class="status">
+                    <span>状态：</span>
+                    <div class="toggle-select btn-group">
+                        <button type="button" data-toggle="dropdown" class="btn btn-default dropdown-toggle"
+                                style="border-color: #e1e1e1;background-color: #f5f5f5" v-cloak>
+                            {{statusActive}} <span class="caret"></span>
+                        </button>
+                        <ul class="select dropdown-menu pull-right">
+                            <li v-for="x in status" v-show="x.name!=statusActive">
+                                <a @@click="selectStatus(x.name,x.key)" v-cloak>{{x.name}}</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="charater">
+                    <span class="">性质：</span>
+                    <div class="toggle-select btn-group">
+                        <button type="button" data-toggle="dropdown" class="btn btn-default dropdown-toggle"
+                                style="border-color: #e1e1e1;background-color: #f5f5f5" v-cloak>
+                            {{charActive}} <span class="caret"></span>
+                        </button>
+                        <ul class="select dropdown-menu pull-right">
+                            <li v-for="x in char" v-show="x.name!=charActive">
+                                <a @@click="selectChar(x.name,x.key)"
+                                   v-cloak>{{x.name}}</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="filtering">
+                    <button class="btn-filtering" @@click="takeTransferRecord()">筛选</button>
+                </div>
+            </div>
+        </div>
+        <table id="history-tb" class="table table-bordered table-hover">
+            <tr>
+                <th>日期</th>
+                <th>性质</th>
+                <th>金额</th>
+                <th>用户</th>
+                <th class="hidden-xs">地址</th>
+                <th>状态</th>
+            </tr>
+            <tr v-for="x in history" class="f-10-m" title="点击查看区块流水号" @@click="showTxid(x.TxId)">
+                <td style="color:red" v-cloak>
+                    {{x.SetupTime | toCut(0,10)}}
+                    <span v-show="checkBrowserSize()>=992">{{x.SetupTime |toCut(10,x.SetupTime.length)}}</span>
+                </td>
+                <td v-cloak>{{x.IsSender | toDirect}}</td>
+                <td v-cloak>{{x.Amount | toFix(2)}} {{x.CoinType}}</td>
+                <td v-cloak>{{x.UserName}}</td>
+                <td class="hidden-xs" v-text="x.Address"></td>
+                <td v-cloak>{{x.Status | toStatus}}</td>
+            </tr>
+        </table>
+        <div class="text-center" v-show="history==''">暂无历史记录</div>
+        <div class="p-b-80 text-right clearfix" v-show="totalhistory">
+            <page style="white-space:nowrap;float:right" :current="takeRecord.PageIndex" :allpage="totalPage" :showpage="5" @@next="nextPage" @@prev="prevPage" @@goto="gotoPage"></page>
+            <!--按钮下拉-->
+            <div class="btn-group flo-rig">
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" style="border:none;border-bottom:1px solid #e1e1e1;" v-cloak>
+                    {{activeNum}} <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" style="min-width:30px">
+                    <li v-for="item in showNumber"><a @@click="selectNum(item)">{{item}}</a></li>
+                </ul>
+            </div>
+            <span  class="hidden-xs" style="white-space:nowrap;margin-right:30px;line-height: 34px;float:right">
+            显示<span v-text="startIndex"></span>
+            -<span v-text="endIndex"></span>条/
+            共<span v-text="totalhistory"></span>条</span>
+        </div>
+    </div>
+    <!--接收modal-->
+    <div class="modal fade" id="getModal" tabindex="-1" role="dialog" aria-labelledby="接收" aria-hidden="true">
+        <div class="modal-dialog ps-absolute t50 l50" style="transform: translate(-50%,-50%);">
+            <div class="modal-content p-28">
+                <div class="modal-header">
+                    <button type="button" class="close f-s-28" data-dismiss="modal" aria-hidden="true">
+                        <i class="accountModalIcon modalCloseIcon"></i>
+                    </button>
+                    <h4 class="modal-title c-000 f-s-24" id="myModalLabel">接收</h4>
+                    <div class="f-s-12 m-t-16 f-s-14 c-666">接收来自其他钱包的区块链资产!</div>
+                </div>
+                <div class="modal-body">
+                    <div class="row m-t-20">
+                        <form class="form-horizontal">
+                            <div class="form-group">
+                                <label for="from" class="col-sm-2 control-label">地址</label>
+                                <div class="col-sm-10">
+                                    <input type="text" style="background:#f4f4f4" v-model="transferR.Addr" class="form-control p-r-80">
+                                    <div class="toggle-select btn-group select-wrap">
+                                        <button type="button" class="select-btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            {{transferR.Type}} <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu pull-right">
+                                            <li v-for="x in coinType"><a @@click="selectCotype(x.Type,x.Addr)">{{x.Type}}</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="clearfix" style="border-bottom: 1px solid #e5e5e5;position:relative;height:20px;margin-bottom: 30px;">
+                                <span class="centerline text-center">接收指定数量</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">接收币种</label>
+                                <div class="col-sm-5" style="width:37.5%">
+                                    <input type="number" class="ctomR form-control p-r-80" placeholder="请输入数量..." v-model="transferR.Amount">
+                                    <div class="toggle-select btn-group select-wrap">
+                                        <button type="button" class="select-btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            {{transferR.Type}} <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu pull-right">
+                                            <li v-for="x in coinType"><a @@click="selectCotype(x.Type,x.Addr)">{{x.Type}}</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <label for="from" class="col-sm-1 control-label" style="text-align: center;"><img src="../../images/icon/transferico.png" alt="转换" /></label>
+                                <div class="col-sm-5" style="width:37.5%">
+                                    <input type="number" class="mtocR form-control p-r-80" placeholder="请输入金额..." v-model="transferRValue">
+                                    <div class="toggle-select btn-group select-wrap">
+                                        <button type="button" class="select-btn btn btn-default dropdown-toggle" data-toggle="dropdown" v-cloak>
+                                            {{transferR.Currenry}} <span class="caret"></span>
+                                        </button>
+                                        <ul class="select dropdown-menu pull-right">
+                                            <li v-for="x in Currenry"><a @@click="choiceCurrenry(x)" v-cloak>{{x}}</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="from" class="col-sm-2 control-label">备忘</label>
+                                <div class="col-sm-10">
+                                    <input type="text" v-model="transferR.Remark" class="form-control" placeholder="您对该笔交易的备忘...">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="from" class="col-sm-2 control-label">链接</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control p-r-120" v-model="shareLink">
+                                    <img v-show="qrshow" data-toggle="modal" data-target="#getScrModal" src="../../images/icon/qrcodeico.png" alt="二维码" style="width:21px;height: 21px;position: absolute;top: 7px;right: 102px;" />
+                                    <button type="button" class="modal-r-b" @@click="createUrl('transferGetQr',false)">生成</button>
+                                    <p class="c-red f-10 pt-10" v-show="createMsg" v-text="createMsg"></p>
+                                    <p class="c-green f-10 pt-10" v-show="successMsg" v-text="successMsg"></p>
+                                </div>
+                            </div>
+                        </form>
+                        <div class="m-t-40 hidden-xs">
+                            <div class="text-center c-red" id="UpdateUserInfoAlertBox"></div>
+                            <button style="background:#1da1f3" class="d-s-block w100 h-40 c-255 border-none border-radius-4 m-t-16" @@click="copyLink()">复制链接</button>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+    <!--送出modal-->
+    <div class="modal fade" id="sendModal" tabindex="-1" role="dialog" aria-labelledby="送出" aria-hidden="true">
+        <div  class="modal-dialog ps-absolute t50 l50" style="transform: translate(-50%,-50%);">
+            <div class="modal-content p-28">
+                <div class="modal-header">
+                    <button type="button" class="close f-s-28" data-dismiss="modal" aria-hidden="true">
+                        <i class="accountModalIcon modalCloseIcon"></i>
+                    </button>
+                    <h4 class="modal-title c-000 f-s-24" id="myModalLabel">送出</h4>
+                    <div class="f-s-12 m-t-16 f-s-14 c-666">内部转账秒确认；外部转账一般2小时内确认，最长不超过24小时。</div>
+                </div>
+                <div class="modal-body">
+                    <div class="row m-t-20">
+
+                        <form class="form-horizontal">
+                            <div class="form-group" v-show="otherRemark.length>0">
+                                <div class="col-sm-2  col-xs-3 text-center">
+                                    <img src="../../images/icon/remarkico.png" alt="备忘" />
+                                </div>
+                                <div class="col-sm-10  col-xs-9">
+                                    <p>“{{otherRemark}}”</p>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="from" class="col-sm-2  col-xs-3 control-label">送出地址</label>
+                                <div class="col-sm-10  col-xs-9">
+                                    <input readonly type="text" style="background:#f4f4f4" v-model="transferR.Addr" class="form-control p-r-80">
+                                    <div class="toggle-select btn-group select-wrap">
+                                        <button type="button" class="select-btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            {{transferSubmit.Type}} <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu pull-right">
+                                            <li v-for="x in coinType"><a @@click="selectTASubmit(x.Type,x.Addr)">{{x.Type}}</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">用户名</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control p-r-90" v-model="QueryName.UserName" placeholder="您可搜索对方用户名或账号">
+                                    <img v-show="qrshow" data-toggle="modal" data-target="#getScrModal" src="../../images/icon/qrcodeico.png" alt="二维码" style="width:21px;height: 21px;position: absolute;top: 7px;right: 102px;" />
+                                    <button type="button" class="modal-r-b" @@click="search()">搜索</button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">接收地址</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" v-model="transferSubmit.Addr" placeholder="请输入或选择一个地址">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 col-xs-3 control-label">接收币种</label>
+                                <div class="col-sm-5" style="width:37.5%">
+                                    <input type="number" class="ctomS form-control p-r-80" placeholder="请输入数量..." v-model="transferSubmit.Amount">
+                                    <div class="toggle-select btn-group select-wrap" style="height:34px">
+                                        <button type="button" class="select-btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            {{transferSubmit.Type}} <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu pull-right">
+                                            <li v-for="x in coinType"><a @@click="selectTASubmit(x.Type,x.Addr)">{{x.Type}}</a></li>
+                                        </ul>
+                                    </div>
+                                    <span class="c-red f-10" v-show="noSupport">不支持该币种！</span><p v-show="advise.length>0">推荐使用：<span v-for="x in advise">{{x}}</span></p>
+                                </div>
+                                <label for="from" class="col-sm-1 control-label" style="text-align: center;"><img src="../../images/icon/transferico.png" alt="转换" /></label>
+                                <div class="col-sm-5" style="width:37.5%">
+                                    <input type="number" class="mtocS form-control p-r-80" placeholder="请输入金额..." v-model="transferSValue">
+                                    <div class="toggle-select btn-group select-wrap">
+                                        <button type="button" class="select-btn btn btn-default dropdown-toggle" data-toggle="dropdown" v-cloak>
+                                            {{transferSubmit.Currenry}} <span class="caret"></span>
+                                        </button>
+                                        <ul class="select dropdown-menu pull-right">
+                                            <li v-for="x in Currenry"><a @@click="choiceCurrenry(x)" v-cloak>{{x}}</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="from" class="col-sm-2 control-label">备忘</label>
+                                <div class="col-sm-10">
+                                    <input type="text" v-model="transferSubmit.Remark" class="form-control" placeholder="您对该笔交易的备忘...">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="from" class="col-sm-2 control-label">交易密码</label>
+                                <div class="col-sm-10">
+                                    <input type="password" class="form-control" v-model="transferSubmit.TradePassword">
+                                    <p class="c-red f-10 pt-10" v-show="sendMsg" v-text="sendMsg"></p>
+                                    <p class="c-green f-10 pt-10" v-show="sendSuccess" v-text="sendSuccess"></p>
+                                </div>
+                            </div>
+                            <div class="text-right cursor-pointer" onclick="TakeUserInfo()" data-toggle="modal" data-target="#accountModal">设置交易密码</div>
+                        </form>
+                        <div class="m-t-20">
+                            <div class="text-center c-red" id="UpdateUserInfoAlertBox"></div>
+                            <button style="background:#1da1f3" class="d-s-block w100 h-40 c-255 border-none border-radius-4 m-t-16" @@click="transferT()">确认送出</button>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+    <!--接收二维码modal-->
+    <div class="modal fade" id="getScrModal" tabindex="-1" role="dialog" aria-labelledby="二维码" aria-hidden="true">
+        <div class="modal-dialog ps-relative t50 translateY-50 l-0">
+            <div class="modal-content p-28">
+                <div class="modal-header">
+                    <button type="button" class="close f-s-28" data-dismiss="modal" aria-hidden="true">
+                        <i class="accountModalIcon modalCloseIcon"></i>
+                    </button>
+                    <h4 class="modal-title c-000 f-s-24" id="myModalLabel">接收</h4>
+                    <div class="f-s-12 m-t-16 f-s-14 c-666">接收来自其他钱包的区块链资产!</div>
+                </div>
+                <div class="modal-body">
+                    <div id="transferGetQr" class="row m-t-20 qrcenter">
+                    </div>
+                </div>
+
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+    <!--谷歌验证码-->
+    <div class="modal fade" id="sendgoogleModal" tabindex="-1" role="dialog" aria-labelledby="谷歌验证码" aria-hidden="true">
+        <div class="modal-dialog ps-relative t50 translateY-50 l-0">
+            <div class="modal-content p-28">
+                <div class="modal-header">
+                    <button type="button" class="close f-s-28" data-dismiss="modal" aria-hidden="true">
+                        <i class="accountModalIcon modalCloseIcon"></i>
+                    </button>
+                    <h4 class="modal-title c-000 f-s-24" id="myModalLabel">送出</h4>
+                    <div class="f-s-12 m-t-16 f-s-14 c-666">立即向任意地址发送区块链资产!</div>
+                </div>
+                <div class="modal-body">
+                    <div class="row m-t-20 text-center">
+                        您已开启谷歌身份认证，请填写谷歌认证码！
+                    </div>
+                    <div class="col-sm-12 m-t-40 c-666">
+                        <input type="text" class="form-control" style="" id="googletoken" placeholder="请输入您的谷歌验证码...">
+                    </div>
+                    <div class="m-t-40 ">
+                        <div class="text-center c-red" id="UpdateUserInfoAlertBox"></div>
+                        <button style="background:#1da1f3" class="d-s-block w100 h-40 c-255 border-none border-radius-4 m-t-16" @@click="copyLink()">确认送出</button>
+                    </div>
+                </div>
+
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+    <!-- Txid -->
+    <div class="modal fade" id='detail'>
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4>区块流水号</h4>
+                </div>
+                <div class="modal-body">
+                    <p v-if="txid" v-text="txid"></p>
+                    <p v-else>此记录没有流水号</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- end modal -->
+</div><!--整个转换页-->
+@Html.AntiForgeryToken()
+<script scr="~/Scripts/bootstrap-datetimepicker2.js"></script>
+<script src="~/Scripts/vue-page.js"></script>
+<script>
+        //对象转url传参
+        var urlEncode = function (param, key, encode) {
+            if (param == null) return '';
+            var paramStr = '';
+            var t = typeof (param);
+            if (t == 'string' || t == 'number' || t == 'boolean') {
+                paramStr += '&' + key + '=' + ((encode == null || encode) ? encodeURIComponent(param) : param);
+            } else {
+                for (var i in param) {
+                    var k = key == null ? i : key + (param instanceof Array ? '[' + i + ']' : '.' + i);
+                    paramStr += urlEncode(param[i], k, encode);
+                }
+            }
+            return paramStr;
+        };//对象转url
+
+        //当前时间
+        var Unow = Date.now || function () {
+            return new Date().getTime();
+        };
+        //函数去抖
+        var debounce = function (func, wait, immediate) {
+            var timeout, args, context, timestamp, result;
+
+            var later = function () {
+                var last = Unow() - timestamp;
+
+                if (last < wait && last >= 0) {
+                    timeout = setTimeout(later, wait - last);
+                } else {
+                    timeout = null;
+                    if (!immediate) {
+                        result = func.apply(context, args);
+                        if (!timeout) context = args = null;
+                    }
+                }
+            };
+
+            return function () {
+                context = this;
+                args = arguments;
+                timestamp = Unow();
+                var callNow = immediate && !timeout;
+                if (!timeout) timeout = setTimeout(later, wait);
+                if (callNow) {
+                    result = func.apply(context, args);
+                    context = args = null;
+                }
+
+                return result;
+            };
+        };
+        //函数去抖
+
+
+
+    $(document).ready(function () {
+        if ($(".iDate.date").length > 0) {
+            $(".iDate.date").datetimepicker({
+                defaultDate: null,
+	              locale:"zh-cn",
+                format: "YYYY-MM-DD",
+                dayViewHeaderFormat: "YYYY年 MMMM"
+            });
+        }
+    });
+$()
+
+    new Vue({
+        el: '#app',
+        data: {
+	        txid:'',
+            allWeb: true,//整页
+            tab: true,//接收页tab切换
+            getForm: false,//接收页
+            sendForm: false,//送出页
+            qrForm:false,//二维码页
+            balance: {//维护获取余额
+                BTC: 0.00,
+                ETH: 0.00,
+                LTC: 0.00,
+                SC: 0.00,
+                VC: 0.00,
+                VS: 0.00,
+                VT: 0.00,
+                VCStock: ''
+            },
+            transferR: {
+                Type: 'SC',
+                Addr: '',//维护地址选择
+                Amount: '',
+                Currenry: 'CNY',
+                Remark: '',
+                Nonce: getNowTimeStamp()
+            },
+            transferSubmit: {//维护送出
+                __RequestVerificationToken: getToken(),
+                Type:  '@Html.Raw(CoinType)',
+                Addr: '@Html.Raw(DestAddr)',
+                Amount:@Amount,
+                Currenry:  '@Html.Raw(Currenry)',
+                Remark:  '',
+                Nonce: '@Html.Raw(Nonce)',
+                TradePassword:''
+            },
+            otherRemark: '@Html.Raw(Remark)',//对方备忘
+            coinType: [],//维护币种地址
+            coinTypeActive: '',//币种选择名称
+            shareLink: '',//维护生成后的链接
+            sendMsg: '',//送出提示
+            sendSuccess: '',//送出成功提示
+            createMsg: '',//生成失败提示
+            successMsg: '',//生成成功提示
+            advise: '',//币种不支持送出的建议
+            noSupport: false,
+            qrshow: false,
+            QueryName: {//提交用户搜索的数据
+                __RequestVerificationToken: getToken(),
+                UserName: '',
+                CoinType:'SC'
+            },
+            MarketCoin: 'sc',//市场币种
+            MarketCurr: 'cny',//现实货币
+            transferRValue: '',//接收现实价格
+            transferSValue: '',//送出现实价格
+            currentPrice: '',//目前价格
+            takeRecord: {//维护分页数据
+                __RequestVerificationToken: getToken(),
+                'Direct': 'A',
+                'Status': '',
+                'StartTime': '',
+                'EndTime':'',
+                'PageIndex': 1,
+                'ShowNumber': 10
+            },
+            status: [//维护状态选择渲染，key是请求接口用的
+                { name: '全部', key: '' },
+                { name: '已完成', key: 'D' },
+                { name: '已取消', key: 'C' },
+                { name: '等待中', key: 'W' }
+            ],
+            statusActive: '全部',
+            char: [//维护性质选择渲染
+                { name: '全部', key: 'A' },
+                { name: '送出', key: 'S' },
+                { name: '接收', key: 'R' }
+            ],
+            Currenry: ['CNY', 'USD'],//维护货币选择渲染
+            charActive: '全部',
+            FilteringStart: '',
+            FilteringEnd: '',
+            showNumber: [10, 20],//维护分页
+            activeNum: 10,
+            showNumber: [10, 20],     //每页展示数量
+            history: '',//存历史纪录
+            totalPage: 0,//总页数
+            totalhistory: 0//总历史条数
+        },
+        created:function(){
+            this.getReceiverAddress(true);//调用地址信息
+            this.takeTransferRecord();//获取历史记录
+        },
+        mounted: function () {
+            var _this = this;
+            this.getBalance();
+
+            if (this.transferSubmit.Type.length > 0 && this.checkBrowserSize()>=768) {//手动打开送出框
+                this.MarketCoin = this.transferSubmit.Type;//和绑定市场换算
+                this.MarketCurr = this.transferSubmit.Currenry;
+                $('#sendModal').modal('show');
+            }
+            if (this.transferSubmit.Type.length > 0 && this.checkBrowserSize() < 768) {
+                this.sendForm = true;
+                this.allWeb = false;
+            }
+            if (this.transferSubmit.Type.length==0) {//手动添加送出的默认值
+                this.transferSubmit.Type = 'SC';
+                this.transferSubmit.Currenry = 'CNY';
+            }
+            if (this.transferSubmit.Amount > 0) {
+                this.CTM();
+            }
+
+
+            $('.ctomR').keyup(function () {//绑定接收部分币转钱的按键事件c=coin，m=money
+                _this.CTM();
+                _this.shareLink = "";
+            });
+            $('.mtocR').keyup(function () {//绑定接收币转钱的按键事件
+                _this.MTC();
+            });
+
+            $('.ctomS').keyup(function () {//绑定送出币转钱的按键事件c=coin，m=money
+                _this.CTM();
+            });
+            $('.mtocS').keyup(function () {//绑定送出币转钱的按键事件
+                _this.MTC();
+            });
+
+        },
+        filters: {//过滤器
+            toFix: function (val, decimal) {
+                if (typeof (val) === 'number' && val != 0) {
+                    return val.toFixed(decimal);
+                }
+                return val;
+            },
+            toCut: function (val,start,end) {
+                return val.substring(start, end);
+            },
+            toStatus: function (val) {
+                switch (val) {
+                    case 'D':
+                        return '完成';
+                        break;
+                    case 'W':
+                        return '等待';
+                        break;
+                    case 'C':
+                        return '取消';
+                        break;
+                    default:
+                        return '';
+                }
+            },
+            toDirect: function (val) {
+                if (val == true) {
+                    return "送出";
+                }
+                if (val == false) {
+                    return "接收";
+                }
+            }
+        },
+        computed: {
+            startIndex: function () {
+                var index = this.takeRecord.PageIndex;
+                var sN = this.takeRecord.ShowNumber;
+                return index > 1 ? (index - 1) * sN + 1 : index;
+            },
+            endIndex: function () {
+                return this.takeRecord.PageIndex * this.takeRecord.ShowNumber;
+            }
+        },
+        methods: {
+            getqr: function () {
+
+            },
+            back: function () {//移动端返回
+                if (this.qrForm == true) { this.qrForm == false; return; }
+                this.allWeb = true;
+                this.getForm = false;
+                this.sendForm = false;
+            },
+            checkBrowserSize: function () {
+                return window.innerWidth;
+            },
+            openGet: function () {//点击接收弹框事件
+                var size = this.checkBrowserSize();
+                if (size >= 768) {
+                    $('#getModal').modal('show');
+                } else {
+                    this.allWeb = false;
+                    this.getForm = true;
+                }
+            },
+            openSend: function () {//点击送出弹框事件
+                var size = this.checkBrowserSize();
+                if (size >= 768) {
+                    $('#sendModal').modal('show');
+                } else {
+                    this.allWeb = false;
+                    this.sendForm = true;
+                }
+            },
+            marketTicker: function (arg,callback) {// 单次请求vc价格
+                var _this = this;
+                server.MarketTicker({ symbol: arg }, function (rel) {
+                    var data = rel.data.buy;
+                    if (data) {
+                        _this.currentPrice = data;
+                        callback();
+                    } else {
+                        showTips('请求价格失败，请刷新后重试');
+                    }
+                });
+            },
+            CTM: debounce(function () {//币转钱
+                var _this = this;
+                function handleTransfer() {//转换逻辑handleTransfer
+                    _this.transferRValue = numToFixed(_this.transferR.Amount * _this.currentPrice, 2);
+                    _this.transferSValue = numToFixed(_this.transferSubmit.Amount * _this.currentPrice, 2);
+                }
+                var arg = (this.MarketCoin + '_' + this.MarketCurr).toLowerCase();
+                if (arg === 'vc_usd') { this.currentPrice = 0.5; handleTransfer();}
+                else if (arg === 'vt_usd' || arg === 'vs_usd') { this.currentPrice = 1; handleTransfer(); }
+                else if (arg === 'vc_cny' || arg === 'vt_cny' || arg === 'vs_cny') { arg = "sc_cny"; this.marketTicker(arg, handleTransfer); } else {
+                    this.marketTicker(arg, handleTransfer);
+                }
+            },500),
+            MTC: debounce(function () {//钱转币
+                var _this = this;
+                function handleTransfer() {//转换逻辑handleTransfer
+                    _this.transferR.Amount = numToFixed(_this.transferRValue / _this.currentPrice,4);
+                    _this.transferSubmit.Amount = numToFixed(_this.transferSValue / _this.currentPrice, 4);
+                }
+                var arg = (this.MarketCoin + '_' + this.MarketCurr).toLowerCase();
+                if (arg === 'vc_usd') { this.currentPrice = 0.5; handleTransfer(); }
+                else if (arg === 'vt_usd' || arg === 'vs_usd') { this.currentPrice = 1; handleTransfer(); }
+                else if (arg === 'vc_cny' || arg === 'vt_cny' || arg === 'vs_cny') { arg = "sc_cny"; this.marketTicker(arg, handleTransfer); } else {
+                    this.marketTicker(arg, handleTransfer);
+                }
+            }, 500),
+            getBalance: function () {//请求余额
+                var _this = this
+                server.GetBalance({
+                    __RequestVerificationToken: getToken()
+                }, function (rel) {
+                    if (rel.msg === 'StatusOk') {
+                        rel.data.forEach(function (item) {
+                            _this.balance[item.Type] = item.Banlance
+                        });
+                    } else {
+                        showTips(getDescript(rel.msg));
+                    }
+                });
+            },
+            getReceiverAddress: function (flag) {//请求币种地址
+                var _this = this;
+                server.GetReceiveAddr({
+                    __RequestVerificationToken: getToken()
+                }, function (rel) {
+                    if (rel.msg === 'StatusOk') {
+                        var arr = rel.data;
+                        _this.coinType = arr.filter(function (item, index,array) {
+                            if (item.Type === "SC" && flag === true) {
+                                //绑上地址默认值
+                                _this.transferR.Addr = item.Addr
+                            }
+                            return item.Type != 'ETH';
+                        });
+                    } else {
+                        showTips(getDescript(rel.msg));
+                    }
+                });
+            },
+            createUrl: function (id,boo) {//生成二维码及链接
+                var tA = this.transferR.Amount;
+                if (boo == false) {
+                    if (tA == 0 || tA == '') {
+                        showTips("您输入的数量有误，请重新输入");
+                        return;
+                    }
+                }
+
+                if (boo == true) {
+                    this.transferR.Amount = '';
+                }
+                this.shareLink = '';
+                showTips("请复制链接或查看二维码");
+                var local = window.location.href;
+                if (local.indexOf('?') > 0) {
+                    local = local.substring(0, local.indexOf('?'));
+                }
+                this.shareLink = local + '?' + urlEncode(this.transferR);
+                this.qrshow = true;
+                $('#'+id).empty();//清空所有二维码
+                var qrcode = new QRCode(id, {//二维码
+                    text: this.shareLink,
+                    width: 266,
+                    height: 266,
+                    colorDark: '#000000',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            },
+            transferT: function () {//确认送出
+                this.sendSuccess = '';
+                this.sendMsg = '';
+                this.advise = '';
+                this.noSupport = false;//成功与否，清空文字
+                var _this = this;
+
+                function addrCheck(callback) {//检测地址是否正确
+                    server.validateaddress({
+                        __RequestVerificationToken: getToken(),
+                        addr: _this.transferSubmit.Addr,
+                        type: _this.transferSubmit.Type
+                    }, function (rel) {
+                        if (rel.msg === 'StatusOk') {
+                            if (rel.data == 'SystemAddress') {
+                                done();
+                            }
+                            if (rel.data == 'BlockAddress') {
+                                callback()
+                            }
+                        } else {
+                            _this.sendMsg = getDescript(rel.msg);
+                        }
+                    });
+                }
+
+                function typeCheck() {//检验币种是否支持
+                    server.ExchangeCoinValid({
+                        __RequestVerificationToken: getToken(),
+                        Total: _this.transferSubmit.Amount,
+                        CoinType: _this.transferSubmit.Type
+                    }, function (rel) {
+                        if(rel.msg=== "StatusOk"){
+                            if (rel.data.some(function (item) {
+                                    return item === _this.transferSubmit.Type;
+                                })) {//如果币种支持
+                                done();
+                            }
+                        }
+                         else {
+                            _this.noSupport = true;
+                            _this.advise = rel.data;//币种不支持，返回推荐币种
+                        }
+                    });
+                }
+
+                function done() {//检查无误才调用的送出函数
+                    server.TransferTo(_this.transferSubmit, function (rel) {
+                        if (rel.msg === "StatusOk") {
+                            _this.sendSuccess = '送出成功';
+                            _this.takeTransferRecord();
+                        } else {
+                            _this.sendMsg = getDescript(rel.msg);
+                        }
+                    });
+                }
+                var tA = this.transferSubmit.Addr;
+                var tC = this.transferSubmit.Type;
+                var tN = this.transferSubmit.Amount;
+                var tP = this.transferSubmit.TradePassword;
+                if (tA == '') {
+                    this.sendMsg = '请填写接收地址'; return;
+                }//验证送出地址是否为空
+                if (tC == '') {
+                    this.sendMsg = '请选择一个接收币种'; return;
+                }//验证币种是否选择
+                if (tN <= 0) {
+                    this.sendMsg = '请输入接收币种数量'; return;
+                }//验证数量是否合法
+                if (tP == '' || tP.length < 8) {
+                    this.sendMsg = '请输入你的交易密码'; return;
+                }//验证是否输入合法密码
+                var r = confirm("送出地址：" + this.transferSubmit.Addr + "\n 数量：" + this.transferSubmit.Amount + this.transferSubmit.Type);
+                if (r === false) return;
+                addrCheck(typeCheck);//验证入口
+            },
+            search: function () {
+                var _this = this;
+                this.sendMsg = '';//成功与否，清空文字
+                if (this.QueryName.UserName == '') { showTips('请输入您要送出的用户名'); return; }//检测用户名是否存在
+                server.QueryAddressByName(this.QueryName, function (rel) {
+                    if (rel.msg === 'StatusOk') {
+                        _this.transferSubmit.Addr = rel.data;
+                    } else {
+                        alert(getDescript(rel.msg));
+                    }
+                })
+            },
+            selectTASubmit: function (xt,xa) {//选择送出提交地址
+                this.transferSubmit.Type = xt;
+                this.transferR.Type = xt;
+                this.QueryName.CoinType = xt;//选择搜索用户的的币种
+                this.transferR.Addr = xa;//继续维护原来的接收币种
+                this.MarketCoin = xt;//绑定市场查询的币种选择
+                this.CTM();
+            },
+            selectCotype: function (xt, xa) {//选择接收币种地址
+                this.transferR.Type = xt;
+                this.transferR.Addr = xa;
+                this.transferSubmit.Type = xt;
+                this.transferSubmit.Addr = xa;
+                this.shareLink = '';//选择币种后，清空已生成的链接
+                this.MarketCoin = xt;//绑定市场查询的币种选择
+                this.CTM();
+                $('#qrMobile').empty();
+                $('#qrMobile2').empty();
+                $('#transferGetQr').empty;
+                this.successMsg = "";
+                this.qrshow = false;
+            },
+            choiceCurrenry: function (x) {//选择接收货币
+                this.transferR.Currenry = x;
+                this.transferSubmit.Currenry = x;
+                this.MarketCurr = x;//绑定市场查询的现实货币选择
+                this.MTC();
+                this.shareLink = '';//选择币种后，清空已生成的链接
+                $('#qrMobile').empty();
+                $('#qrMobile2').empty();
+                $('#transferGetQr').empty;
+                this.successMsg = "";
+                this.qrshow = false;
+            },
+            selectStatus: function (xn, xk) {//选择状态
+                this.statusActive = xn;
+                this.takeRecord.Status = xk;
+            },
+            selectChar: function (xn, xk) {//选择性质
+                this.charActive = xn;
+                this.takeRecord.Direct = xk;
+            },
+            selectNum: function (index) {//选择展示页数量
+                this.activeNum = index;
+            },
+            copyLink: function () {
+                alert('您的浏览器不支持复制到剪切板，请手动复制');
+            },
+            nextPage: function () {
+                this.takeRecord.PageIndex++;
+                this.takeTransferRecord();//下一页
+            },
+            prevPage: function () {
+                this.takeRecord.PageIndex--;
+                this.takeTransferRecord();//上一页
+            },
+            gotoPage: function (index) {//点击页
+                this.takeRecord.PageIndex = index;
+                this.takeTransferRecord();
+            },
+            selectNum: function (item) {//选择展示页
+                this.takeRecord.PageIndex = 1;
+                this.activeNum = item;
+                this.takeRecord.ShowNumber = item;
+                this.takeTransferRecord();
+            },
+            takeTransferRecord: function () {//请求VC记录
+                var _this = this;
+                this.takeRecord.StartTime = $('#startTime').val();
+                this.takeRecord.EndTime = $('#endTime').val();
+                server.TakeTransferRecord (this.takeRecord, function (rel) {
+                    if (rel.msg === 'StatusOk') {
+                        _this.history = rel.data.data;
+                        _this.totalPage = rel.data.page;
+                        _this.totalhistory = rel.data.total;
+                    } else {
+                        showTips(getDescript(rel.msg));
+                    }
+                });
+            },
+	        showTxid:function(id){
+            	this.txid= id;
+            	$('#detail').modal('show');
+          }
+        },
+        components: {
+            'page': page
+        }
+    });
+</script>

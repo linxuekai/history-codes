@@ -1,0 +1,60 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Page Not Found</title>
+    <link rel="stylesheet" href="~/Content/bootstrap.min.css">
+    <style>
+        .container {
+            position: relative;
+            height: 500px;
+        }
+
+        .imgWrap img {
+            transition: .2s;
+        }
+
+        .container:hover img {
+            transform: scale(1.5);
+        }
+
+        .imgWrap {
+            width: 273px;
+            height: 120px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin: -60px 0 0 -136px;
+        }
+
+        .desc {
+            width: 100%;
+            position: absolute;
+            bottom: 0;
+            text-align: center;
+            font-weight: bold;
+            font-size: 30px;
+        }
+
+        a.btn {
+            margin: 30px 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="imgWrap">
+            <img src="~/images/Img/500Img.jpg">
+        </div>
+        <div class="desc">
+            ERROR！
+            <a href="/" class="btn btn-lg btn-primary">
+                <span class="glyphicon glyphicon-share-alt"> HOME</span>
+            </a>
+            <div>
+                Something Went Wrong&nbsp;&nbsp;&nbsp;&nbsp;O_o
+            </div>
+        </div>
+    </div>
+</body>
+</html>

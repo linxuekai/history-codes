@@ -1,0 +1,146 @@
+﻿
+@{
+    ViewBag.Title = "VC兑换记录";
+    Layout = "~/Views/Shared/_zh-CN_Layout.cshtml";
+}
+<style>
+   ::-ms-clear, ::-ms-reveal {
+        display: none;
+    }
+    .container {
+        padding:0;
+    }
+    .history-tb {
+        padding: 0;
+        list-style: none;
+        font-size: 14px;
+    }
+        .history-tb li {
+            height: 44px;
+            line-height: 44px;
+            border-bottom: solid 1px #e1e1e1;
+            white-space:nowrap;
+        }
+        .history-tb span {
+            text-align: center;
+        }
+    .data-col {
+        display: flex;
+        justify-content: space-between;
+    }
+    .captain {
+        font-weight:bold;
+    }
+    .data-col span {
+        flex: 1;
+        width: 33%;
+    }
+    /*分页*/
+    .history {
+        position: relative;
+    }
+
+        .history li {
+            display: inline-block;
+        }
+
+        .history .ban a {
+            color: #999;
+        }
+
+        .history li a {
+            padding: 10px;
+            display: inline-block;
+            border: 1px solid #ddd;
+            background: #fff;
+            color: #0f0f0f;
+        }
+
+            .history li a:hover {
+                background: #eee;
+            }
+
+        .history li.active a {
+            background: #0E90D2;
+            color: #fff;
+        }
+</style>
+<div id="app">
+    
+    <ul class="history-tb">
+        <li class="captain data-col">
+            <span>日期</span>
+            <span>使用币种</span>
+            <span>得到币种</span>
+            <span>兑换数量</span>
+        </li>
+        <li v-if='history' v-for="item in history" class="data-col">
+            <span style="color:#ec0000" v-cloak>{{item.SetupTime | toCut}}</span>
+            <span v-cloak>{{item.SourceAmount |toFix(5)}} {{item.SouceCoin}}</span>
+            <span v-cloak> {{item.DestCoin}}</span>
+            <span v-cloak>{{item.DestAmount | toFix(5)}}</span>
+        </li>
+        <li v-if="!totalhistory" style="text-align:center"><span>暂无历史记录</span></li>
+    </ul>
+    <page v-show="totalhistory" style="white-space:nowrap;padding:0;text-align:center" :current="takeRecord.PageIndex" :allpage="totalPage" :showpage="5" @@next="nextPage" @@prev="prevPage" @@goto="gotoPage"></page>
+</div>
+@Html.AntiForgeryToken()
+
+<script src="~/Scripts/vue-page.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            takeRecord: {
+                __RequestVerificationToken: getToken(),
+                'PageIndex': 1,
+                'ShowNumber':10
+            },
+            history: '',
+            coinType: coinType,
+            history: '',
+            totalPage: 1,
+            totalhistory: ''
+        },
+        components: {
+            'page':page
+        },
+        created: function () {
+            this.takeVcRecord();
+        },
+        filters: {
+            toFix: function (val,num) {
+                return val.toFixed(num);
+            },
+            toCut: function (val) {
+                return val.substring(0,10);
+            }
+        },
+        methods: {
+            takeVcRecord: function () {
+                var _this = this;
+                server.TakeChargeRecord(this.takeRecord, function (rel) {
+                    if (rel.msg === 'StatusOk') {
+                        _this.history = rel.data.data;
+                        _this.totalPage = rel.data.page;
+                        _this.totalhistory = rel.data.total;
+                    } else {
+                        showTips('请求失败，请刷新后重试！')
+                    }
+                })
+            },
+            nextPage: function () {
+                this.takeRecord.PageIndex++;
+                this.takeVcRecord();
+            },
+            prevPage: function () {
+                this.takeRecord.PageIndex--;
+                this.takeVcRecord();
+            },
+            gotoPage: function (index) {
+                this.takeRecord.PageIndex = index;
+                this.takeVcRecord();
+            }
+        }
+    })
+</script>

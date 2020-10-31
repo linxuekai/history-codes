@@ -1,0 +1,108 @@
+﻿
+@{
+Layout = "~/Views/Shared/_zh-CN_ManageLayout.cshtml";
+ViewBag.Title = "体系深度";
+}
+
+<style>
+    .wp {
+        text-align: center;
+        position: absolute;
+        width: 100%;
+        top:200px;
+    }
+    .ipt-wp {
+        display: inline-block;
+        margin-right: 10px;
+    }
+    .leader-msg {
+        box-sizing: border-box;
+        position: absolute;
+        width: 50%;
+        left: 25%;
+        top:100px;
+        background: #ffffff;
+        padding:45px;
+    }
+</style>
+
+@Html.AntiForgeryToken()
+<link href="~/Content/eleme-css/index.css" rel="stylesheet" />
+<script src="~/Scripts/element-ui.js"></script>
+<div id="app">
+    <div class="wp">
+        <div  class="ipt-wp" style="width: 250px;">
+            <el-input placeholder="用户名" v-model="UserName" @@change="UserNameInput"></el-input>
+        </div>
+        <div class="ipt-wp" style="width: 90px;">
+            <el-select placeholder="源层级" v-model="LayoutIndex" :disabled="deepDisabled">
+                <el-option
+                  v-for="(item,idx) in Deep"
+                  :label="item"
+                  :value="item"
+                  :key="idx"></el-option>
+            </el-select>
+        </div>
+        <el-button @@click="search" :disabled="LayoutIndex<=0">
+            <i class="el-icon-search"></i>&nbsp;搜索用户
+        </el-button>
+        <div class="leader-msg">
+            <el-form label-width="100px">
+                <el-form-item label="用户名：">
+                    <el-input :value="currentShow.LeaderUserName" readonly></el-input>
+                </el-form-item>
+                <el-form-item label="邮箱：">
+                    <el-input :value="currentShow.LeaderEmail" readonly></el-input>
+                </el-form-item>
+                <el-form-item label="当前深度：">
+                    <el-input :value="currentShow.CurrentIndex" readonly></el-input>
+                </el-form-item>
+                <el-form-item label="总深度：">
+                    <el-input :value="currentShow.Deep" readonly></el-input>
+                </el-form-item>
+            </el-form>
+        </div>
+    </div>
+</div>
+
+<script>
+    var app = new Vue({
+      el: '#app',
+      data: {
+        LayoutIndex: '',
+        UserName: '',
+        Deep: 0,
+        deepDisabled: true,
+        currentShow: {}
+      },
+      methods: {
+        UserNameInput: function () {
+          console.log(this.UserName)
+          if(this.UserName.length >= 8) {
+            $.get('/console/QueryAlianceLeaderDeep', {
+              UserName: this.UserName
+            }).then(function (res) {
+              if (res.msg === 'StatusOk') {
+                console.log(res)
+                this.deepDisabled = false
+                this.Deep = res.data
+              } else {
+                this.deepDisabled = true
+                this.Deep = 0
+              }
+            }.bind(this))
+          }
+        },
+        search: function () {
+          $.post('/console/QueryAlianceLeaderByIndex', {
+            UserName: this.UserName,
+            LayoutIndex: this.LayoutIndex
+          }).then(function (res) {
+            if (res.msg === 'StatusOk') {
+              this.currentShow = res.data
+            }
+          }.bind(this))
+        }
+      }
+    })
+</script>

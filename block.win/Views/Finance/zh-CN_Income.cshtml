@@ -1,0 +1,504 @@
+﻿@{ViewBag.Title = "分红明细";Layout = "~/Views/Shared/_zh-CN_Layout.cshtml";} @Html.AntiForgeryToken()
+
+<link rel="stylesheet"
+      href="../../Content/eleme-css/index.css">
+
+<style>
+  #app {
+    font-family: "Microsoft YaHei UI", sans-serif;
+    padding: 15px;
+    background: white;
+  }
+
+  .tab-a {
+    width: 120px;
+    text-align: center;
+    font-size: 16px;
+  }
+
+  #navtab .active > .tab-a {
+    background: #428bca;
+    color: white;
+  }
+
+  .filter-bar {
+    padding: 10px 0;
+  }
+
+  .filter-bar .el-date-editor--date {
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    text-align: center;
+    display: inline-block;
+    width: 117px;
+  }
+
+  .selector {
+    display: inline-block;
+    margin: 8px 8px 0 0;
+  }
+  .end-date-picker{
+    margin-right: 8px;
+  }
+  table.text-center th {
+    text-align: center;
+  }
+  .query-btn{
+    margin-top:8px;
+  }
+
+  @@media screen and (max-width: 768px){
+    #app{
+      padding:0;
+    }
+    .selector {
+      margin: 5px 2px 0 0;
+    }
+    .end-date-picker{
+      margin-right: 2px;
+    }
+    .query-btn{
+       margin-top:0;
+    }
+    .pc-show{
+      display: none;
+    }
+  }
+</style>
+
+<div id="app">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-xs-12">
+        <ul class="nav nav-tabs"
+            id="navtab">
+          <li>
+            <a href="#generation"
+               id="showGeneration"
+               data-toggle="tab"
+               @@click.once="openGeneration"
+               class="tab-a">
+              直代联队
+            </a>
+          </li>
+          <li>
+            <a href="#team"
+               id="showTeam"
+               data-toggle="tab"
+               @@click="openTeam"
+               class="tab-a">
+              整体联队
+            </a>
+          </li>
+        </ul>
+        <div class="col-sm-12  tab-content">
+
+          <!-- 直代联队 -->
+          <div class="tab-pane"
+               id="generation">
+            <div class="filter-bar">
+              <el-date-picker
+                placeholder="开始时间"
+                format="yyyy/MM/dd"
+                v-model="generationFilter.StartTime"
+                :picker-options="StDateOptions"
+                @@change="GStartTimeCg"
+              ></el-date-picker>
+              <span class="glyphicon glyphicon-resize-horizontal"></span>
+              <el-date-picker
+                placeholder="截止时间"
+                format="yyyy/MM/dd"
+                :disabled="!generationFilter.StartTime"
+                :picker-options="grEdDateOptions"
+                v-model="generationFilter.EndTime"
+                @@change="GEndTimeCg"
+                class="end-date-picker"
+              ></el-date-picker>
+              <div class="selector">
+                <el-select
+                  placeholder="代数"
+                  style="width: 75px;"
+                  v-model="generationFilter.LayoutIndex">
+                  <el-option
+                    v-for="obj in generationOptions"
+                    :key="obj.value"
+                    :value="obj.value"
+                    :label="obj.label"
+                  ></el-option>
+                </el-select>
+              </div>
+              <div class="selector">
+                <el-select
+                  placeholder="分红类型"
+                  style="width: 120px;"
+                  v-model="generationFilter.Type">
+                  <el-option
+                    v-for="obj in TypeOptions"
+                    :key="obj.value"
+                    :label="obj.label"
+                    :value="obj.value"
+                  ></el-option>
+                </el-select>
+              </div>
+              <div class="selector">
+                <el-input
+                  placeholder="搜索用户名"
+                  style="width: 100px;"
+                  v-model="generationFilter.QuerySCName"
+                ></el-input>
+              </div>
+              <el-button type="primary"
+                         class="query-btn"
+                         :disabled="!!generationFilter.StartTime !== !!generationFilter.EndTime"
+                         @@click="generationQuery">筛选
+              </el-button>
+            </div>
+            <table class="table table-striped text-center">
+              <thead>
+                <tr>
+                  <th class="pc-show">#</th>
+                  <th>用户</th>
+                  <th class="pc-show">ID</th>
+                  <th>注册日期</th>
+                  <th>套餐</th>
+                  <th>我的分红</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item, idx) in generationIncome"
+                    :key="idx">
+                  <td class="pc-show">{{idx+1}}</td>
+                  <td>{{item.NickName}}</td>
+                  <td class="pc-show">{{item.UserName}}</td>
+                  <td>{{item.SetupTime.slice(0,11)}}</td>
+                  <td>{{item.IncomePercent}}</td>
+                  <td>{{item.Income}}</td>
+                </tr>
+              </tbody>
+            </table>
+            <infinite-loading :on-infinite="grOnInfinite"
+                              ref="grInfiniteLoading"
+                              v-if="generationInfiniteReady">
+              <span slot="no-results">
+                暂无分红数据。
+              </span>
+              <span slot="no-more">
+                以上为筛选到的分红数据。
+              </span>
+            </infinite-loading>
+          </div>
+
+          <!-- 整体联队 -->
+          <div class="tab-pane"
+               id="team">
+            <div class="filter-bar">
+              <el-date-picker
+                placeholder="开始时间"
+                format="yyyy/MM/dd"
+                v-model="teamFilter.StartTime"
+                :picker-options="StDateOptions"
+                @@change="TStartTimeCg"
+              ></el-date-picker>
+              <span class="glyphicon glyphicon-resize-horizontal"></span>
+              <el-date-picker
+                placeholder="截止时间"
+                format="yyyy/MM/dd"
+                :disabled="!teamFilter.StartTime"
+                :picker-options="tmEdDateOptions"
+                v-model="teamFilter.EndTime"
+                @@change="TEndTimeCg"
+                class="end-date-picker"
+              ></el-date-picker>
+              <div class="selector">
+                <el-select
+                  placeholder="级别"
+                  style="width: 90px;"
+                  v-model="teamFilter.LayoutIndex">
+                  <el-option
+                    v-for="obj in levelOptions"
+                    :key="obj.value"
+                    :value="obj.value"
+                    :label="obj.label"
+                  ></el-option>
+                </el-select>
+              </div>
+              <div class="selector">
+                <el-input
+                  placeholder="搜索用户名"
+                  style="width: 100px;"
+                  v-model="teamFilter.QuerySCName"
+                ></el-input>
+              </div>
+              <el-button type="primary"
+                         class="query-btn"
+                         :disabled="!!teamFilter.StartTime !== !!teamFilter.EndTime"
+                         @@click="teamQuery">筛选
+              </el-button>
+            </div>
+            <table class="table table-striped text-center">
+              <thead>
+                <tr>
+                  <th class="pc-show">#</th>
+                  <th>用户</th>
+                  <th class="pc-show">ID</th>
+                  <th>注册日期</th>
+                  <th>分红比例</th>
+                  <th>我的分红</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item, idx) in teamIncome"
+                    :key="idx">
+                  <td class="pc-show">{{idx+1}}</td>
+                  <td>{{item.NickName}}</td>
+                  <td class="pc-show">{{item.UserName}}</td>
+                  <td>{{item.SetupTime.slice(0,11)}}</td>
+                  <td>{{(item.IncomePercent * 100) + '%'}}</td>
+                  <td>{{item.Income}}</td>
+                </tr>
+              </tbody>
+            </table>
+            <infinite-loading :on-infinite="tmOnInfinite"
+                              ref="tmInfiniteLoading"
+                              v-if="teamInfiniteReady">
+              <span slot="no-results">
+                暂无分红数据。
+              </span>
+              <span slot="no-more">
+                以上为筛选到的分红数据。
+              </span>
+            </infinite-loading>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../../Scripts/element-ui.js"></script>
+<script src="../../Scripts/vue-infinite-loading.js"></script>
+
+<script>
+  /* global Vue getToken */
+  var app = new Vue({
+    el: '#app',
+    data: function() {
+      return {
+        token: getToken(),
+        generationInfiniteReady: false,
+        teamInfiniteReady: false,
+        generationFilter: {
+          StartTime: null,
+          EndTime: null,
+          LayoutIndex: 1,
+          QuerySCName: '',
+          PageIndex: '',
+          ShowNumber: '',
+          Type: 1
+        },
+        teamFilter: {
+          StartTime: null,
+          EndTime: null,
+          LayoutIndex: 0,
+          QuerySCName: '',
+          PageIndex: '',
+          ShowNumber: '',
+          Type: 5
+        },
+        generationOptions: [
+          {label: 'Ｇ１', value: 1},
+          {label: 'Ｇ２', value: 2},
+          {label: 'Ｇ３', value: 3},
+          {label: 'Ｇ４', value: 4},
+          {label: 'Ｇ５', value: 5},
+          {label: 'Ｇ６', value: 6}
+        ],
+        levelOptions:[
+          {label: '全部', value: 0},
+          {label: 'ＢＲ', value: 1},
+          {label: 'ＪＢＲ', value: 2},
+          {label: 'ＳＢＲ', value: 3},
+          {label: 'ＩＳ', value: 4},
+          {label: 'ＡＤ', value: 5},
+          {label: 'ＩＰ', value: 6}
+        ],
+        TypeOptions: [
+          {label: '直购分红', value: 1},
+          {label: '直购差分红', value: 2},
+          {label: '直代分红', value: 3}
+        ],
+        generationIncome: [],
+        teamIncome: [],
+        generationRequestPage: 1,
+        teamRequestPage: 1,
+        StDateOptions: {
+          disabledDate: function(time) {
+            return time.getTime() > Date.now()
+          }
+        } //未来的时间不可选
+      }
+    },
+    computed: {
+      // 未来时间和小于开始时间不可选
+      grEdDateOptions:function() {
+        return {
+          disabledDate: function(time) {
+            var now = new Date()
+            var minDate = new Date(app.generationFilter.StartTime)
+            return time > now || time < minDate
+          }
+        }
+      },
+      tmEdDateOptions:function() {
+        return {
+          disabledDate: function(time) {
+            var now = new Date()
+            var minDate = new Date(app.teamFilter.StartTime)
+            return time > now || time < minDate
+          }
+        }
+      }
+    },
+    methods: {
+      openGeneration() {
+        this.generationInfiniteReady = true
+      },
+      openTeam() {
+        this.teamInfiniteReady = true
+      },
+      generationQuery: function() {
+        this.generationIncome = []
+        this.generationRequestPage = 1
+        this.$refs.grInfiniteLoading.$emit('$InfiniteLoading:reset')
+      },
+      teamQuery: function() {
+        this.teamIncome = []
+        this.teamRequestPage = 1
+        this.$refs.tmInfiniteLoading.$emit('$InfiniteLoading:reset')
+      },
+      GStartTimeCg: function(d) {
+        this.generationFilter.StartTime = d
+        var sTime = this.generationFilter.StartTime
+        var eTime = this.generationFilter.EndTime
+        if (!sTime || new Date(sTime) >= new Date(eTime || null)) {
+          this.generationFilter.EndTime = null
+        }
+      },
+      GEndTimeCg: function(d) {
+        this.generationFilter.EndTime = d
+      },
+      TStartTimeCg: function(d) {
+        this.teamFilter.StartTime = d
+        var sTime = this.teamFilter.StartTime
+        var eTime = this.teamFilter.EndTime
+        if (!sTime || new Date(sTime) >= new Date(eTime || null)) {
+          this.teamFilter.EndTime = null
+        }
+      },
+      TEndTimeCg: function(d) {
+        this.teamFilter.EndTime = d
+      },
+      grOnInfinite: function() {
+        this.takeGenerationIncome().then(function(res) {
+          res.msg === 'StatusOk' && res.data.data.length
+            ? app.$refs.grInfiniteLoading.$emit('$InfiniteLoading:loaded')
+            : app.$refs.grInfiniteLoading.$emit('$InfiniteLoading:complete')
+        })
+      },
+      tmOnInfinite: function() {
+        this.takeAllianceIncome().then(function(res) {
+          res.msg === 'StatusOk' && res.data.data.length
+            ? app.$refs.tmInfiniteLoading.$emit('$InfiniteLoading:loaded')
+            : app.$refs.tmInfiniteLoading.$emit('$InfiniteLoading:complete')
+        })
+      },
+      takeGenerationIncome: function() {
+        var gF = this.generationFilter
+        return $.post('/Finance/TakeGenIncome', {
+          __RequestVerificationToken: this.token,
+          StartTime: gF.StartTime,
+          EndTime: gF.EndTime,
+          LayoutIndex: gF.LayoutIndex,
+          QuerySCName: gF.QuerySCName,
+          PageIndex: this.generationRequestPage++,
+          ShowNumber: 10,
+          Type: gF.Type
+        }).then(
+          function(res) {
+            if (res.msg === 'StatusOk') {
+              res.data.data.forEach(function(item) {
+                app.generationIncome.push(item)
+              })
+            } else if (res.msg === 'UserNeedLogin') {
+              app.$message.warning('登录信息已失效，请登录后重试。')
+            }
+            return res
+          },
+          function() {
+            app.$message.error('网络错误，请刷新重试。')
+          }
+        )
+      },
+      takeAllianceIncome: function() {
+        var tm = this.teamFilter
+        return $.post('/Finance/TakeAllianceIncome', {
+          __RequestVerificationToken: this.token,
+          StartTime: tm.StartTime,
+          EndTime: tm.EndTime,
+          LayoutIndex: tm.LayoutIndex,
+          QuerySCName: tm.QuerySCName,
+          PageIndex: this.teamRequestPage++,
+          ShowNumber: 10,
+          Type: tm.Type
+        }).then(
+          function(res) {
+            if (res.msg === 'StatusOk') {
+              res.data.data.forEach(function(item) {
+                app.teamIncome.push(item)
+              })
+            } else if (res.msg === 'UserNeedLogin') {
+              app.$message.warning('登录信息已失效，请登录后重试。')
+            }
+            return res
+          },
+          function() {
+            app.$message.error('网络错误，请刷新重试。')
+          }
+        )
+      }
+
+    },
+    created: function() {
+      var $showGeneration = $('#showGeneration')
+      var gF = this.generationFilter
+      var tF = this.teamFilter
+      if (/^2\d{3}-(0[1-9]|1[012])&(0[123]|15)$/.test(window.location.search.slice(1))) {
+        var search = window.location.search.slice(1)
+        var StarTime = search.slice(0, 7) + '-' + '01'
+        var EndTime = search.slice(0, 7) + '-' + new Date(search.slice(0, 4), search.slice(5, 7), 0).getDate()
+        var queryType = search.slice(-2)
+        switch (queryType) {
+          case '01':
+          case '02':
+          case '03':
+            $showGeneration.tab('show')
+            gF.StartTime = StarTime
+            gF.EndTime = EndTime
+            gF.LayoutIndex = 1
+            gF.Type = parseInt(queryType)
+            this.generationInfiniteReady = true // 开始获取Generation数据
+            break
+          case '15':
+            $('#showTeam').tab('show')
+            tF.StartTime = StarTime
+            tF.EndTime = EndTime
+            this.teamInfiniteReady = true // 开始获取Team数据
+            break
+        }
+      } else {
+        // 默认打开直代联队tab
+        $showGeneration.tab('show')
+        this.generationInfiniteReady = true // 开始获取Generation数据
+      }
+    }
+  })
+</script>

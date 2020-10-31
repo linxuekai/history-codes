@@ -1,0 +1,711 @@
+﻿
+@{
+    ViewBag.Title = "区块股VTS";
+    Layout = "~/Views/Shared/_zh-CN_Layout.cshtml";
+}
+
+<link href="~/Content/eleme-css/slider.css" rel="stylesheet" />
+<script src="~/Scripts/element-ui.js"></script>
+<style>
+    @@media screen and (max-width: 768px) {
+      #PC-VTCTop-buy,#PC-VTCTop-sale,#PC-buyLog,#PC-positions,#PC-saleLog{
+        display: none;
+      }
+      #MB-VTCTop-buy,#MB-VTCTop-sale,#MB-buyLog,#MB-positions,#MB-saleLog{
+        display:block;
+      }
+      .purse {
+        position: relative;
+        height: 60px;
+        color: white;
+        width: 32%;
+        float: left;
+        margin-left: 1%;
+      }
+
+      .purse-name {
+        position: absolute;
+        top: 8px;
+        left: 10%;
+        font-size: 10px;
+      }
+
+      .purse-balance {
+        position: absolute;
+        bottom: 8px;
+        left: 10%;
+        font-size: 16px;
+      }
+
+      .unit {
+        font-size: 10px;
+        margin-left: 8px;
+      }
+
+    }
+    @@media screen and (min-width: 768px) {
+      #PC-VTCTop-buy,#PC-VTCTop-sale,#PC-buyLog,#PC-positions,#PC-saleLog{
+        display: block;
+      }
+      #MB-VTCTop-buy,#MB-VTCTop-sale,#MB-buyLog,#MB-positions,#MB-saleLog{
+        display: none;
+      }
+      .purse {
+        position: relative;
+        height: 90px;
+        color: white;
+        width: 32%;
+        float: left;
+        margin-left: 1%;
+      }
+
+      .purse-name {
+        position: absolute;
+        top: 14px;
+        left: 10%;
+        font-size: 14px;
+      }
+
+      .purse-balance {
+        position: absolute;
+        bottom: 14px;
+        left: 10%;
+        font-size: 18px;
+      }
+
+      .unit {
+        font-size: 12px;
+        margin-left: 8px;
+      }
+    }
+
+    .container-fluid {
+      padding: 0 6px;
+      min-width:310px;
+    }
+
+    .VTCBlock {
+      background: #f5f5f5;
+    }
+
+    .VTCLeftTop {
+      height: 420px;
+      border-right: 1px solid #eeeeee;
+    }
+
+    .VTCRightTop {
+      height: 420px;
+      position: relative;
+    }
+
+    #VTCBottom, #buy, #sale {
+      background-color: white;
+    }
+
+    .purse-wrap {
+      margin: 20px 0;
+    }
+
+    .row {
+      margin: 0;
+    }
+
+    .pd-0 {
+      padding: 0;
+    }
+
+
+    table {
+      font-size: 11px;
+    }
+
+    th{
+      font-size: 10px;
+    }
+
+    #MB-VTCTop-sale th,#MB-VTCTop-buy th {
+      padding-right: 0;
+    }
+
+    .calculation {
+      margin-bottom: 40px;
+    }
+
+    .calculation-symbol {
+      line-height: 34px;
+      text-align: center;
+    }
+
+    .calculation-item-name {
+      padding-left: 15px;
+      margin-bottom: 5px;
+    }
+
+    .trade-item {
+      position: relative;
+      margin: 0 auto 25px;
+      width: 70%;
+    }
+
+    .VTCHr {
+      margin: 10px 0;
+    }
+
+    .MB-buy-ac .el-input-group__prepend, .MB-buy-ac .el-input-group__append {
+      padding: 0;
+      width: 20%;
+    }
+
+    .MB-buy-ac a.btn {
+      width: 100%;
+      border-radius: 0;
+      border: none;
+      color: #1e88e5;
+      font-size: 20px;
+      padding: 0;
+    }
+
+    .MB-buy-ac-item {
+      margin: 0 0 15px;
+    }
+
+    .MB-buy-ac-item:first-child {
+      margin-top: 26px;
+    }
+
+    .pdl-8 {
+      padding: 0 0 0 8px;
+    }
+
+    .pdr-8 {
+      padding: 0 8px 0 0;
+    }
+
+    #MB-VTCTop-buy td, #MB-VTCTop-sale td {
+      padding: 4px 0 4px 5px;
+      border: none;
+    }
+
+    .cover{
+      position: absolute;
+      left:0;
+      top:0;
+      width: 100%;
+      height: 100%;
+      background-color: black;
+      opacity: .6;
+    }
+
+    .coverText{
+      text-align: center;
+      height: 100px;
+      width: 100%;
+      font-size: 40px;
+      color: white;
+      position: absolute;
+      top:50%;
+      margin-top: -50px;
+    }
+
+    #PC-VTCTop-buy .el-slider__runway,#PC-VTCTop-sale .el-slider__runway,#PC-VTCTop-sale .el-slider__bar,#PC-VTCTop-buy .el-slider__bar{
+      height: 8px;
+    }
+    #PC-VTCTop-buy .el-slider__button-wrapper,#PC-VTCTop-sale .el-slider__button-wrapper{
+      top:-14px;
+    }
+</style>
+
+    <div class="container-fluid VTCBlock" id="app">
+        <div class="row">
+            <div class="col-sm-12 pd-0">
+                <ul class="nav nav-tabs">
+                    <li class="active"><a href="#buy" data-toggle="tab">买入操作</a></li>
+                    <li><a href="#sale" data-toggle="tab">卖出操作</a></li>
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane active" id="buy">
+                        <div id="PC-VTCTop-buy">
+                            <div class="row">
+                                <div class="col-sm-7 VTCLeftTop">
+                                    <purse></purse>
+                                    <div class="calculation row">
+                                        <div class="col-sm-3 pd-0">
+                                            <div class="calculation-item-name">购买量</div>
+                                            <input type="text" class="form-control">
+                                        </div>
+                                        <div class="col-sm-1 pd-0">
+                                            <div style="visibility: hidden; margin-bottom: 5px">.</div>
+                                            <div class="calculation-symbol">x</div>
+                                        </div>
+                                        <div class="col-sm-3 pd-0">
+                                            <div class="calculation-item-name">单价</div>
+                                            <input type="text" class="form-control">
+                                        </div>
+                                        <div class="col-sm-1 pd-0">
+                                            <div style="visibility: hidden; margin-bottom: 5px">.</div>
+                                            <div class="calculation-symbol">=</div>
+                                        </div>
+                                        <div class="col-sm-3 pd-0">
+                                            <div class="calculation-item-name">金额</div>
+                                            <input type="text" class="form-control">
+                                        </div>
+                                    </div>
+
+                                    <div class="trade-item">
+                                        <el-slider v-model="buySliderVal" :format-tooltip="formatSliderVal"></el-slider>
+                                        <div style="width: 100%;margin: -16px 0 46px;">
+                                            <span style="position: absolute;left:0;">0</span>
+                                            <span style="position: absolute;left:16%;">20%</span>
+                                            <span style="position: absolute;left:36%;">40%</span>
+                                            <span style="position: absolute;left:56%;">60%</span>
+                                            <span style="position: absolute;left:76%;">80%</span>
+                                            <span style="position: absolute;left:96%;">100%</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="trade-item">
+                                        <el-form label-width="75px" label-position="left">
+                                            <el-form-item label="交易密码">
+                                                <el-input v-model="tradePWK" type="password"></el-input>
+                                            </el-form-item>
+                                            <el-form-item label="">
+                                                <el-button type="info" style="width: 100%;">买入</el-button>
+                                            </el-form-item>
+                                        </el-form>
+                                    </div>
+
+                                </div>
+                                <div class="col-sm-5 VTCRightTop">
+                                    <!--买入操作右上角表格-->
+                                    <progress-table></progress-table>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="MB-VTCTop-buy">
+                            <div class="row">
+                                <div class="col-xs-12 pd-0">
+                                    <purse></purse>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xs-6 pdr-8 MB-buy-ac">
+                                    <el-input placeholder="购买量" type="number" class="MB-buy-ac-item">
+                                        <template slot="prepend">
+                                            <a class="btn">-</a>
+                                        </template>
+                                        <template slot="append">
+                                            <a class="btn">+</a>
+                                        </template>
+                                    </el-input>
+                                    <el-input placeholder="单价" type="number" class="MB-buy-ac-item">
+                                        <template slot="prepend">
+                                            <a class="btn">-</a>
+                                        </template>
+                                        <template slot="append">
+                                            <a class="btn">+</a>
+                                        </template>
+                                    </el-input>
+                                    <div class="MB-buy-ac-item">金额：$0.00</div>
+                                    <el-input placeholder="请输入交易密码" type="password" class="MB-buy-ac-item"></el-input>
+                                    <el-button style="width: 100%;" type="info" class="MB-buy-ac-item">买入</el-button>
+                                </div>
+                                <div class="col-xs-6 pdl-8">
+                                    <progress-table></progress-table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="sale">
+                        <div id="PC-VTCTop-sale">
+                            <div class="row">
+                                <div class="col-sm-7 VTCLeftTop">
+                                    <!--卖出操作左上角内容-->
+                                    <purse></purse>
+                                    <div class="calculation row">
+                                        <div class="col-sm-3 pd-0">
+                                            <div class="calculation-item-name">卖出量</div>
+                                            <input type="text" class="form-control">
+                                        </div>
+                                        <div class="col-sm-1 pd-0">
+                                            <div style="visibility: hidden; margin-bottom: 5px">.</div>
+                                            <div class="calculation-symbol">x</div>
+                                        </div>
+                                        <div class="col-sm-3 pd-0">
+                                            <div class="calculation-item-name">单价</div>
+                                            <input type="text" class="form-control">
+                                        </div>
+                                        <div class="col-sm-1 pd-0">
+                                            <div style="visibility: hidden; margin-bottom: 5px">.</div>
+                                            <div class="calculation-symbol">=</div>
+                                        </div>
+                                        <div class="col-sm-3 pd-0">
+                                            <div class="calculation-item-name">金额</div>
+                                            <input type="text" class="form-control">
+                                        </div>
+                                    </div>
+
+                                    <div class="trade-item">
+                                        <el-slider v-model="saleSliderVal" :format-tooltip="formatSliderVal"></el-slider>
+                                        <div style="width: 100%;margin: -16px 0 46px;">
+                                            <span style="position: absolute;left:0;">0</span>
+                                            <span style="position: absolute;left:16%;">20%</span>
+                                            <span style="position: absolute;left:36%;">40%</span>
+                                            <span style="position: absolute;left:56%;">60%</span>
+                                            <span style="position: absolute;left:76%;">80%</span>
+                                            <span style="position: absolute;left:96%;">100%</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="trade-item">
+                                        <el-form label-width="75px" label-position="left">
+                                            <el-form-item label="交易密码">
+                                                <el-input v-model="tradePWK" type="password"></el-input>
+                                            </el-form-item>
+                                            <el-form-item label="">
+                                                <el-button type="info" style="width: 100%;">卖出</el-button>
+                                            </el-form-item>
+                                        </el-form>
+                                    </div>
+                                </div>
+                                <div class="col-sm-5 VTCRightTop">
+                                    <!--卖出操作右上角表格-->
+                                    <progress-table></progress-table>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="MB-VTCTop-sale">
+                            <div class="row">
+                                <div class="col-xs-12 pd-0">
+                                    <purse></purse>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xs-6 pdr-8 MB-buy-ac">
+                                    <el-input placeholder="卖出量" type="number" class="MB-buy-ac-item">
+                                        <template slot="prepend">
+                                            <a class="btn">-</a>
+                                        </template>
+                                        <template slot="append">
+                                            <a class="btn">+</a>
+                                        </template>
+                                    </el-input>
+                                    <el-input placeholder="单价" type="number" class="MB-buy-ac-item">
+                                        <template slot="prepend">
+                                            <a class="btn">-</a>
+                                        </template>
+                                        <template slot="append">
+                                            <a class="btn">+</a>
+                                        </template>
+                                    </el-input>
+                                    <div class="MB-buy-ac-item">金额：$0.00</div>
+                                    <el-input placeholder="请输入交易密码" type="password" class="MB-buy-ac-item"></el-input>
+                                    <el-button style="width: 100%;" type="info" class="MB-buy-ac-item">卖出</el-button>
+                                </div>
+                                <div class="col-xs-6 pdl-8">
+                                    <progress-table></progress-table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <hr class="VTCHr">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12 pd-0">
+                <div id="VTCBottom">
+                    <ul class="nav nav-tabs">
+                        <li class="active"><a href="#positions" data-toggle="tab">持仓订单</a></li>
+                        <li><a href="#buyLog" data-toggle="tab">买入操作</a></li>
+                        <li><a href="#saleLog" data-toggle="tab">卖出操作</a></li>
+                    </ul>
+                    <div class="tab-content">
+                        <div id="positions" class="tab-pane active">
+                            <!--持仓订单-->
+                            <div id="PC-positions">
+                                <table class="table table-bordered table-condensed table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>委托时间</th>
+                                            <th>委托类别</th>
+                                            <th>委托数量</th>
+                                            <th>委托价格</th>
+                                            <th>成交数量</th>
+                                            <th>平均成交价</th>
+                                            <th>尚未成交</th>
+                                            <th>订单来源</th>
+                                            <th>操作/状态</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>暂无订单</td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="MB-positions">
+                                <table class="table table-striped table-condensed">
+                                    <thead>
+                                        <tr>
+                                            <th>委托时间</th>
+                                            <th>委托价格</th>
+                                            <th>成交数量</th>
+                                            <th>尚未成交</th>
+                                            <th>操作/状态</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>暂无订单</td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div id="buyLog" class="tab-pane">
+                            <div id="PC-buyLog">
+                                <table class="table table-bordered table-condensed table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>委托时间</th>
+                                            <th>委托类别</th>
+                                            <th>委托数量</th>
+                                            <th>委托价格</th>
+                                            <th>成交数量</th>
+                                            <th>平均成交价</th>
+                                            <th>尚未成交</th>
+                                            <th>订单来源</th>
+                                            <th>操作/状态</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>暂无订单</td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="MB-buyLog">
+                                <table class="table table-striped table-condensed">
+                                    <thead>
+                                        <tr>
+                                            <th>委托时间</th>
+                                            <th>委托价格</th>
+                                            <th>成交数量</th>
+                                            <th>尚未成交</th>
+                                            <th>操作/状态</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>暂无订单</td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div id="saleLog" class="tab-pane">
+                            <div id="PC-saleLog">
+                                <table class="table table-bordered table-condensed table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>委托时间</th>
+                                            <th>委托类别</th>
+                                            <th>委托数量</th>
+                                            <th>委托价格</th>
+                                            <th>成交数量</th>
+                                            <th>平均成交价</th>
+                                            <th>尚未成交</th>
+                                            <th>订单来源</th>
+                                            <th>操作/状态</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>暂无订单</td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="MB-saleLog">
+                                <table class="table table-striped  table-condensed">
+                                    <thead>
+                                        <tr>
+                                            <th>委托时间</th>
+                                            <th>委托价格</th>
+                                            <th>成交数量</th>
+                                            <th>尚未成交</th>
+                                            <th>操作/状态</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>暂无订单</td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <template id="purse" style="display:none;">
+        <div class="purse-wrap">
+            <div class="purse"
+                 style="background-image: url('/images/Img/BTCBG.png'); background-repeat: no-repeat; background-size: 100% 100%;">
+                <div class="purse-name">VS余额</div>
+                <div class="purse-balance">0.00<span class="unit">VS</span></div>
+            </div>
+            <div class="purse"
+                 style="background-image: url('/images/Img/LTCBG.png'); background-repeat: no-repeat; background-size: 100% 100%;">
+                <div class="purse-name">可买VTS</div>
+                <div class="purse-balance">0.00<span class="unit">VTS</span></div>
+            </div>
+            <div class="purse"
+                 style="background-image: url('/images/Img/SCBG.png'); background-repeat: no-repeat; background-size: 100% 100%;">
+                <div class="purse-name">持仓VTS</div>
+                <div class="purse-balance">0.00<span class="unit">VTS</span></div>
+            </div>
+            <div class="clearfix"></div>
+        </div>
+    </template>
+    <template id="progressTable" style="display:none;">
+        <div>
+            <table class="table table-condensed">
+                <thead>
+                    <tr>
+                        <th>买卖类型</th>
+                        <th>委托价格</th>
+                        <th>委托数量</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <tr>
+                        <td>卖出(0)</td>
+                        <td>$0.326</td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td>卖出(0)</td>
+                        <td>$0.326</td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td>卖出(0)</td>
+                        <td>$0.326</td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td>卖出(0)</td>
+                        <td>$0.326</td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td>卖出(0)</td>
+                        <td>$0.326</td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td>买入(0)</td>
+                        <td>$0.326</td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td>买入(0)</td>
+                        <td>$0.326</td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td>买入(0)</td>
+                        <td>$0.326</td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td>买入(0)</td>
+                        <td>$0.326</td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td>买入(0)</td>
+                        <td>$0.326</td>
+                        <td>0</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="cover">
+                <div class="coverText">
+                    停牌中
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script>
+      new Vue({
+        el: '#app',
+        components: {
+          'purse': {
+            template: '#purse'
+          },
+          'progress-table': {
+            template: '#progressTable'
+          }
+        },
+        data: {
+          buySliderVal: 0,
+          saleSliderVal: 0,
+          tradePWK: ''
+        },
+        methods: {
+          formatSliderVal: function (val) {
+            return val + '%'
+          }
+        }
+      })
+    </script>

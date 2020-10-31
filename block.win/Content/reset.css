@@ -1,0 +1,56 @@
+.navbar-toggle:focus {
+    outline: none;
+}
+
+.navbar-default {
+    border-color: #004a7c;
+}
+
+    .navbar-default .navbar-toggle:focus {
+        background-color: #004a7c !important;
+    }
+
+    .navbar-default .navbar-collapse, .navbar-default .navbar-form {
+        border-color: #004a7c;
+    }
+.navbar {
+    min-height:40px;
+}
+.panel {
+    background-color: transparent;
+    border: none;
+    border-radius: 0 !important;
+}
+.panel-heading.active {
+    background-color: #1e88e5;
+}
+    .panel-group .panel + .panel {
+        margin-top: 0;
+    }
+.panel-heading {
+    height: 60px;
+    line-height: 60px;
+    padding: 0 10px 0 34px;
+    font-size: 18px;
+    color: #fff;
+}
+
+.panel-body {
+    height:40px;
+    line-height:40px;
+    padding:0 0 0 80px;
+}
+    .panel-body a {
+        color: #75b2e9;
+    }
+    .panel-body a.active {
+        color: #fff;
+    }
+    .panel-group .panel-heading + .panel-collapse .panel-body {
+        border-top: none;
+    }
+
+html {
+    -webkit-tap-highlight-color:none !important;
+}
+

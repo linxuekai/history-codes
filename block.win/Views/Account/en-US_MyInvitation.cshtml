@@ -1,0 +1,91 @@
+﻿
+@{
+    ViewBag.Title = "Account";
+    Layout = "~/Views/Shared/_en-US_Layout.cshtml";
+}
+
+<style>
+    .goBack {
+        position: fixed;
+        left: 16px;
+        top: 12px;
+        padding-right: 50px;
+        z-index: 1000;
+    }
+
+    .acoountSet {
+        display: none;
+    }
+</style>
+
+<a href="../Account/General" class="goBack p-l-14">
+    <img class="w-10" src="~/images/Img/goBack.png" />
+</a>
+
+<div class="bg-f5f5f5 h100" id="app">
+    <a class="d-s-block f-s-14 p-lr-16 h-40 l-h-40 bg-255 ps-relative c-000" href="../LayoutPartial/LayoutMobileUserInfo">
+        Personal Information
+        <img class="ps-absolute r-16 w-8 h-16 t-12" src="~/images/arrow-right.png" />
+    </a>
+    <a class="d-s-block c-000 f-s-14 p-lr-16 m-t-16 h-40 l-h-40 bg-255 ps-relative" href="../News/Notify">
+        Notice
+        <img class="ps-absolute r-16 w-8 h-16 t-12" src="~/images/arrow-right.png" />
+    </a>
+
+    <a class="d-s-block c-000 f-s-14 p-lr-16 m-t-16 b-b-e1e1e1 h-40 l-h-40 bg-255 ps-relative" href="../LayoutPartial/LayoutMobileUserLoginPassword">
+        Login Password
+        <img class="ps-absolute r-16 w-8 h-16 t-12" src="~/images/arrow-right.png" />
+    </a>
+    <a class="d-s-block c-000 f-s-14 p-lr-16 b-b-e1e1e1 h-40 l-h-40 bg-255 ps-relative" href="../LayoutPartial/LayoutMobileUserTradePassword">
+        Transaction Password
+        <img class="ps-absolute r-16 w-8 h-16 t-12" src="~/images/arrow-right.png" />
+    </a>
+    <a class="d-s-block c-000 f-s-14 p-lr-16 h-40 l-h-40 bg-255 ps-relative" @@click="GoogleToken">
+        Google Certified
+        @*<span class="ps-absolute r-16 f-s-12 c-999">已认证</span>*@
+         <img class="ps-absolute r-16 w-8 h-16 t-12" src="~/images/arrow-right.png" />
+    </a>
+
+    <a class="d-s-block c-000 f-s-14 p-lr-16 m-t-16 h-40 l-h-40 bg-255 ps-relative" href="../LayoutPartial/LayoutMobileLang">
+        Language
+        <img class="ps-absolute r-16 w-8 h-16 t-12" src="~/images/arrow-right.png" />
+    </a>
+    @*<a class="d-s-block c-000 f-s-14 p-lr-16 m-t-16 h-40 l-h-40 bg-255 ps-relative" href="../LayoutPartial/LayoutMobileLang">
+        Customer Service
+        <img class="ps-absolute r-16 w-8 h-16 t-12" src="~/images/arrow-right.png" />
+    </a>*@
+
+    <div class="m-t-16 p-lr-16">
+        <button class="border-none bg-255 c-red f-s-14 h-40 l-h-40 d-s-i-b w100 border-radius-4" @@click="Logout">Log out</button>
+    </div>
+
+</div>
+@Html.AntiForgeryToken()
+
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+
+        },
+        methods: {
+            GoogleToken: function(){
+                server.GoogleToken({
+                    __RequestVerificationToken: getToken(),
+                }, function (rel) {
+                    switch (rel.msg) {
+                        case 'StatusOk': {
+                            $('#layoutFade').html('<div id="mobileGoogleToken"></div>');
+                            $('#layoutFade').fadeIn();
+                            qr(rel.data, 'mobileGoogleToken');
+                            break;
+                        }
+                    }
+                })
+            },
+            Logout: function (){
+                Logout();
+            }
+        }
+    })
+</script>

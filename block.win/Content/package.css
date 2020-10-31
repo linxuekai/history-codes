@@ -1,0 +1,290 @@
+﻿/*coder 智杰
+日期 2017-6-6
+范围 Finance/package */
+body {
+    background: #f5f5f5;
+}
+
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }  
+.row {
+    margin: 0;
+}
+
+.c-p-l {
+    padding-left: 0
+}
+
+
+.convert {
+    background-color: #ffffff;
+    margin: 76px 0px 0px 18px;
+    box-shadow: 0px 1px 10px 0 rgba(0, 0, 0, 0.07);
+    border: solid 1px #e1e1e1;
+}
+
+.convert-stock {
+    margin: 20px 0;
+}
+
+.convert-stock > div {
+    position: relative;
+    height: 90px;
+    color: #fff;
+}
+
+.convert-name {
+    position: absolute;
+    top: 14px;
+    left: 10%;
+    font-size: 16px
+}
+
+.convert-balance {
+    position: absolute;
+    bottom: 14px;
+    left: 10%;
+    font-size: 18px;
+}
+
+    .convert-balance .unit {
+        margin-left: 10px;
+        font-size: 16px;
+    }
+
+.vc > div {
+    font-size: 24px;
+    text-align: center;
+}
+
+.vc .unit {
+    font-size: 15px;
+}
+
+
+.form-horizontal {
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.form-group {
+    padding: 10px 0 0 0;
+}
+    .form-group label {
+        white-space: nowrap;
+    }
+
+    .form-group > div {
+        position: relative;
+    }
+    .form-group .toggle-select {
+        position: absolute;
+        top: 0;
+        right: 15px;
+        height: 100%;
+    }
+        .form-group .toggle-select button {
+            height: 100%;
+            border: 0;
+            background: transparent;
+            box-shadow: none;
+        }
+
+        .form-group .toggle-select li {
+            text-align:right;
+        }
+        .form-group .toggle-select .select {
+            position: absolute;
+            top: 100%;
+            min-width: 88px;
+            right: 0;
+            
+        }
+    .form-group .select li{
+        line-height:30px;
+        background:#fff;
+        text-align:right;
+    }
+    .form-control {
+        height: 44px;
+        background-color: #fcfcfc;
+        border: solid 1px #e1e1e1;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+.form-group .confirm {
+    padding: 6px 12px;
+    width: 100%;
+    height: 40px;
+    color: #fff;
+    border:0;
+    border-radius: 4px;
+    background-color: #1da1f3;
+}
+
+.info {
+    position: relative;
+    font-size: 18px;
+    height:40px;
+    line-height:40px;
+    color: #999;
+    border: 1px solid transparent;
+}
+    .info.active {
+        background-color:#fff;
+    }
+.info a {
+    color: #999;
+}
+
+.info .toggle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 15%;
+    background: url(/images/arrow-up.png) no-repeat center;
+    display: block;
+    content: "";
+    height: 100%;
+    border-left: 1px solid #e1e1e1;
+}
+
+.info-down {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 30px;
+    text-align: left;
+    color: #666666;
+    border: 1px solid #e1e1e1;
+}
+.info-down ol{
+    padding:10px 10px 10px 30px;
+}
+/*历史表格*/
+#tb th, #tb-tb td {
+    padding: 15px 20px;
+}
+/*分页*/
+.history {
+    position: relative;
+}
+
+    .history li {
+        display: inline-block;
+    }
+    .history .ban a{
+        color: #999;
+    }
+    .history li a {
+        padding: 6px 10px;
+        display: inline-block;
+        border: 1px solid #ddd;
+        background: #fff;
+        color: #0f0f0f;
+    }
+
+            .history li a:hover {
+                background: #eee;
+            }
+
+        .history li.active a {
+            background: #0E90D2;
+            color: #fff;
+        }
+/*清除bootstrap影响*/
+.info .panel-heading.active {
+    background: #f5f5f5
+}
+/*手机版响应式*/
+@media screen and (max-width:768px) {
+    .convert {
+        
+        margin: 0;
+        
+    }
+    .main {
+        padding: 0;
+    }
+
+    .container {
+        padding:0;
+    }
+    .wrapper {
+        padding: 0 5px 10px 5px;
+    }
+
+    .convert-stock {
+        margin: 15px 0;
+    }
+
+        .convert-stock > div {
+            height: 60px;
+        }
+
+    .convert-name {
+        top: 7px;
+        left: 10%;
+        font-size: 10px;
+    }
+
+    .convert-balance {
+        bottom: 7px;
+        left: 10%;
+        font-size: 12px;
+    }
+
+        .convert-balance .unit {
+            font-size: 10px;
+            margin: 0;
+        }
+
+    .vc > div {
+        font-size: 16px;
+    }
+
+    .vc .unit {
+        font-size: 12px;
+    }
+    .vc-name {
+        margin-top:10px;
+        font-size: 10px;
+        color: #999;
+    }
+
+    .form-horizontal {
+        margin-top: 0px;
+        padding-top: 17px;
+        background: #f5f5f5;
+    }
+
+        .form-horizontal .form-group {
+            font-size: 14px;
+            padding: 10px 0;
+            margin: 0;
+        }
+    .form-control {
+        height: 44px;
+    }
+
+    .select {
+        position: absolute;
+    }
+
+    .check-history {
+        display: inline-block !important;
+        float: right;
+        text-align: right;
+        font-size: 12px;
+        color: #1da1f3;
+        padding: 0 15px;
+    }
+
+}

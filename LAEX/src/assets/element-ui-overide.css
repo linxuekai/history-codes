@@ -1,0 +1,210 @@
+/*element reset*/
+/*.el-tabs--card>.el-tabs__header,*/
+
+
+.el-tabs--card>.el-tabs__header .el-tabs__nav,
+.el-tabs--card>.el-tabs__header .el-tabs__item
+{
+  border-color: #4e5b85;
+}
+.el-tabs--card>.el-tabs__header .el-tabs__item.is-active
+{
+  border-bottom-color: #262a42;
+}
+
+.el-tabs--card>.el-tabs__header
+{
+  border-bottom: none;
+}
+
+.el-tabs__header.is-top {
+  margin: 0;
+}
+
+/*color-weak*/
+.el-form-item__label,
+.el-select-dropdown__item,
+.el-select-dropdown__item.hover,
+.el-picker-panel__icon-btn,
+.el-date-picker__header-label,
+.el-date-table th,
+.el-date-table td.next-month,
+.el-date-table td.prev-month{
+  color: #61688a;
+}
+.el-input__inner,
+.el-select:hover .el-input__inner,
+.el-form-item.is-success .el-input__inner,
+.el-input.is-disabled .el-input__inner,
+.el-input-group__append,
+.el-input-group__prepend
+{
+  background-color: transparent;
+  border-color: #4e5b85;
+  color: #c7cce6;
+  font-size: 15px;
+}
+.el-input__inner:hover{
+  border-color: #4e5b85;
+}
+.el-input__inner:focus {
+  border-color: #7a98f7;
+}
+.el-form-item {
+  margin-bottom: 15px;
+}
+.el-select {
+  min-width: 100px;
+}
+.el-select-dropdown,
+.el-picker-panel{
+  box-shadow: 0 2px 6px 0 #000;
+  border-color: #4e5b85;
+  background-color: #1e2235;
+  color: #61688a;
+}
+.el-select-dropdown__wrap{
+  overflow-x: hidden;
+}
+.el-select-dropdown__item{
+  border-bottom: 1px solid #272b3f;
+}
+.el-select-dropdown__item.hover{
+  background-color: #1e2235;
+}
+.el-select-dropdown__item:hover {
+  background-color: #262a42;
+}
+.el-select-dropdown__item.selected,
+.el-select-dropdown__item:hover,
+.el-message-box__content
+{
+  color: #c7cce6;
+}
+
+.el-popper .popper__arrow::after{
+  border-bottom-color: #1e2235 !important;
+  border-top-color: #1e2235 !important;
+}
+.el-popper .popper__arrow{
+  border-bottom-color: #4e5b85 !important;
+  border-top-color: #4e5b85 !important;
+}
+
+.payments .popper__arrow::after{
+  border-bottom-color: #fff !important;
+}
+.el-popper .popper__arrow{
+  border-bottom-color: #dddddd !important;
+}
+
+.el-slider__button{
+  width: 8px;
+  height: 8px;
+  transform: translate(0, -1px);
+  border-color: #fff;
+}
+
+.el-slider__runway
+{
+  height: 4px;
+  background-color: #262a42;
+}
+.el-tooltip__popper.is-dark{
+  background-color: transparent;
+  padding: 0 0 5px;
+}
+.el-slider__bar{
+  background-color: #4e5b85;
+  height: 4px;
+}
+.el-slider__button{
+  background-color: #4e5b85;
+}
+
+.el-form-item.is-required .el-form-item__label:before{
+  display: none;
+}
+
+.el-message-box {
+  background-color: #262a42;
+  border: none;
+}
+.el-message-box__title{
+  color: #e5e5e5;
+}
+.el-button--text.is-loading:before{
+  background-color: transparent;
+}
+
+.v-modal{
+  opacity: .2;
+}
+.el-dialog{
+  background-color: #262a42;
+}
+.el-dialog__title,
+.el-checkbox,
+.el-dialog__body,
+.el-picker-panel{
+  color: currentColor;
+}
+.el-dialog__body{
+  padding: 10px 30px 30px;
+}
+.el-alert__content{
+  padding-left: 15px;
+}
+.el-loading-mask {
+  background-color: rgba(0,0,0,.1);
+  border-radius: 4px;
+}
+.el-pagination {
+  padding: 10px 0;
+}
+.el-pagination__editor .el-input__inner{
+  height: 22px !important;
+}
+.el-breadcrumb__inner.is-link{
+  color: #7a98f7;
+  font-size: 20px;
+  font-weight: normal;
+}
+.el-breadcrumb__item:last-child .el-breadcrumb__inner,
+.el-breadcrumb__item:last-child .el-breadcrumb__inner:hover{
+  color: #c7cce6;
+  line-height: 20px;
+  font-size: 18px;
+}
+.el-breadcrumb__separator[class*=icon]{
+  margin: 0 15px;
+}
+
+.el-pager li,
+.el-pagination button{
+  background-color: transparent !important;
+  color: #61688a;
+}
+.el-pagination .btn-next,
+.el-pagination .btn-prev
+{
+  color: #c7cce6;
+}
+.el-pagination__jump{
+  color: #61688a;
+}
+
+.el-radio-button__orig-radio:disabled+.el-radio-button__inner,
+.el-radio-button__inner{
+  width: 100%;
+  border: none !important;
+  background-color: #414750;
+  color: #c0c4cc;
+}
+.entrust-comp .el-input__inner{
+  background-color: #1f243e;
+}
+.el-switch__core{
+  background-color: #262a42;
+  border-color: #262a42;
+}

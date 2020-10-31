@@ -1,0 +1,13 @@
+﻿.BVBgImg {
+    background-image: url(../images/icon/navAsideIcon.png);
+}
+.VCBg1 {
+    background-image: url(../images/Img/VCBg1.png);
+    background-repeat: no-repeat;
+    background-size:100% ;
+}
+.VCBg2 {
+    background-image: url(../images/Img/VCBg2.png);
+    background-repeat: no-repeat;
+    background-size: 100%;
+}

@@ -1,0 +1,185 @@
+﻿
+@{
+ViewBag.Title = "Notice";
+Layout = "~/Views/Shared/_en-US_Layout.cshtml";
+}
+@Html.AntiForgeryToken()
+<script src="~/Scripts/vue-infinite-loading.js"></script>
+<style>
+    @@media screen and (max-width:768px) {
+        .panel-heading {
+            display: none;
+        }
+        #noticeCard{
+            max-width: 100%;
+        }
+    }
+    @@media screen and (min-width:768px) {
+        #noticeCard{
+            max-width: 80%;
+        }
+    }
+
+    #noticeCard {
+        min-width: 300px;
+        margin: 0 auto;
+    }
+
+    .noticeTime {
+        margin-top: 4px;
+        text-align: right;
+        color: gray;
+        font-size: 14px;
+    }
+
+    .modalNoticeTime {
+        text-align: right;
+        padding-right: 25px;
+        margin-bottom: -15px;
+        color: gray;
+        font-size: 14px;
+    }
+
+    #goBack {
+        color: white;
+        font-size: 16px;
+        float: right;
+        margin-right: 5px;
+        padding: 0;
+    }
+
+    #appVm {
+        background-color: #f5f5f5;
+        padding: 10px 15px;
+    }
+
+    .noticeIcon {
+        margin-right: 10px;
+        color: #dddddd;
+    }
+
+    .noticeItem {
+        font-size: 16px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+
+    .noticeContent{
+        font-size: 16px;
+    }
+
+    .newNotice {
+        color: lightcoral;
+    }
+
+    .hasRead {
+        color: gray;
+    }
+
+    .noRead {
+        color: #337ab7;
+    }
+</style>
+
+<div class="container-fluid" id="appVm">
+    <div class="panel panel-primary" id="noticeCard">
+        <div class="panel-heading">
+            <img src="~/images/Img/logoBar.png" alt="">
+            <button class="btn-primary btn-link" id="goBack" @@click="goBack"><span class="glyphicon glyphicon-chevron-left"></span> Back</button>
+        </div>
+        <ul class="list-group">
+            <li class="list-group-item noticeItem" v-for="(notice,index) in notices" :key="index">
+                <span :class="notice.IsRead?'glyphicon glyphicon-envelope noticeIcon':'glyphicon glyphicon-envelope noticeIcon newNotice'"></span>
+                <a @@click="noticeClick(notice)" href="#noticeModal" data-toggle="modal" :class="notice.IsRead?'hasRead':'noRead'">{{notice.Title}}</a>
+                <div class="noticeTime">{{notice.PushTime}}</div>
+            </li>
+            <infinite-loading :on-infinite="onInfinite" ref="infiniteLoading">
+        <span slot="no-results">
+          No Message.
+        </span>
+        <span slot="no-more">
+          No More Message.
+        </span>
+            </infinite-loading>
+        </ul>
+    </div>
+    <div class="modal fade" id="noticeModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                    <h4 class="modal-title"><strong>{{notifyDetail.Title}}</strong></h4>
+                    <div class="modalNoticeTime">Notice&nbsp;&nbsp;&nbsp;{{notifyDetail.PushTime}}</div>
+                </div>
+                <div class="modal-body  noticeContent">
+                    {{notifyDetail.Content}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+  var userToken = getToken();
+  new Vue({
+    el: '#appVm',
+    data: {
+      userToken: userToken,
+      page: 1,
+      notifyDetail: {
+        Title: '',
+        PushTime: '',
+        Content: ''
+      },
+      notices: []
+    },
+    methods: {
+      goBack:function () {
+        window.history.back()
+      },
+      noticeClick: function (notice) {
+        var _this = this;
+        notice.Content
+          ? (_this.notifyDetail = notice)
+          : noticeNoContent();
+        function noticeNoContent() {
+          !notice.IsRead && (notice.IsRead = true)
+          server.TakeNotifyDetail({
+            __RequestVerificationToken: _this.userToken,
+            NotifyId: notice.NotifyId
+          }, function (res) {
+            if (res.msg === 'StatusOk') {
+              notice.Content = res.data.Content
+              _this.notifyDetail = notice
+            } else {
+              showTips(getDescript(res.msg));
+            }
+          })
+        }
+      },
+      onInfinite: function () {
+        server.TakeNotifyTitle({
+          __RequestVerificationToken: this.userToken,
+          PageIndex: this.page,
+          ShowNumber: 10,
+          Lang: 'en-US'
+        }, function (res) {
+          var _this = this;
+          if (res.msg === 'StatusOk') {
+            res.data.data.forEach(function (notice) {
+              _this.notices.push(notice)
+            })
+            this.page++;
+            res.data.data instanceof Array && res.data.data.length > 0
+              ? this.$refs.infiniteLoading.$emit('$InfiniteLoading:loaded')
+              : this.$refs.infiniteLoading.$emit('$InfiniteLoading:complete')
+          } else {
+            showTips(getDescript(res.msg));
+          }
+        }.bind(this))
+      }
+    }
+  })
+</script>

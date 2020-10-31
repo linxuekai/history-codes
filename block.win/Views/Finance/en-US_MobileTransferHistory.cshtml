@@ -1,0 +1,154 @@
+﻿
+@{
+    ViewBag.Title = "VC Exchange Record";
+    Layout = "~/Views/Shared/_zh-CN_Layout.cshtml";
+}
+<style>
+    ::-ms-clear, ::-ms-reveal {
+        display: none;
+    }
+
+    .container {
+        padding: 0;
+    }
+
+    .history-tb {
+        padding: 0;
+        list-style: none;
+        font-size: 14px;
+    }
+
+        .history-tb li {
+            height: 44px;
+            line-height: 44px;
+            border-bottom: solid 1px #e1e1e1;
+            white-space: nowrap;
+        }
+
+        .history-tb span {
+            text-align: center;
+        }
+
+    .data-col {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .captain {
+        font-weight: bold;
+    }
+
+    .data-col span {
+        flex: 1;
+        width: 33%;
+    }
+    /*分页*/
+    .history {
+        position: relative;
+    }
+
+        .history li {
+            display: inline-block;
+        }
+
+        .history .ban a {
+            color: #999;
+        }
+
+        .history li a {
+            padding: 10px;
+            display: inline-block;
+            border: 1px solid #ddd;
+            background: #fff;
+            color: #0f0f0f;
+        }
+
+            .history li a:hover {
+                background: #eee;
+            }
+
+        .history li.active a {
+            background: #0E90D2;
+            color: #fff;
+        }
+</style>
+<div id="app">
+    <table id="history-tb" class="table table-bordered table-hover">
+        <tr>
+            <th>Date</th>
+            <th>Use Currency</th>
+            <th>Get Currency </th>
+            <th>Exchange amount</th>
+        </tr>
+        <tr v-for="item in history">
+            <td style="color:#ec0000;width: 95px;" v-cloak>{{item.SetupTime | toCut}}</td>
+            <td v-cloak>{{item.SourceAmount | toFix(5)}} {{item.SouceCoin}}</td>
+            <td v-cloak> {{item.DestCoin}}</td>
+            <td v-cloak>{{item.DestAmount | toFix(5)}}</td>
+        </tr>
+    </table>
+
+        <div v-if="!totalhistory" style="text-align:center"><span>No historical record</span></div>
+   
+    <page v-show="totalhistory>0" style="white-space:nowrap;padding:0;text-align:center" :current="takeRecord.PageIndex" :allpage="totalPage" :showpage="5" @@next="nextPage" @@prev="prevPage" @@goto="gotoPage"></page>
+</div>
+@Html.AntiForgeryToken()
+
+<script src="~/Scripts/vue-page-ua.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            takeRecord: {
+                __RequestVerificationToken: getToken(),
+                'PageIndex': 1,
+                'ShowNumber':10
+            },
+            history: '',
+            coinType: coinType,
+            history: '',
+            totalPage: 1,
+            totalhistory: ''
+        },
+        components: {
+            'page':page
+        },
+        created: function () {
+            this.takeVcRecord();
+        },
+        filters: {
+            toFix: function (val,num) {
+                return val.toFixed(num);
+            },
+            toCut: function (val) {
+                return val.substring(0,10);
+            }
+        },
+        methods: {
+            takeVcRecord: function () {
+                var _this = this;
+                server.TakeChargeRecord(this.takeRecord, function (rel) {
+                    if (rel.msg === 'StatusOk') {
+                        _this.history = rel.data.data;
+                        _this.totalPage = rel.data.page;
+                        _this.totalhistory = rel.data.total;
+                    } else {
+                        showTips('The request failed. Please refresh and try again')
+                    }
+                })
+            },
+            nextPage: function () {
+                this.takeRecord.PageIndex++;
+                this.takeVcRecord();
+            },
+            prevPage: function () {
+                this.takeRecord.PageIndex--;
+                this.takeVcRecord();
+            },
+            gotoPage: function (index) {
+                this.takeRecord.PageIndex = index;
+                this.takeVcRecord();
+            }
+        }
+    })
+</script>

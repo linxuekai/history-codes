@@ -1,0 +1,483 @@
+﻿﻿﻿@{
+Layout = "~/Views/Shared/_zh-CN_ManageLayout.cshtml";
+ViewBag.Title = "留言管理";
+}
+@Html.AntiForgeryToken()
+
+<link rel="stylesheet" href="../../Content/eleme-css/index.css">
+<script src="../../Scripts/element-ui.js"></script>
+<script src="../../Scripts/axios.min.js"></script>
+
+<style>
+  #app{
+    position: absolute;
+    width:90%;
+    height:85%;
+    min-width:1000px;
+    min-height:500px;
+    left:5%;
+    top:10%;
+    background-color: #fff;
+  }
+  #feedBackHeader{
+    width:100%;
+    height:70px;
+    padding:15px;
+    font-size: 18px;
+    font-family: "Microsoft YaHei", sans-serif;
+    color: grey;
+  }
+  #pageTitle{
+    line-height: 40px;
+  }
+  .pageIcon{
+    margin-right: 15px;
+  }
+  #headerBtnBar{
+    float: right;
+    padding-top:2px;
+  }
+  #tableWrap{
+    padding:15px;
+    height: 80%;
+    overflow: auto;
+  }
+  .resolvedMsg{
+    background: #ddd !important;
+  }
+  #paginationWrap{
+    text-align: right;
+    padding: 0 15px;
+  }
+  #chatBody{
+    border-top:1px solid #eee;
+    height:380px;
+    overflow: auto;
+  }
+  .msg-row-user{
+    margin:10px 10px;
+    max-width:70%;
+    clear: both;
+    float: left;
+    border: 1px solid #ddd;
+    background: #f1f1f1;
+    border-radius: 5px;
+    padding: 5px 10px;
+  }
+  .msg-row-servicer{
+    margin:10px 10px;
+    max-width:70%;
+    clear: both;
+    float: right;
+    border: 1px solid #ddd;
+    background: #B2E281;
+    border-radius: 5px;
+    padding: 5px 10px;
+  }
+  .msg-row-servicer .msg-time{
+    text-align: right;
+  }
+  .msg-time{
+    color: gray;
+  }
+  .msg-content{
+    color: black;
+    word-break: break-all;
+  }
+  .el-message-box__btns{
+    height: 0;
+    padding:0;
+  }
+  .el-message-box{
+    height:564px;
+  }
+  .el-message-box__content{
+    height: 450px;
+    padding:15px;
+  }
+  .iptBox{
+    margin-top: 15px;
+  }
+  .submitBtn{
+    text-align: right;
+    bottom: -60px;
+    padding: 10px 0;
+  }
+  @@media screen and (max-height: 500px){
+    #app{
+      top:50px;
+    }
+  }
+</style>
+
+<div id="app">
+  <div id="feedBackHeader">
+    <span id="pageTitle">
+      <i class="glyphicon glyphicon-send pageIcon"></i>
+      留言管理
+    </span>
+    <div id="headerBtnBar">
+      <el-button
+        @@click="toggleMsgList"
+        :type="msgStatus==='open'?'default':'success'"
+      >查看{{msgStatus==='open'?'已':'未'}}解决</el-button>
+      <el-button type="success" @@click="reGetMsgList">刷新消息</el-button>
+    </div>
+  </div>
+  <hr style="margin:0 20px;">
+  <div id="tableWrap">
+    <el-table
+      v-loading="dataLoading.table"
+      height="str"
+      :data="msgList"
+      :row-class-name="tableRowClassName"
+      @@filter-change="filterChange"
+      style="width: 100%;height: 100%;overflow: auto;">
+      <el-table-column
+        label="状态"
+        width="80">
+        <template scope="scope">
+          <el-button
+            v-if="!scope.row.CloseTime"
+            size="small"
+            @@click="resolveQuest(scope.$index, scope.row)">未解决</el-button>
+          <el-button
+            v-else
+            size="small"
+            disabled>已解决</el-button>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="UserName"
+        width="120"
+        label="用户名">
+      </el-table-column>
+      <el-table-column
+        prop="QuestId"
+        label="问题类型"
+        width="120"
+        :filters="filterOption"
+        :filter-multiple="false"
+        filter-placement="bottom-end">
+        <template scope="scope">
+          <el-tag
+            :type="questTagType(scope.row.QuestId)"
+            >{{questIdMap[parseInt(scope.row.QuestId)]}}</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="最新提问"
+        prop="Content">
+      </el-table-column>
+      <el-table-column
+        label="操作"
+        width="80">
+        <template scope="scope">
+          <el-button
+            size="small"
+            type="info"
+            @@click="reply(scope.$index, scope.row)">查看</el-button>
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="提问时间"
+        prop="SetupTime"
+        width="180">
+      </el-table-column>
+    </el-table>
+  </div>
+  <div id="paginationWrap">
+    <el-pagination
+      @@size-change="SizeChange"
+      @@current-change="CurrentPageChange"
+      :current-page.sync="currentPage"
+      :page-sizes="[10,15, 20]"
+      :page-size="pageSize"
+      layout="sizes, prev, pager, next"
+      :total="total">
+    </el-pagination>
+  </div>
+</div>
+
+<template id="chatBox">
+  <div>
+  <div id="chatBody">
+    <div class="text-center" style="padding: 10px 0;">
+      <a  v-if="isThereMoreMsg" href="javascript:;" @@click="getMoreMsg">查看更早消息</a>
+      <span v-else>没有更多了</span>
+    </div>
+    <div
+      v-for="(msg,i) in chatData" style="clear: both;">
+      <div :class="msg.IsServicer?'msg-row-servicer':'msg-row-user'">
+        <div class="msg-time"><small>{{msg.SetupTime}}</small></div>
+        <div class="msg-content">{{msg.Content}}</div>
+      </div>
+    </div>
+  </div>
+  <div class="iptBox">
+    <el-input
+      v-model="replyMsg"
+      type="textarea"
+      :rows="2"
+      resize="none"
+      :placeholder="replyDisable?'该话题已解决，不可回复。':'回复：'"
+      :disabled="replyDisable"
+    ></el-input>
+  </div>
+  <div class="submitBtn">
+    <el-button
+      type="primary"
+      @@click="msgSubmit"
+      :disabled="replyDisable"
+    >提交</el-button>
+  </div>
+  </div>
+</template>
+
+<script>
+  function json2FormData(json){
+    return JSON.stringify(json).replace(/:/g,'=').replace(/,/g,'&').replace(/"/g,'').slice(1,-1)
+  }
+  function arrToFormData(name,arr){
+    var str = ''
+    arr.forEach(function(item){
+      str+=`&${name}[]=${item}`
+    })
+    return str
+  }
+  var comp = {
+    template:'#chatBox',
+    data(){return{
+      isThereMoreMsg:true,
+      replyMsg:''
+    }},
+    computed:{
+      chatData(){
+        return app.msgDetail
+      },
+      replyDisable(){
+        return app.msgStatus === 'closed'
+      },
+      beforeDestroy(){
+        alert(1)
+      }
+    },
+    methods:{
+      nowTime(){
+        var now = new Date()
+        return now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate()+' '+now.getHours()+':'+now.getMinutes()+':'+now.getSeconds()
+      },
+      getMoreMsg(){
+        axios.post('/Account/TakeFeedbackDetail',json2FormData({
+          __RequestVerificationToken: app.token,
+          FeekbackId: app.currentFeedbackId,
+          PageIndex: app.detailCurrentPage++,
+          ShowNumber: 10
+        })).then(
+          function(res){
+            res.data.data.data.length
+              ? res.data.data.data.forEach(function(m){
+                  app.msgDetail.unshift(m)
+                })
+              : this.isThereMoreMsg = false
+          }.bind(this)
+        )
+      },
+      msgSubmit(){
+        if(this.replyMsg.length > 4){
+          axios.post('/Account/UpdateFeedbackDetail',json2FormData({
+            __RequestVerificationToken: app.token,
+            FeekbackId: app.currentFeedbackId,
+            Content: this.replyMsg
+          })).then(
+            function(res){
+              res.data.msg === 'StatusOk'
+                ? (
+                    app.$message.success('信息发送成功。'),
+                      app.msgDetail.push({
+                        Content: this.replyMsg,
+                        IsServicer: true,
+                        SetupTime: this.nowTime()
+                      }),
+                      this.replyMsg = '',
+                      this.$nextTick(function(){
+                        $('.msg-content').last()[0].scrollIntoView()
+                      })
+                  )
+                : app.$message.error('发送错误，请重试。')
+            }.bind(this)
+          )
+        } else {
+          app.$message.warning('消息长度不能小于 5 。')
+        }
+      }
+    }
+  }
+  var app = new Vue({
+    el:'#app',
+    components:{comp:comp},
+    data (){
+      return{
+        token:getToken(),
+        msgData:[],
+        selections:[],
+        msgList:[],
+        filterOption:[
+          {text:'短信服务',value:'SMS'},
+          {text:'账号冻结',value:'Account'},
+          {text:'违规投诉',value:'Complain'},
+          {text:'转账兑换',value:'Exchange'},
+          {text:'结算分红',value:'SettleError'},
+          {text:'更改资料',value:'PersonalInfo'},
+          {text:'其他问题',value:'Other'}
+        ],
+        currentPage:0,
+        total:0,
+        pageSize:10,
+        dataLoading:{
+          table:false
+        },
+        questIdMap:[
+          '短信服务',
+          '账号冻结',
+          '违规投诉',
+          '转账兑换',
+          '结算分红',
+          '更改资料',
+          '其它问题'
+        ],
+        detailCurrentPage:1,
+        msgDetail:[],
+        currentFeedbackId:'',
+        currentType:'',
+        msgStatus:'open'
+      }
+    },
+    methods:{
+      questTagType(questId){
+        switch (questId) {
+          case '1':
+          case '3':
+          case '4':
+            return 'danger'
+          case '2':
+          case '5':
+            return 'warning'
+          case '0':
+            return 'primary'
+          case '6':
+            return 'gray'
+        }
+      },
+      reply(i,row){
+        this.currentFeedbackId = row.FeekbackId
+        this.msgDetail = []
+        this.detailCurrentPage = 1
+        axios.post('/Account/TakeFeedbackDetail',json2FormData({
+          __RequestVerificationToken: this.token,
+          FeekbackId: row.FeekbackId,
+          PageIndex: this.detailCurrentPage++,
+          ShowNumber: 10
+        })).then(
+          function(res){
+            console.log(res)
+            res.data.data.data.forEach(function(m){
+              app.msgDetail.unshift(m)
+            })
+            var h = app.$createElement
+            app.$msgbox({
+              title:`${row.UserName}   [ ${app.questIdMap[row.QuestId]} ]`,
+              message:h('comp',{ref:'comp'}),
+              closeOnClickModal:false,
+              showConfirmButton:false,
+              callback(){
+                app.$refs.comp.isThereMoreMsg = true
+              }
+            })
+            app.$nextTick(function(){
+              app.$refs.comp.$nextTick(function(){
+                $('.msg-content').last()[0].scrollIntoView()
+              })
+            })
+          }
+        )
+      },
+      reGetMsgList(){
+        this.getMsgList()
+      },
+      resolveQuest(i,row){
+        if(confirm(`是否确定将${row.UserName}的问题标记为已解决？`)){
+          axios.post('/Account/RateFeedback',json2FormData({
+            __RequestVerificationToken: this.token,
+            Type: row.QuestId,
+            FeekbackId: row.FeekbackId
+          })).then(
+            function(res){
+              res.data.msg === 'StatusOk'
+                ? (
+                app.$message.success('已标记为解决。'),
+                  app.msgList.splice(i,1)
+              )
+                : app.$message.warning('未成功标记，请重试。')
+            },
+            function(){
+              app.$message.error('网络错误，请刷新重试。')
+            }
+          )
+        } else {
+          app.$message.warning('已取消解决标记。')
+        }
+      },
+      tableRowClassName(row){
+        return row.CloseTime
+                ?'resolvedMsg'
+                : ''
+      },
+      CurrentPageChange(n){
+        this.currentPage = n
+        this.getMsgList()
+      },
+      SizeChange(n){
+        this.pageSize = n
+        this.currentPage === 1
+          ? this.CurrentPageChange(1)
+          : this.currentPage = 1
+      },
+      getMsgList(){
+        this.dataLoading.table = true
+        axios.post('/console/TakeFeedback',json2FormData({
+          __RequestVerificationToken:this.token,
+          Type:this.currentType,
+          Status:this.msgStatus,
+          PageIndex: this.currentPage,
+          ShowNumber: this.pageSize
+        })).then(
+          function(res){
+            res.data.msg === 'StatusOk'
+              ? res.data.data && res.data.data.data instanceof Array && (
+                app.msgList = res.data.data.data,
+                app.total = res.data.data.total,
+                app.dataLoading.table = false
+                )
+              : (app.$message.warning('获取消息列表有误，请刷新重试。'),app.dataLoading.table = false)
+          },
+          function(){app.$message.error('网络错误，请刷新重试。')}
+        )
+      },
+      filterChange(obj){
+        this.currentType = obj['el-table_1_column_3'][0] || ''
+        this.getMsgList()
+      },
+      toggleMsgList(){
+        this.currentType = ''
+        this.msgStatus = this.msgStatus === 'open'
+          ? 'closed'
+          : 'open'
+        this.getMsgList()
+      }
+    },
+    mounted(){
+      this.currentPage = 1
+    }
+  })
+</script>

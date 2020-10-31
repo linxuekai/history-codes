@@ -1,0 +1,182 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>@ViewBag.Title</title>
+  <meta name="viewport" content="width=device-width,
+                                     initial-scale=1.0,
+                                     maximum-scale=1.0,
+                                     user-scalable=no">
+  <link rel="stylesheet" href="~/Content/bootstrap.min.css">
+  <link rel="stylesheet" href="~/Content/site.css">
+  <link rel="stylesheet" href="~/Content/reset.css">
+  <link href="~/Content/manageLayout.css" rel="stylesheet"/>
+
+  <script src="~/Scripts/jquery-1.10.2.min.js"></script>
+  <script src="~/Scripts/bootstrap.min.js"></script>
+  <script src="~/Scripts/vue.min.js"></script>
+  <script src="~/Scripts/js/manage-code.js"></script>
+</head>
+<body class="bg-004a7c w100 h100">
+<nav class="navbar navbar-default bg-004a7c zIndex999 ps-fixed w100 t-0">
+  <div class="container-fluid">
+    <div class="navbar-header ">
+      <button type="button" class="navbar-toggle border-none" data-toggle="collapse"
+              data-target="#example-navbar-collapse">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar bg-255"></span>
+        <span class="icon-bar bg-255"></span>
+        <span class="icon-bar bg-255"></span>
+      </button>
+      <a class="navbar-brand" href="/zh-CN">
+        <img src="/images/blockchain-wrate-text.png" id="navLogo">
+      </a>
+
+      <div class="mChooseLang">
+        <img src="/images/China-langular.png" title="中文简体" onclick="openMChooseLang()"
+             class="m-r-6 m-t--2 w-16 pos-rel langular-title-user m-r-8 m-l-8 langular-title-mob">
+        <ul class="m-t--24 d-s-none list-unstyled">
+          <li class="langular-lis" style="margin:0;">
+            <a href="/Home/SwithLang?Lang=zh-CN">
+              <img src="/images/China-langular.png" alt="中文简体" title="中文简体" class="m-t--2" style="margin-right:0;">
+            </a>
+          </li>
+          <li class="langular-lis" style="margin:0;">
+            <a href="/Home/SwithLang?Lang=en-US">
+              <img src="/images/USA-langular.png" alt="English" title="English" class="m-t--2" style="margin-right:0;">
+            </a>
+          </li>
+          <li class="langular-lis" style="margin:0;">
+            <a href="/Home/SwithLang?Lang=id-ID">
+              <img src="/images/Indonesia-langular.png" alt="Indonesian" title="Indonesian" class="m-t--2"
+                   style="margin-right:0;">
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="ps-fixed r-64 t-12 pcChooseLang">
+        <div class="dropdown d-s-i-b m-r-22">
+          <button class="btn dropdown-toggle p-0 border-none bg-transparent" type="button" id="dropdownMenuLang"
+                  data-toggle="dropdown">
+            <img src="~/images/Img/chnai.png" class="langIcon" alt="Alternate Text"/>
+            <span class="langText">中文</span>
+            @* <span class="caret c-255"></span>*@
+          </button>
+          <ul class="dropdown-menu p-lr-12 p-t-16 p-b-16" id="layoutLang">
+            <li class=" h-40">
+              <a class="h-30 p-0 p-t-2 p-l-6" onclick="SwithLang('zh-CN')">
+                <img src="~/images/Img/chnai.png" alt="" class="f-l langIcon d-s-i-b"/>
+                <span class="f-l f-s-12 m-l-8" tabindex="-1">中文</span>
+              </a>
+            </li>
+            <li class="h-40">
+              <a class="h-30 p-0 p-t-2 p-l-6" onclick="SwithLang('en-US')">
+                <img src="~/images/Img/america.png" alt="" class="f-l langIcon d-s-i-b"/>
+                <span class="f-l f-s-12 m-l-8" tabindex="-1">English</span>
+              </a>
+            </li>
+            <li class=" h-40">
+              <a class="h-30 p-0 p-t-2 p-l-6" onclick="SwithLang('id-ID')">
+                <img src="~/images/Img/id.png" alt="" class="f-l langIcon d-s-i-b"/>
+                <span class="f-l f-s-12 m-l-8" tabindex="-1">ID</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="collapse navbar-collapse" id="example-navbar-collapse">
+      <ul class="nav navbar-nav c-255">
+        <li>
+          <div class="dropdown navTab">
+            <button class="dropdown-toggle navBtn" data-toggle="dropdown" >统计</button>
+            <ul class="dropdown-menu subNav">
+              <li><a href="/zh-CN/console/summary">统计概况</a></li>
+            </ul>
+          </div>
+        </li>
+        <li>
+          <div class="dropdown navTab">
+            <button class="dropdown-toggle navBtn" data-toggle="dropdown" >财务中心</button>
+            <ul class="dropdown-menu subNav">
+              <li><a href="/zh-CN/console/exchange">币兑币</a></li>
+              <li class="divider"></li>
+              <li><a href="/zh-CN/console/sendout">钱包转账</a></li>
+              <li class="divider"></li>
+              <li><a href="/zh-CN/console/income">分红明细</a></li>
+              <li class="divider"></li>
+              <li><a href="/zh-CN/console/Withdraw">提现管理</a></li>
+            </ul>
+          </div>
+        </li>
+        <li>
+          <div class="dropdown navTab">
+            <button class="dropdown-toggle navBtn" data-toggle="dropdown" >联队分布</button>
+            <ul class="dropdown-menu subNav">
+              <li><a href="/zh-CN/console/relationship">联队表单</a></li>
+              <li><a href="/zh-CN/console/leaderrelationship">体系深度</a></li>
+            </ul>
+          </div>
+        </li>
+        <li>
+          <div class="dropdown navTab">
+            <button class="dropdown-toggle navBtn" data-toggle="dropdown" >设置</button>
+            <ul class="dropdown-menu subNav">
+              <li><a href="/zh-CN/console/userManage">用户管理</a></li>
+              <li class="divider"></li>
+              <li><a href="/zh-CN/console/roles">角色权限</a></li>
+              <li class="divider"></li>
+              <li><a href="/zh-CN/console/ad">首页公告</a></li>
+            </ul>
+          </div>
+        </li>
+        <li>
+          <div class="dropdown navTab">
+            <button class="dropdown-toggle navBtn" data-toggle="dropdown" >留言管理</button>
+            <ul class="dropdown-menu subNav">
+              <li><a href="/zh-CN/console/feedback">处理留言</a></li>
+            </ul>
+          </div>
+          </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="clear"></div>
+
+<div class="body-content w100">
+  @RenderBody()
+</div>
+
+<div id="layoutShowLoading">
+  <img src="~/images/icon/showLoading.gif"/>
+</div>
+    <div id="showTips">
+        <span id="showTipsMsg"></span>
+    </div>
+
+<script>
+  //切换语言
+  var userCode = window.location.href;
+  userCode = userCode.substring(userCode.lastIndexOf('=') + 1, userCode.length);
+
+  function SwithLang(langCode) {
+    window.location.href = host + 'Home/SwithLang?Lang=' + langCode;
+  }
+
+  var isOpenMChooseLang = 'close';
+  function openMChooseLang() {
+    if (isOpenMChooseLang == 'close') {
+      isOpenMChooseLang = 'open';
+      $('.mChooseLang ul').fadeIn();
+    } else {
+      isOpenMChooseLang = 'close';
+      $('.mChooseLang ul').fadeOut();
+    }
+  }
+</script>
+
+</body>
+</html>

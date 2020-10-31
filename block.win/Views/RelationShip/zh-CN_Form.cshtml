@@ -1,0 +1,398 @@
+﻿@{ViewBag.Title = "联队表单"; Layout = "~/Views/Shared/_zh-CN_Layout.cshtml";}
+@Html.AntiForgeryToken()
+
+<!--<link rel="stylesheet"-->
+<!--href="../../Content/bootstrap.css">-->
+<link rel="stylesheet"
+      href="../../Content/eleme-css/index.css">
+
+<style>
+    #app {
+        font-family: "Microsoft YaHei UI", sans-serif;
+        padding: 15px;
+        background: white;
+    }
+
+    .filter-bar {
+        padding: 10px 0;
+    }
+
+    .filter-bar .el-date-editor--date {
+        font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+        text-align: center;
+        display: inline-block;
+        width: 117px;
+    }
+
+    .selector {
+        display: inline-block;
+        margin: 8px 8px 0 0;
+    }
+
+    .end-date-picker {
+        margin-right: 8px;
+    }
+
+    table.text-center th {
+        text-align: center;
+    }
+
+    .filter-bar .el-radio-button__inner{
+        display: inline-block;
+        width:100px;
+    }
+    .hasQuerySCName .el-input__inner{
+        background-color: beige;
+    }
+
+    .el-radio-group{
+        margin-top: 4px;
+    }
+    #dataTable>tbody>tr{
+        cursor: pointer;
+    }
+    #dataTable>tbody>tr:hover>td{
+        background: lavender;
+    }
+    .bread-text{
+        line-height:38px;
+    }
+    .bread-wrap{
+        width:100%;
+        height: 38px;
+        padding:0 10px 0 100px;
+        overflow:hidden;
+        white-space:nowrap;
+        text-overflow:ellipsis
+    }
+    .back-btn-wrap{
+        display: inline-block;
+        position: absolute;
+        top:0;
+        background: white;
+        text-align: center;
+        width: 105px;
+        left: -10px;
+        box-shadow: 8px 0 20px #fff;
+    }
+    .all-bread{
+        position: absolute;
+        right: 5px;
+    }
+    .all-bread>:last-child>button{
+        color: darkmagenta;
+    }
+    @@media screen and (max-width: 768px) {
+        #app {
+            padding: 8px;
+        }
+
+        .selector {
+            margin: 6px 2px 0 0;
+        }
+
+        .end-date-picker {
+            margin-right: 2px;
+        }
+
+        .pc-show {
+            display: none;
+        }
+        .filter-bar .el-radio-button__inner{
+            width:80px;
+        }
+        /* small screen */
+    }
+</style>
+
+<div id="app">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="filter-bar">
+                    <el-date-picker
+                      placeholder="开始时间"
+                      format="yyyy/MM/dd"
+                      v-model="startTime"
+                      :picker-options="stDateOptions"
+                      @@change="startTimeCg"
+                    ></el-date-picker>
+                    <span class="glyphicon glyphicon-resize-horizontal"></span>
+                    <el-date-picker
+                      placeholder="截止时间"
+                      format="yyyy/MM/dd"
+                      :disabled="!startTime"
+                      :picker-options="edDateOptions"
+                      v-model="endTime"
+                      @@change="endTimeCg"
+                      class="end-date-picker"
+                    ></el-date-picker>
+                    <div class="selector">
+                        <el-select
+                          @@change="layoutIndexSelect"
+                          placeholder="层级"
+                          style="width: 75px;"
+                          v-model="layoutIndex">
+                            <el-option
+                              v-for="obj in layoutIndexOptions"
+                              :key="obj.value"
+                              :value="obj.value"
+                              :label="obj.label"
+                            ></el-option>
+                        </el-select>
+                    </div>
+                    <div class="selector">
+                        <el-radio-group v-model="currentView" :fill="currentView === 'GENE'?'lightcoral':'seagreen'" @@change="currentViewCg">
+                            <el-radio-button label="GENE">代数</el-radio-button>
+                            <el-radio-button label="ALLI">体系</el-radio-button>
+                        </el-radio-group>
+                    </div>
+                    <div class="selector">
+                        <el-input
+                          placeholder="搜索用户名"
+                          icon="search"
+                          :on-icon-click="querySCName"
+                          style="width: 125px;"
+                          :class="QuerySCName?'hasQuerySCName':''"
+                          v-model="QuerySCName"
+                        ></el-input>
+                    </div>
+                    <hr style="margin:8px;">
+                </div>
+                <div style="position: relative;">
+                    <div class="bread-wrap">
+            <span class="all-bread">
+              <span class="bread-text" v-for="(item,idx) in childUser" :key="item.userName">
+                <span v-if="idx > 0">/ </span>
+                <el-button type="text" @@click="backTo(idx)">
+                  {{item.userName||'首页'}}<span v-if="childUser.length-1>idx" :style="{color:item.currentView === 'GENE'?'red':'green'}">
+                  ({{item.currentView[0]}}{{item.layoutIndex}})
+                </span>
+                </el-button>
+              </span>
+            </span>
+                    </div>
+                    <div class="back-btn-wrap">
+                        <el-button size="small"
+                                   type="warning"
+                                   @@click="backTo(childUser.length - 2)"
+                                   :disabled="childUser.length===1">
+                            <i class="el-icon-arrow-left"></i> 返回上级
+                        </el-button>
+                    </div>
+                </div>
+                <table class="table table-striped text-center" id="dataTable">
+                    <thead :style="{background:currentView === 'GENE'?'lightcoral':'seagreen',color:'antiquewhite'}">
+                        <tr>
+                            <th class="pc-show">#</th>
+                            <th style="min-width: 70px;">用户</th>
+                            <th class="pc-show">ID</th>
+                            <th>注册日期</th>
+                            <th>套餐<span class="pc-show">级别</span></th>
+                            <th>代数<span class="pc-show">等级</span></th>
+                            <th>体系<span class="pc-show">等级</span></th>
+                        </tr>
+                    </thead>
+                    <tbody @@click="tbodyClick">
+                        <tr v-for="(item, idx) in tableData"
+                            :key="idx"
+                            :id="item.UserName">
+                            <td class="pc-show">{{idx+1}}</td>
+                            <td>{{item.NickName}}</td>
+                            <td class="pc-show">{{item.UserName}}</td>
+                            <td>{{item.SetupTime.slice(2,11).replace(/-/g, '/')}}</td>
+                            <td>Ｖ{{item.Package}}</td>
+                            <td>Ｇ{{item.GenerationLevel}}</td>
+                            <td>Ｌ{{item.LeaderLevel}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <infinite-loading :on-infinite="onInfinite"
+                                  ref="infiniteLoading">
+              <span slot="no-results">
+                {{this.tableData.length?'以上为筛选到的数据。':'暂无数据。'}}
+              </span>
+                    <span slot="no-more">
+                以上为筛选到的数据。
+              </span>
+                </infinite-loading>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../../Scripts/element-ui.js"></script>
+<script src="../../Scripts/vue-infinite-loading.js"></script>
+
+<script>
+    /* global Vue getToken */
+    var app = new Vue({
+      el: '#app',
+      data: function() {
+        return {
+          token:getToken(),
+          currentView: 'GENE', // GENE||ALLI
+          startTime: null,
+          endTime: null,
+          layoutIndex: 1,
+          QuerySCName: '',
+          byUserName: '',
+          childUser:[
+            {
+              userName:'',
+              data:[],
+              requestPage: 1
+            }
+          ],
+          stDateOptions: {
+            disabledDate: function(time) {
+              return time.getTime() > Date.now()
+            }
+          },
+          isGoBack: false
+        }
+      },
+      computed: {
+        layoutIndexOptions:function() {
+          return [
+            {label: this.currentView === 'GENE' ? 'Ｇ１' : 'Ａ１', value: 1},
+            {label: this.currentView === 'GENE' ? 'Ｇ２' : 'Ａ２', value: 2},
+            {label: this.currentView === 'GENE' ? 'Ｇ３' : 'Ａ３', value: 3},
+            {label: this.currentView === 'GENE' ? 'Ｇ４' : 'Ａ４', value: 4},
+            {label: this.currentView === 'GENE' ? 'Ｇ５' : 'Ａ５', value: 5},
+            {label: this.currentView === 'GENE' ? 'Ｇ６' : 'Ａ６', value: 6}
+          ]
+        },
+        edDateOptions: function() {
+          return {
+            disabledDate: function(time) {
+              var now = new Date()
+              var minDate = new Date(app.startTime)
+              return time > now || time < minDate
+            }
+          }
+        },
+        tableData:function() {
+          return this.childUser[this.childUser.length - 1].data
+        }
+      },
+      methods: {
+        startTimeCg: function(d) {
+          this.startTime = d
+          if (!this.startTime || new Date(this.startTime) >= new Date(this.endTime || null)) {
+            this.endTime = null
+          }
+        },
+        endTimeCg: function(d) {
+          this.endTime = d
+          if (!this.isGoBack) {
+            this.requestClick()
+          }
+        },
+        currentViewCg: function() {
+          if (!this.isGoBack) {
+            this.requestClick()
+          }
+        },
+        requestData: function() {
+          var api = this.currentView === 'GENE'
+            ? !this.byUserName
+              ? '/RelationShip/Generation'
+              : '/RelationShip/GenerationByName'
+            : !this.byUserName
+              ? '/RelationShip/Alliance'
+              : '/RelationShip/AllianceByName'
+          return $.post(api, {
+            __RequestVerificationToken: this.token,
+            LayoutIndex: this.layoutIndex,
+            QuerySCName: this.QuerySCName,
+            StartTime:this.startTime,
+            EndTime: this.endTime,
+            PageIndex: this.childUser[this.childUser.length - 1].requestPage++,
+            ShowNumber: 10,
+            UserName: this.byUserName
+          }).then(
+            function(res) {
+              if (res.msg === 'StatusOk') {
+                res.data.data.forEach(function(item) {
+                  app.tableData.push(item)
+                })
+              } else if (res.msg === 'UserNeedLogin') {
+                app.$message.warning('登录信息已失效，请重新登录。')
+              }
+              return res
+            },
+            function() {
+              app.$message.error('网络错误，请刷新重试。')
+            }
+          )
+        },
+        requestClick: function() {
+          var lastChildUser = this.childUser[this.childUser.length - 1]
+          if (!this.isGoBack) {
+            lastChildUser.data = []
+            lastChildUser.isCompleted = false
+            lastChildUser.requestPage = 1
+          }
+          if (!lastChildUser.isCompleted) {
+            app.$refs.infiniteLoading.$emit('$InfiniteLoading:reset')
+          }
+        },
+        onInfinite: function() {
+          this.requestData().then(
+            function(res) {
+              if (res.msg === 'StatusOk' && res.data.data.length === 10) {
+                app.$refs.infiniteLoading.$emit('$InfiniteLoading:loaded')
+              } else {
+                app.$refs.infiniteLoading.$emit('$InfiniteLoading:complete')
+                app.childUser[app.childUser.length - 1].isCompleted = true
+              }
+            }
+          )
+        },
+        tbodyClick: function(e) {
+          var user = e.target.parentNode.getAttribute('id')
+          if (!user || user.slice(0, 2).toLocaleLowerCase() !== 'sc') { return }
+          var arrChild = this.childUser
+          arrChild.push({
+            userName:user, data:[], requestPage:1
+          })
+          var prevUser = arrChild[arrChild.length - 2]
+          prevUser.startTime = this.startTime
+          prevUser.endTime = this.endTime
+          prevUser.layoutIndex = this.layoutIndex
+          prevUser.currentView = this.currentView
+          prevUser.lastRead = user
+          prevUser.QuerySCName = this.QuerySCName
+          this.byUserName = user
+          this.QuerySCName = ''
+          this.layoutIndex = 1
+          this.requestClick()
+        },
+        querySCName:function() {
+          this.requestClick()
+        },
+        layoutIndexSelect:function() {
+          this.requestClick()
+        },
+        backTo: function(idx) {
+          if (idx === this.childUser.length - 1) { return }
+          this.isGoBack = true
+          var item = this.childUser[idx]
+          this.startTime = item.startTime
+          this.endTime = item.endTime
+          this.layoutIndex = item.layoutIndex
+          this.currentView = item.currentView
+          this.byUserName = item.userName
+          this.QuerySCName = item.QuerySCName
+          this.childUser.splice(idx + 1)
+          this.requestClick()
+          this.$nextTick(function() {
+            this.isGoBack = false
+            $('#' + item.lastRead + ' td').css('background-color', 'lavender')
+            $('tr:not(#' + item.lastRead + ') td').css('background', '')
+          })
+        }
+      }
+    })
+</script>

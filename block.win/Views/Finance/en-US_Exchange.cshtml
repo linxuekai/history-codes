@@ -1,0 +1,790 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_en-US_Layout.cshtml";
+    ViewBag.Title = "Cross-Transfer";
+}
+<style>
+    .coinPriceBg {
+        background-image: url('/images/Img/coinPriceBG.png');
+        background-size: 100% 100%;
+        background-repeat: no-repeat;
+        height: 130px;
+        border-radius: 4px;
+    }
+
+    .autoHeight {
+        height: 0px;
+        padding-bottom: 100%;
+    }
+
+    @@media screen and (max-width: 768px) {
+        #exchangeMobile {
+            display: block;
+        }
+
+        #exchangePC {
+            display: none;
+        }
+
+        .coinPriceBg {
+            height: 110px;
+        }
+
+        .exSplitLine {
+            width: 2px;
+            height: 100px;
+            top: 0
+        }
+    }
+
+    @@media screen and (max-width: 992px) and (min-width:768px) {
+        #exchangeMobile {
+            display: none;
+        }
+
+        #exchangePC {
+            display: block;
+        }
+
+        .coinPriceBg {
+            height: 130px;
+        }
+
+        .exSplitLine {
+            width: 2px;
+            height: 100px;
+            top: 10px
+        }
+    }
+
+    @@media screen and (min-width: 992px) {
+        #exchangeMobile {
+            display: none;
+        }
+
+        #exchangePC {
+            display: block;
+        }
+
+        .coinPriceBg {
+            height: 130px;
+        }
+
+        .exSplitLine {
+            width: 2px;
+            height: 100px;
+            top: 10px
+        }
+    }
+
+    #exchangeMobile, .mb {
+        margin-left: -16px;
+        margin-right: -16px;
+        margin-top: -16px;
+        padding: 16px;
+    }
+
+    select {
+        border: solid 1px #000;
+        appearance: none;
+        -moz-appearance: none;
+        -webkit-appearance: none;
+        padding-right: 14px;
+    }
+
+    [v-cloak] {
+        display: none;
+    }
+
+    select {
+        border: solid 1px #000;
+        appearance: none;
+        -moz-appearance: none;
+        -webkit-appearance: none;
+        padding-right: 14px;
+        background: url("/images/icon/selDown.png") no-repeat scroll right center transparent;
+        background-position-x: 98%;
+        padding-left: 10px;
+        padding-right: 16px;
+        height: 40px;
+    }
+
+        select::-ms-expand {
+            display: none;
+        }
+
+        select::-ms-expand {
+            display: none;
+        }
+    .exchangeDD ul {
+        max-height: 150px;
+        overflow-y: scroll;
+    }
+    .dropdown-menu {
+        min-width: 44px;
+    }
+</style>
+
+<div id="app" class="w100 bg-f5f5f5 p-lr-16  p-b-16">
+    <div class="row p-lr-16 m-0 bg-255 p-b-40" id="exchangePC">
+
+        <div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
+            <div class="p-t-20 p-b-16">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 coinPriceBg">
+
+                    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 p-t-16 p-b-16">
+                        <div class="c-255 f-s-18 text-ellipsis">
+                            <span>VC Stock</span>
+                            <span v-text="coinBanlance.VC"></span>
+                        </div>
+                        <div class="c-255 f-s-18 m-t-10 text-ellipsis">
+                            <span>VS Stock</span>
+                            <span v-text="coinBanlance.VS"></span>
+                        </div>
+                        <div class="c-255 f-s-18 m-t-10 text-ellipsis">
+                            <span>VT Stock</span>
+                            <span v-text="coinBanlance.VT"></span>
+                        </div>
+                        <img src="~/images/Img/coinPriceBgLine.png" class="ps-absolute r-16" style="width:2px;height:100px;top:10px" />
+
+                    </div>
+
+                    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 p-t-16 p-b-16">
+                        <div class="c-255 f-s-18 text-ellipsis">
+                            <span>BTC Stock</span>
+                            <span v-text="coinBanlance.BTC"></span>
+                        </div>
+                        <div class="c-255 f-s-18 m-t-10 text-ellipsis">
+                            <span>LTC Stock</span>
+                            <span v-text="coinBanlance.LTC"></span>
+                        </div>
+                        <div class="c-255 f-s-18 m-t-10 text-ellipsis">
+                            <span>SC Stock</span>
+                            <span v-text="coinBanlance.SC"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="clear"></div>
+
+            <div class="m-t-40">
+                <div class="m-t-40 h-40 l-h-40">
+                    <div class="w100 bor-e1e1e1 m-lr-auto p-r-6">
+                        <input type="text" class="border-none p-l-14 w70" placeholder="Number" v-model="transferData.Total" id='Total'>
+                        <select id="selectPC1" class="select h-40 border-none f-r bg-none bg-transparent" v-model="transferData.CoinType" @@change="selChange('CoinType')">
+                            <option v-for="x in coinType" v-text="x.coin" v-bind:value="x.value"></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="m-t-40 h-40 l-h-40">
+                    <div class="w100 bor-e1e1e1 m-lr-auto p-r-6">
+                        <input type="text" class="border-none p-l-14 w70" placeholder="0.000" v-model="transferData.DestTotal" id='DestTotal'>
+                        <select id="selectPC2" class="select h-40 border-none f-r" v-model="transferData.DestCoinType" @@change="selChange('DestCoinType')">
+                            <option v-for="x in destCoinType" v-text="x.coin" v-bind:value="x.value"></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="m-t-40 h-40 l-h-40 text-center">
+                    <input type="password" class="w100 p-l-14 h40 bor-e1e1e1" v-model="transferData.TradePassword" placeholder="Transaction Password" name="name" value="" />
+                </div>
+
+            </div>
+
+            <div class="m-t-40 h-40 l-h-40">
+                <div class="m-b-10 c-red text-center" id="ExchangeCoinAlertBox"></div>
+                <button class="w100 border-none c-255 f-s-18 bg-10ADE4 border-radius-4" @@click="transfer">Confirm Exchange</button>
+            </div>
+
+            <div class="m-t-20 text-right cursor-pointer" onclick="TakeUserInfo()" data-toggle="modal" data-target="#accountModal">Set Transaction Password</div>
+
+        </div>
+
+        <div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
+            <div class="p-t-20 p-b-16">
+                <div class="f-s-18 c-000 p-b-16">Exchange Record</div>
+                <table class="table table-bordered" v-if="isHasExchangeRecord==true">
+                    <thead>
+                        <tr class="h-40">
+                            <th>Date</th>
+                            <th>Currency Issued</th>
+                            <th>Quantity Issued</th>
+                            <th>Target Currency</th>
+                            <th>Target Quantity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="h-40" v-for="item in exchangeRecord">
+                            <td v-text="item.SetupTime" class="c-red"></td>
+                            <td v-text="item.SourceType"></td>
+                            <td v-text="item.SourceAmount"></td>
+                            <td v-text="item.DestType"></td>
+                            <td v-text="item.DestAmount"></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="p-t-20 p-b-16 text-right" v-if="isHasExchangeRecord==true">
+                    <button class="border-none m-r-22" @@click="prevPage()">Page Up</button>
+                    <div class="btn-group exchangeDD">
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                            <span v-text="pages.current">1</span>
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" role="menu">
+                            <li v-for="x in page" v-text="x" v-bind:value="x" @@click="goto(x)"></li>
+                        </ul>
+                    </div>
+                    <button class="border-none m-l-22" @@click="nextPage()">Page Down</button>
+                </div>
+
+                <div class="p-t-20 p-b-16" v-if="isHasExchangeRecord==false">
+                    No Historical Record
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <div id="exchangeMobile">
+        <div class="bg-255 mb">
+            <div class="coinPriceBg p-lr-16 p-tb-10">
+                <div class="p-t-6 p-b-10 w50 f-l ps-relative">
+                    <div class="c-255 f-s-14 text-ellipsis">
+                        <span>VC Stock</span>
+                        <span v-text="coinBanlance.VC"></span>
+                    </div>
+                    <div class="c-255 f-s-14 m-t-10 text-ellipsis">
+                        <span>VS Stock</span>
+                        <span v-text="coinBanlance.VS"></span>
+                    </div>
+                    <div class="c-255 f-s-14 m-t-10 text-ellipsis">
+                        <span>VT Stock</span>
+                        <span v-text="coinBanlance.VT"></span>
+                    </div>
+                    <img src="~/images/Img/coinPriceBgLine.png" class="ps-absolute r-16 exSplitLine" />
+
+                </div>
+                <div class="p-t-6 p-b-10 w50 f-l">
+                    <div class="c-255 f-s-14">
+                        <span>BTC Stock</span>
+                        <span v-text="coinBanlance.BTC"></span>
+                    </div>
+                    <div class="c-255 f-s-14 m-t-10">
+                        <span>LTC Stock</span>
+                        <span v-text="coinBanlance.LTC"></span>
+                    </div>
+                    <div class="c-255 f-s-14 m-t-10">
+                        <span>SC Stock</span>
+                        <span v-text="coinBanlance.SC"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-255 mb m-t-">
+            <div class="m-t-16 h-40 l-h-40 bg-255">
+                <div class="w100 bor-e1e1e1 m-lr-auto border-radius-4 p-r-6">
+                    <input type="text" class="border-none h-39 p-l-14 w70" placeholder="Number" v-model="transferData.Total" id="mTotal">
+                    <select id="selectMobile1" class="select border-none f-r" v-model="transferData.CoinType" @@change="selChange('CoinType')">
+                        <option v-for="x in coinType" v-text="x.coin" v-bind:value="x.value"></option>
+                    </select>
+                </div>
+            </div>
+            <div class="m-t-16 h-40 l-h-40">
+                <div class="w100 bor-e1e1e1 m-lr-auto border-radius-4 p-r-6">
+                    <input type="text" class="border-none h-39 p-l-14 w70" placeholder="0.000" v-model="transferData.DestTotal" id="mDestTotal">
+                    <select id="selectMobile2" class="select border-none f-r" v-model="transferData.DestCoinType" @@change="selChange('DestCoinType')">
+                        <option v-for="x in destCoinType" v-text="x.coin" v-bind:value="x.value"></option>
+                    </select>
+                </div>
+            </div>
+            <div class="m-t-16 h-40 l-h-40 text-center">
+                <input type="password" class="w100 p-l-14 h40 bor-e1e1e1 border-radius-4" v-model="transferData.TradePassword" placeholder="Transaction Password" name="name" value="" />
+            </div>
+            <div class="m-t-30 h-40 l-h-40">
+                <div class="m-b-10 c-red text-center" id="ExchangeCoinAlertBox"></div>
+                <button class="w100 border-none c-255 f-s-14 bg-10ADE4 border-radius-4" @@click="transfer">Confirm Exchange</button>
+            </div>
+
+        </div>
+
+        <div class="bg-255 mb m-t-16">
+            <div class="f-s-16 c-000 p-b-16">Exchange Record</div>
+            <table class="table table-bordered f-s-12" v-if="isHasExchangeRecord==true">
+                <thead>
+                    <tr class="h-40">
+                        <th>Date</th>
+                        <th>Currency Issued</th>
+                        <th>Quantity Issued</th>
+                        <th>Target Currency</th>
+                        <th>Target Quantity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="h-40" v-for="item in exchangeRecord">
+                        <td v-text="item.SetupTime" class="c-red"></td>
+                        <td v-text="item.SourceType"></td>
+                        <td v-text="item.SourceAmount"></td>
+                        <td v-text="item.DestType"></td>
+                        <td v-text="item.DestAmount"></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="p-t-20 p-b-16 text-right" v-if="isHasExchangeRecord==true">
+                <button class="border-none m-r-22" @@click="prevPage()">Page Up</button>
+                <div class="btn-group exchangeDD">
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                        <span v-text="pages.current">1</span>
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" role="menu">
+                        <li v-for="x in page" v-text="x" v-bind:value="x" @@click="goto(x)"></li>
+                    </ul>
+                </div>
+                <button class="border-none m-l-22" @@click="nextPage()">Page Down</button>
+            </div>
+
+            <div class="f-s-16 c-000 p-b-16" v-if="isHasExchangeRecord==false">
+                No Historical Record
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+@Html.AntiForgeryToken()
+
+<script>
+    var Unow = Date.now || function () {
+        return new Date().getTime();
+    };
+
+    var debounce = function (func, wait, immediate) {
+        var timeout, args, context, timestamp, result;
+
+        var later = function () {
+            var last = Unow() - timestamp;
+
+            if (last < wait && last >= 0) {
+                timeout = setTimeout(later, wait - last);
+            } else {
+                timeout = null;
+                if (!immediate) {
+                    result = func.apply(context, args);
+                    if (!timeout) context = args = null;
+                }
+            }
+        };
+
+        return function () {
+            context = this;
+            args = arguments;
+            timestamp = Unow();
+            var callNow = immediate && !timeout;
+            if (!timeout) timeout = setTimeout(later, wait);
+            if (callNow) {
+                result = func.apply(context, args);
+                context = args = null;
+            }
+
+            return result;
+        };
+    };
+
+    var app = new Vue({
+        el: '#app',
+        data: {
+            coinType: deepClone(exchangeCoin),
+            //destCoinType: deepClone(destCoinType),
+            destCoinType: [{ coin: 'SC', value: 5 }, { coin: 'VS', value: 7 }, { coin: 'VC', value: 6 }],//init VT list
+            transferData: {
+                __RequestVerificationToken: getToken(),
+                Total: '',
+                CoinType: 8,
+                DestCoinType: 5,
+                TradePassword: '',
+                DestTotal: ''
+            },
+            exchangeRecord: [],
+            pages: {
+                current: 1, 
+                page: 1,
+                total: '',
+            },
+            page: [],
+            coinBanlance: {
+                VC: 0,
+                VS: 0,
+                VT: 0,
+                SC: 0,
+                BTC: 0,
+                LTC: 0,
+                ETH: 0,
+            },
+            isHasExchangeRecord: false
+        },
+        mounted: function () {
+            var _this = this;
+            $('#DestTotal').keyup(function () {
+                _this.selChange('DestTotal');
+            });
+            $('#Total').keyup(function () {
+                _this.selChange('Total');
+            });
+            $('#mDestTotal').keyup(function () {
+                _this.selChange('DestTotal');
+            });
+            $('#mTotal').keyup(function () {
+                _this.selChange('Total');
+            });
+            this.GetBalance();
+            this.TakeExchangeRecord(this.pages.current);
+
+        },
+        methods: {
+
+            ExchangeCoinValid: function () {
+                var _this = this;
+                server.ExchangeCoinValid({
+                    __RequestVerificationToken: getToken(),
+                    Total: '',
+                    CoinType: ''
+                }, function (bRel) {
+                    if (bRel.msg == 'StatusOk') {
+                        bRel.data.forEach(function (item, index) {
+                            _this.exchangeCoinValid.push(item);
+                        })
+                    }
+                })
+            },
+            GetBalance: function () {
+                var _this = this;
+                server.GetBalance({
+                    __RequestVerificationToken: getToken(),
+                }, function (bRel) {
+                    if (bRel.msg == 'StatusOk') {
+                        bRel.data.forEach(function (item, index) {
+                            _this.coinBanlance[item.Type] = item.Banlance;
+                        })
+                    }
+                });
+            },
+            TakeExchangeRecord: function (index) {
+                var _this = this;
+                server.TakeExchangeRecord({
+                    __RequestVerificationToken: getToken(),
+                    PageIndex: index,
+                    ShowNumber: 10
+                }, function (rel) {
+                    _this.page = [];
+                    if (rel.data.total > 0) {
+                        _this.pages.total = rel.data.total;
+                        _this.pages.page = rel.data.page;
+                        _this.page = [];
+
+                        rel.data.data.forEach(function (item) {
+                            item.SetupTime = parseTimeGetDate(item.SetupTime);
+                            item.DestAmount = numToFixed(item.DestAmount, 4);
+                        });
+                        _this.exchangeRecord = rel.data.data;
+                        _this.isHasExchangeRecord = true;
+
+                        for (var p = 0, pLen = rel.data.page; p < pLen; p++) {
+                            _this.page.push(p + 1);
+                        };
+                    }
+                })
+            },
+            MarketTicker: function (coinType, CB) {
+                var _this = this;
+                var result = '';
+                server.MarketTicker({
+                    symbol: coinType
+                }, function (rel) {
+                    CB(rel);
+                });
+            },
+
+            selChange: debounce(function (par) {
+                var _this = this;
+                switch (par) {
+                    case 'Total': {
+                        if (!ValidateValue(_this.transferData.Total, 'Float') || _this.transferData.Total == 0) {
+                            return;
+                        } else {
+                            if (checkTrue(_this.transferData.CoinType) == false) {
+                                return;
+                            } else {
+                                if (checkTrue(_this.transferData.DestCoinType) == false) {
+                                    return;
+                                } else {
+                                    calculatedSum('Original');
+                                }
+                            }
+                        }
+                        break;
+                    }
+                    case 'CoinType': {
+                        _this.destCoinType = deepClone(destCoinType);
+                        switch (this.transferData.CoinType) {
+                            case 0:
+                            case 1: {
+                                showTips('BTC,LTC Coming soon...');
+                                var a = [];
+                                deepClone(destCoinType).forEach(function (curValue, index) {
+                                    if (curValue.value != _this.transferData.CoinType && curValue.value != 6
+                                        && curValue.value != 7 && curValue.value != 8) {
+                                        a.push(curValue);
+                                    }
+                                })
+                                _this.destCoinType = a;
+                                break;
+                            }
+                            case 5: {
+                                showTips("SC Coming soon...");
+                                break;
+                            }
+                            case 7: {
+                                _this.destCoinType = [{ coin: 'SC', value: 5 }]
+                                _this.transferData.DestCoinType = 5;
+                                showTips("VS Coming soon...");
+                                break;
+                            }
+                            case 8: {
+                                //_this.destCoinType.forEach(function (curValue, index) {
+                                //    if (curValue.value == _this.transferData.CoinType) {
+                                //        _this.destCoinType.splice(index, 1);
+                                //        index--;
+                                //    }
+                                //})
+                                _this.destCoinType = [{ coin: 'SC', value: 5 }, { coin: 'VS', value: 7 }, { coin: 'VC', value: 6 }];
+                                break;
+                            }
+                        }
+                        _this.DestCoinType = _this.destCoinType[0].value;
+                        console.log(_this.DestCoinType, _this.destCoinType[0].value)
+                        if (ValidateValue(_this.transferData.DestTotal, 'Float') && _this.transferData.DestTotal != 0) {
+                            if (checkTrue(_this.transferData.DestCoinType) == false) {
+                                return;
+                            } else {
+                                calculatedSum('target');
+                            }
+                        } else {
+                            if (!ValidateValue(_this.transferData.Total, 'Float') || _this.transferData.Total == 0) {
+                                return;
+                            } else {
+                                if (checkTrue(_this.transferData.CoinType) == false) {
+                                    return;
+                                } else {
+                                    calculatedSum('Original');
+                                }
+                            }
+                        }
+
+                        break;
+                    }
+                    case 'DestTotal': {
+                        if (!ValidateValue(_this.transferData.DestTotal, 'Float') || _this.transferData.DestTotal == 0) {
+                            return;
+                        } else {
+                            if (checkTrue(_this.transferData.DestCoinType) == false) {
+                                return;
+                            } else {
+                                if (checkTrue(_this.transferData.CoinType) == false) {
+                                    return;
+                                } else {
+                                    calculatedSum('target');
+                                }
+                            }
+                        }
+                        break;
+                    }
+                    case 'DestCoinType': {
+                        if (ValidateValue(_this.transferData.Total, 'Float') && _this.transferData.Total != 0) {
+                            if (checkTrue(_this.transferData.CoinType) == false) {
+                                return;
+                            } else {
+                                calculatedSum('Original');
+                            }
+                        } else {
+                            if (!ValidateValue(_this.transferData.Total, 'Float') || _this.transferData.Total == 0) {
+                                return;
+                            } else {
+                                if (checkTrue(_this.transferData.DestCoinType) == false) {
+                                    return;
+                                } else {
+                                    calculatedSum('target');
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+                function calculatedSum(obj) {
+                    var coinPar = '', desPar = '';
+                    for (var t = 0, tLen = _this.coinType.length; t < tLen; t++) {
+                        if (_this.coinType[t].value == _this.transferData.CoinType) {
+                            coinPar = _this.coinType[t].coin;
+                            break;
+                        }
+                    }
+                    for (var d = 0, dLen = _this.destCoinType.length; d < dLen; d++) {
+                        if (_this.destCoinType[d].value == _this.transferData.DestCoinType) {
+                            desPar = _this.destCoinType[d].coin;
+                            break;
+                        }
+                    }
+                    if (checkTrue(coinPar) == false || checkTrue(desPar) == false) {
+                        return;
+                    }
+                    coinPar = coinPar.toLowerCase();
+                    coinPar = coinPar + '_usd';
+                    desPar = desPar.toLowerCase();
+                    desPar = desPar + '_usd';
+                    var coinTypePrice = '', coinDestPrice = '';
+                    switch (obj) {
+                        case 'Original': {
+                            _this.MarketTicker(coinPar, function (rel) {
+                                if (rel) {
+                                    coinTypePrice = rel.data.buy;
+                                    _this.MarketTicker(desPar, function (dRel) {
+                                        if (dRel) {
+                                            coinDestPrice = dRel.data.buy;
+                                            _this.transferData.DestTotal = coinTypePrice * _this.transferData.Total / coinDestPrice;
+                                            _this.transferData.DestTotal = numToFixed(_this.transferData.DestTotal, 4);
+
+                                        }
+                                    });
+                                } else {
+                                    var temp = "";
+                                    if (coinPar === "vt_usd") {
+                                        if (desPar === "sc_usd" || desPar === "vs_usd") temp = 1;//1:1
+                                        if (desPar === "vc_usd") temp = 2;//1:2
+                                    }
+                                    if (coinPar === "vs_usd") {
+                                        if (desPar === "sc_usd") temp = 0.9;
+                                    }
+                                    if (temp != "") {
+                                        _this.transferData.DestTotal = numToFixed(_this.transferData.Total * temp, 4);
+                                    }
+                                }
+                            });
+                            break;
+                        }
+                        case 'target': {
+                            _this.MarketTicker(coinPar, function (mRel) {
+                                if (mRel) {
+                                    coinTypePrice = mRel.data.buy;
+                                    _this.MarketTicker(desPar, function (tRel) {
+                                        if (tRel) {
+                                            coinDestPrice = tRel.data.buy;
+                                            _this.transferData.Total = coinDestPrice * _this.transferData.DestTotal / coinTypePrice;
+                                            _this.transferData.Total = numToFixed(_this.transferData.Total, 4);
+
+                                        }
+                                    });
+                                } else {
+                                    var temp = "";
+                                    if (coinPar === "vt_usd") {
+                                        if (desPar === "sc_usd" || desPar === "vs_usd") temp = 1;//1:1
+                                        if (desPar === "vc_usd") temp = 2;//1:2
+                                    }
+                                    if (coinPar === "vs_usd") {
+                                        if (desPar === "sc_usd") temp = 0.9;//1:0.9
+                                    }
+                                    if (temp != "") {
+                                        _this.transferData.Total = numToFixed(_this.transferData.DestTotal / temp, 4);
+                                    }
+                                }
+                            });
+                            break;
+                        }
+                    }
+                }
+
+            }, 1000),
+
+            transfer: function () {
+                var _this = this;
+                if (!_this.transferData.Total) {
+                    showTips('Please Enter The Quantity');
+                    return;
+                }
+                if (checkTrue(_this.transferData.CoinType) == false) {
+                    showTips('Please Select The Transfer Currency');
+                    return;
+                }
+                if (checkTrue(_this.transferData.DestCoinType) == false) {
+                    showTips('Please Select Target Currency');
+                    return;
+                }
+                if (!_this.transferData.TradePassword) {
+                    showTips('Please Enter The Transaction Password');
+                    return;
+                }
+                var showcoinType = $('#selectMobile1').find('option:selected').text();
+                var showdestCoinType = $('#selectMobile1').find('option:selected').text();
+                if ($(window).width() >= 768) {
+                    showcoinType = $('#selectPC1').find('option:selected').text();
+                    showdestCoinType = $('#selectPC2').find('option:selected').text();
+                }
+                var r = confirm("Use Currency： " + this.transferData.Total + " " + showcoinType + "\nGet Currency：" + this.transferData.DestTotal + " " + showdestCoinType);
+                if (r === false) return;
+                server.ExchangeCoin(this.transferData, function (rel) {
+                    switch (rel.msg) {
+                        case 'StatusOk': {
+                            showTips('Successful Exchange');
+                            _this.transferData.Total = 0;
+                            _this.transferData.TradePassword = '';
+                            _this.transferData.DestTotal = 0;
+                            _this.TakeExchangeRecord(1);
+                            _this.GetBalance();
+                            break;
+                        }
+                        case rel.msg: {
+                            showTips(getDescript(rel.msg));
+                            break;
+                        }
+                        default: {
+                            showTips('Operation Failed, Error Code：' + rel.msg);
+                        }
+                    }
+                })
+            },
+
+            prevPage: function () {
+                if (this.pages.current <= 1) {
+                    return;
+                } else {
+                    this.pages.current--;
+                    this.TakeExchangeRecord(this.pages.current);
+                }
+            },
+            nextPage: function () {
+                if (this.pages.current >= this.pages.page) {
+                    return;
+                } else {
+                    this.pages.current++;
+                    this.TakeExchangeRecord(this.pages.current);
+                }
+            },
+            goto: function () {
+                this.TakeExchangeRecord(this.pages.current);
+            }
+
+        },
+        filters: {
+            toFix: function (val, decimal) {
+                if (typeof (val) === 'number' && val != 0) {
+                    return val.toFixed(decimal);
+                }
+                return val;
+            },
+        }
+    })
+
+</script>

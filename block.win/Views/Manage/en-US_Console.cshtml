@@ -1,0 +1,316 @@
+﻿@{
+bool IsLogined = User != null && User.Identity != null && User.Identity.IsAuthenticated;
+}
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <title>Manager Loading</title>
+    <meta name="viewport" content="width=device-width,
+                                     initial-scale=1.0,
+                                     maximum-scale=1.0,
+                                     user-scalable=no">
+    <link rel="stylesheet" href="~/Content/bootstrap.css">
+    <link rel="stylesheet" href="~/Content/site.css">
+    <link rel="stylesheet" href="~/Content/reset.css">
+    <style>
+        @@media screen and (max-width: 768px) {
+
+            .mChooseLang {
+                display: block;
+            }
+
+            .pcChooseLang {
+                display: none;
+            }
+        }
+
+        @@media screen and (min-width:768px) {
+
+            .mChooseLang {
+                display: none;
+            }
+
+            .pcChooseLang {
+                display: block;
+            }
+        }
+
+        #app {
+            height: 100%;
+            left: 0;
+        }
+
+        .mainBox {
+            position: absolute;
+            top: 50%;
+            margin-top: -167px;
+        }
+
+        .loginedTip{
+            padding: 10px 15px;
+            font-size: 18px;
+        }
+
+        @@media screen and (max-height: 433px) {
+            .mainBox {
+                top: 0;
+                margin-top: 50px;
+            }
+        }
+        .mChooseLang {
+            position: fixed;
+            top: 14px;
+            right: 60px;
+        }
+
+        .mChooseLang ul {
+            margin: 10px 0 0 8px;
+        }
+
+        .mChooseLang ul li {
+            margin: 8px 0 0 0 !important;
+        }
+
+        .pcChooseLang button {
+            position: fixed;
+            right: 16px;
+            top: 14px;
+        }
+
+        .pcChooseLang ul {
+            position: fixed;
+            right: 16px !important;
+            top: 50px;
+            left: inherit;
+            max-width: 100px;
+        }
+        #layoutShowLoading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,.3);
+            text-align: center;
+            z-index: 10000;
+        }
+        #layoutShowLoading img {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%,-50%);
+        }
+    </style>
+</head>
+<body class="bg-004a7c w100 h100">
+<nav class="navbar navbar-default bg-004a7c zIndex999 ps-fixed w100 t-0" role="navigation">
+    <div class="container-fluid">
+        <div class="navbar-header ">
+            <button type="button" class="navbar-toggle border-none" data-toggle="collapse"
+                    data-target="#example-navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar bg-255"></span>
+                <span class="icon-bar bg-255"></span>
+                <span class="icon-bar bg-255"></span>
+            </button>
+            <a class="navbar-brand" href="#">
+                <img src="/images/blockchain-wrate-text.png" class="w-127 h-14 m-t-4">
+            </a>
+
+            <div class="mChooseLang">
+                <img src="/images/USA-langular.png" title="English" onclick="openMChooseLang()" class="m-r-6 m-t--2 w-16 pos-rel langular-title-user m-r-8 m-l-8 langular-title-mob">
+                <ul class="m-t--24 d-s-none list-unstyled">
+                    <li class="langular-lis" style="margin:0;">
+                        <a href="/Home/SwithLang?Lang=zh-CN">
+                            <img src="/images/China-langular.png" alt="中文简体" title="中文简体" class="m-t--2" style="margin-right:0;">
+                        </a>
+                    </li>
+                    <li class="langular-lis" style="margin:0;">
+                        <a href="/Home/SwithLang?Lang=en-US">
+                            <img src="/images/USA-langular.png" alt="English" title="English" class="m-t--2" style="margin-right:0;">
+                        </a>
+                    </li>
+                    <li class="langular-lis" style="margin:0;">
+                        <a href="/Home/SwithLang?Lang=id-ID">
+                            <img src="/images/Indonesia-langular.png" alt="Indonesian" title="Indonesian" class="m-t--2" style="margin-right:0;">
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="ps-fixed r-64 t-12 pcChooseLang">
+                <div class="dropdown d-s-i-b m-r-22">
+                    <button class="btn dropdown-toggle p-0 border-none bg-transparent" type="button" id="dropdownMenuLang" data-toggle="dropdown">
+                        <img src="~/images/Img/america.png" class="w-24 h-24" alt="Alternate Text" />
+                        <span class="c-255">English</span>
+                        @* <span class="caret c-255"></span>*@
+                    </button>
+                    <ul class="dropdown-menu p-lr-12 p-t-16 p-b-16" id="layoutLang" role="menu" aria-labelledby="dropdownMenuLang">
+
+                        <li role="presentation" class=" h-40">
+                            <a class="h-30 p-0 p-t-2 p-l-6" onclick="SwithLang('zh-CN')">
+                                <img src="~/images/Img/chnai.png" alt="" class="f-l w-24 h-24 d-s-i-b" />
+                                <span class="f-l f-s-12 m-l-8" role="menuitem" tabindex="-1">中文</span>
+                            </a>
+                        </li>
+                        <li role="presentation" class="h-40">
+                            <a class="h-30 p-0 p-t-2 p-l-6" onclick="SwithLang('en-US')">
+                                <img src="~/images/Img/america.png" alt="" class="f-l w-24 h-24 d-s-i-b" />
+                                <span class="f-l f-s-12 m-l-8" role="menuitem" tabindex="-1">English</span>
+                            </a>
+                        </li>
+                        <li role="presentation" class=" h-40">
+                            <a class="h-30 p-0 p-t-2 p-l-6" onclick="SwithLang('id-ID')">
+                                <img src="~/images/Img/id.png" alt="" class="f-l w-24 h-24 d-s-i-b" />
+                                <span class="f-l f-s-12 m-l-8" role="menuitem" tabindex="-1">ID</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="collapse navbar-collapse" id="example-navbar-collapse">
+            <ul class="nav navbar-nav c-255">
+                <li><a href="#" class="c-255">Chart</a></li>
+                <li><a href="#" class="c-255">statistical data</a></li>
+                <li><a href="#" class="c-255">market</a></li>
+                <li><a href="#" class="c-255">API</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="w100" id="app">
+    @if (!IsLogined) {
+    <div class="bg-255 p-40 col-sm-6 col-sm-offset-3 col-xs-12 mainBox">
+        <div>
+            <span class="f-s-24">Manage's Account</span>
+        </div>
+        <div class="m-b-15">
+            <div class=" m-b-5">Manage's Account</div>
+            <div class="ps-relative">
+                <input type="" class="w100 p-lr-12 p-tb-6 h-40" v-model="loginData.EmailOrName" placeholder="Please Enter Manage's Account">
+                @*  <img v-bind:src="validate.setterExistence" v-if="validate.ConfirmPassword==true" class="ps-absolute r-16 t-15 w-10 h-10">*@
+            </div>
+            <div class="c-red d-s-none" >Please Enter Manage's Account</div>
+        </div>
+        <div class="m-b-15">
+            <div class=" m-b-5">Password</div>
+            <div class="ps-relative">
+                <input type="password" class="w100 p-lr-12 p-tb-6 h-40" v-model="loginData.Password" placeholder="Please Enter Manage's Password">
+                @* <img v-bind:src="validate.ConfirmPassword" v-if="validate.isSetter==true" class="ps-absolute r-16 t-15 w-10 h-10">*@
+            </div>
+            <div class="c-red d-s-none" >Please Enter Manage's Password</div>
+        </div>
+        <div class="c-red  text-center m-t-10 m-b-5" id="showTipss" v-text="tips"></div>
+        <button class="d-s-i-b w100 h-40 border-none bg-10ADE4 c-255 m-b-15 m-t-4" :disabled="disabled" v-on:click="login()">Manage Login</button>
+    </div>
+    } else {
+    <div class="bg-255 p-40 col-sm-6 col-sm-offset-3 col-xs-12 mainBox">
+        <div>
+            <p class="loginedTip">You have already logged in, please redirect or logout.
+            </p>
+            <div class="list-group">
+                <a href="/" class="list-group-item">Guest Page</a>
+                <a href="/en-US/Finance/Package" class="list-group-item">User Home</a>
+                <a href="/en-US/Console/SendOut" class="list-group-item">Order System</a>
+            </div>
+            <div class="text-right">
+                <button class="btn" @@click="logoutClick">Logout</button>
+            </div>
+        </div>
+    </div>
+    }
+    <div id="layoutShowLoading" v-if="this.showLoading">
+        <img src="~/images/icon/showLoading.gif" alt="Alternate Text" />
+    </div>
+</div>
+
+
+@Html.AntiForgeryToken();
+
+<script src="~/Scripts/jquery-1.10.2.js"></script>
+<script src="~/Scripts/bootstrap.js"></script>
+<script src="~/Scripts/vue.js"></script>
+<script src="~/Scripts/Simple-code.js"></script>
+<script src="~/Scripts/server.js"></script>
+
+<script>
+    //切换语言
+    var userCode = window.location.href;
+    userCode = userCode.substring(userCode.lastIndexOf('=') + 1, userCode.length);
+
+    function SwithLang(langCode) {
+        window.location = host +'/'+ langCode+ '/Manage/Console';
+    };
+
+    var isOpenMChooseLang = 'close';
+    function openMChooseLang() {
+        if (isOpenMChooseLang == 'close') {
+            isOpenMChooseLang = 'open';
+            $('.mChooseLang ul').fadeIn();
+        } else {
+            isOpenMChooseLang = 'close';
+            $('.mChooseLang ul').fadeOut();
+        }
+    }
+
+    new Vue({
+        el: '#app',
+        data: {
+            tips: '',
+            loginData: {
+                EmailOrName:'',
+                Password: '',
+                __RequestVerificationToken:getToken()
+            },
+            validate: {
+                isPassword: false,
+                isConfirmPassword: false,
+            },
+            disabled: false,
+            showLoading:false
+        },
+        methods: {
+            login: function () {
+                if (!this.loginData.EmailOrName) {
+                    showAlertBox('showTipss', 'Please Enter Manage\'s Account');
+                    return;
+                } else {
+                    this.loginData.EmailOrName = this.loginData.EmailOrName.trim();
+                }
+                if (!this.loginData.Password) {
+                    showAlertBox('showTipss', 'Please Enter Manage\'s Password');
+                    return;
+                } else {
+                    this.loginData.Password = this.loginData.Password.trim();
+                }
+                var _this = this;
+                this.disabled = true;
+                _this.showLoading = true;
+                $.post(host+'Manage/SignIn',this.loginData,function(rel){
+                    switch (rel.msg) {
+                        case 'StatusOk': {
+                            window.location=host +'/en-US/Console/SendOut';
+                            break;
+                        }
+                        default: {
+                            showAlertBox('showTipss', getDescript(rel.msg));
+                            _this.disabled = false;
+                        }
+                    }
+                    _this.showLoading=false
+                })
+            },
+            logoutClick: function(){
+                server.Logout(null,function(){
+                    window.location = '/en-US'
+                })
+            }
+        }
+    })
+</script>
+
+</body>
+</html>

@@ -1,0 +1,305 @@
+﻿@{
+Layout = "~/Views/Shared/_zh-CN_ManageLayout.cshtml";
+ViewBag.Title = "提现管理";
+}
+
+
+<link href="~/Content/eleme-css/index.css" rel="stylesheet" />
+<style>
+    ::-ms-clear, ::-ms-reveal {
+        display: none;
+    }
+
+    [v-cloak] {
+        display: none !important;
+    }
+
+    .main {
+        width: 1200px;
+        margin: 0 auto;
+        padding:10px;
+        background: #eef1f6;
+    }
+
+    #showTips {
+        z-index: 9999;
+    }
+
+    .el-loading-mask {
+        z-index: 1;
+    }
+    /*table*/
+    .table tbody tr th, .table tbody tr td {
+        text-align: center;
+    }
+    .table tbody tr td{
+      cursor: pointer;
+    }
+    /*screen*/
+    .el-input{
+        width:180px;
+        display:inline-block;
+    }
+    .el-message-box{
+      width: 360px;
+    }
+    .el-message-box .el-input{
+      width: 100%;
+    }
+
+    @@media screen and (max-width: 768px){
+        .timepick {
+            left: 377px !important;
+        }
+    }
+    .spinner {
+        margin: 5px auto 0;
+        width: 150px;
+        text-align: center;
+    }
+
+    .spinner > div {
+        width: 20px;
+        height: 20px;
+        background-color: #004a7c;
+
+        border-radius: 100%;
+        display: inline-block;
+        -webkit-animation: bouncedelay 1.4s infinite ease-in-out;
+        animation: bouncedelay 1.4s infinite ease-in-out;
+        /* Prevent first frame from flickering when animation starts */
+        -webkit-animation-fill-mode: both;
+        animation-fill-mode: both;
+    }
+
+    .spinner .bounce1 {
+        -webkit-animation-delay: -0.32s;
+        animation-delay: -0.32s;
+    }
+
+    .spinner .bounce2 {
+        -webkit-animation-delay: -0.16s;
+        animation-delay: -0.16s;
+    }
+
+    @@-webkit-keyframes bouncedelay {
+         0%, 80%, 100% { -webkit-transform: scale(0.0) }
+         40% { -webkit-transform: scale(1.0) }
+     }
+
+    @@keyframes bouncedelay {
+         0%, 80%, 100% {
+             transform: scale(0.0);
+             -webkit-transform: scale(0.0);
+         } 40% {
+               transform: scale(1.0);
+               -webkit-transform: scale(1.0);
+           }
+     }
+</style>
+
+<div id="app">
+    <div id="top" style="position: absolute;top:0"></div>
+    <div class="main">
+        <div style="margin:16px 0 8px 0" >
+            <el-input v-model="screen.UserName" size="small" placeholder="输入用户名"></el-input>
+            <el-select v-model="screen.Status" size="small" clearable placeholder="状态" popper-class="orginCoin">
+                <el-option v-for="x in options"
+                           :key="x.key"
+                           :label="x.name"
+                           :value="x.key">
+                </el-option>
+            </el-select>
+            <el-date-picker v-model="time"
+                            size="small"
+                            type="daterange"
+                            placeholder="选择日期范围"
+                            popper-class="timepick"
+                            @@change="chooseTime">
+            </el-date-picker>
+            <el-button type="danger" size="small" icon="search" @@click="screen1">筛选</el-button>
+        </div>
+
+        <div class="clearfix" v-infinite-scroll="loadMore" infinite-scroll-disabled="busy" infinite-scroll-distance="10">
+            <table class="table table-hover table-bordered detail">
+                <tr>
+                  <th>持卡人</th>
+                  <th>银行名称</th>
+                  <th>卡号</th>
+                  <th>SwiftCode</th>
+                  <th>提现数量</th>
+                  <th>手续费</th>
+                  <th>备注</th>
+                  <th>提现日期</th>
+                  <th width="130">操作</th>
+                </tr>
+                <tr v-for="x in list">
+                  <!--<td>{{x.UserName}}{{x.CardName}}</td>-->
+                  <td>
+                    <el-tooltip effect="dark" placement="top-start">
+                      <div slot="content">
+                        <p>用户名：<span v-text="x.UserName"></span></p>
+                      </div>
+                      <span v-text="x.CardName"></span>
+                    </el-tooltip>
+                  </td>
+                  <td>
+                    <el-tooltip effect="dark" :content="'分行信息：'+x.Subbranch" placement="top-start">
+                      <span v-text="x.BankName"></span>
+                    </el-tooltip>
+                  </td>
+                  <td v-text="x.CardId"></td>
+                  <td v-text="x.SwiftCode?x.SwiftCode:'无'"></td>
+                  <td><span v-text="x.Amount"></span><span v-text="x.CoinType"></span></td>
+                  <td v-text="x.Fee"></td>
+                  <td>
+                    <el-tooltip effect="dark" placement="top-start">
+                      <div slot="content">
+                        <p>用户备注：<span v-text="x.Comment"></span></p>
+                        <p>后台备注：<span v-text="x.ConfirmComment"></span></p>
+                      </div>
+                      <i>悬浮(手机点击)</i>
+                    </el-tooltip>
+                  </td>
+                  <td v-text="x.SetupTime"></td>
+                  <td>
+                    <div v-if="x.Status !='D' && x.Status !='C'" >
+                      <el-button type="primary" size="small" @@click="confirm(x)">确定</el-button>
+                      <el-button type="danger" size="small" @@click="cancel(x)">取消</el-button>
+                    </div>
+                    <span v-else>不可操作</span>
+                  </td>
+
+                </tr>
+            </table>
+            <div class="spinner" v-if="!busy">
+                <div class="bounce1"></div>
+                <div class="bounce2"></div>
+                <div class="bounce3"></div>
+            </div>
+            <div v-if="over" style="color:#666;text-align: center" v-text="'以上为所有数据。'"></div>
+        </div>
+    </div>
+</div>
+@Html.AntiForgeryToken()
+<script src="../../Scripts/element-ui.js"></script>
+<script src="../../Scripts/vue-infinite-scroll.min.js"></script>
+<script>
+	server.TakeWithdrawOrders=function(params, callback) {
+		var api = 'Console/TakeWithdrawOrders';
+		jqReq('post', api, params, true, callback)
+	};
+	server.HandleWithdraw=function(params, callback) {
+		var api = 'Console/HandleWithdraw';
+		jqReq('post', api, params, true, callback)
+	};
+</script>
+<script>
+	new Vue({
+		el: '#app',
+		data: {
+			time: '',
+			busy:false,
+			over:false,
+			options: [
+        { name: '成功', key: 'D' },
+        { name: '取消', key: 'C' },
+        { name: '等待', key: 'W' }
+      ],
+			screen: {
+				__RequestVerificationToken: getToken(),
+				UserName:'',
+				Status: 'W',
+				STime: '',
+				ETime: '',
+				PageIndex: 1,
+				ShowNumber:20
+			},
+	    list:[]
+
+		},
+		filters: {
+
+		},
+		mounted: function () {
+		},
+		methods: {
+			loadMore:function(){
+				this.busy=true;
+				var _this = this;
+				server.TakeWithdrawOrders(this.screen, function (rel) {
+					if (rel.msg === "StatusOk") {
+						rel.data.data.forEach(function(i){
+							_this.list.push(i);
+						});
+						_this.screen.PageIndex++;
+						_this.$nextTick(function(){
+							_this.busy = _this.over =!rel.data.data.length;
+						})
+					} else {
+						showTips(getDescriptM(rel.msg))
+					}
+
+				});
+			},
+			chooseTime: function (val) {
+				var aT = val ?val.split(' - '):['', ''];
+				this.screen.STime = aT[0];
+				this.screen.ETime = aT[1];
+			},
+			screen1: function () {
+				this.screen.PageIndex = 1;
+				this.list=[];
+				this.loadMore();
+			},
+			confirm:function(x){
+				var _this= this;
+				this.$prompt('备注', '是否确定提现订单'+x.OrderId, {
+					confirmButtonText: '是',
+					cancelButtonText: '否'
+				}).then(function (obj) {
+            server.HandleWithdraw({
+	            __RequestVerificationToken: getToken(),
+	            OrderId:x.OrderId,
+	            Status:'D',
+	            Comment:obj.value
+            },function(rel){
+	            if (rel.msg === "StatusOk") {
+		            _this.$message({
+			            message: '确定成功',
+			            type: 'success'
+		            });
+		            _this.list=_this.list.filter(function(y){
+		            	return x.OrderId !==y.OrderId
+                })
+	            }
+            })
+				}).catch(function(){});
+      },
+      cancel:function(x){
+	      var _this= this;
+	      this.$prompt('备注', '是否取消提现订单'+x.OrderId, {
+		      confirmButtonText: '是',
+		      cancelButtonText: '否'
+	      }).then(function (obj) {
+		      server.HandleWithdraw({
+			      __RequestVerificationToken: getToken(),
+			      OrderId:x.OrderId,
+			      Status:'C',
+			      Comment:obj.value
+		      },function(rel){
+			      if (rel.msg === "StatusOk") {
+				      _this.$message({
+					      message: '取消成功',
+					      type: 'success'
+				      });
+				      _this.list=_this.list.filter(function(y){
+					      return x.OrderId !==y.OrderId
+				      })
+			      }
+		      })
+	      }).catch(function(){});
+      }
+		}
+	});
+</script>

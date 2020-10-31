@@ -1,0 +1,834 @@
+﻿
+@{
+    bool IsLogined = User != null && User.Identity != null && User.Identity.IsAuthenticated;
+    object Inviter = ViewData["Inviter"];
+    object LoginEmail = ViewData["LoginEmail"];
+    bool ForgotPassword = bool.Parse(ViewData["ForgotPassword"].ToString());
+    string LoginEmailAccount = LoginEmail == null ? "''" : "'" + LoginEmail.ToString() + "'";
+    string IsShowLogin = LoginEmail != null ? "true" : "false";
+    string IsShowRegister = Inviter == null ? "false" : "true";
+    string IsShowForgotPassword = ForgotPassword == false ? "false" : "true";
+    string InviterAccount = Inviter == null ? "''" : "'" + Inviter.ToString() + "'";
+    object ReturnUrl = ViewData["ReturnUrl"];
+    string Lang = "zh-CN";
+    ViewBag.Title = "登录";
+}
+
+<!DOCTYPE html>
+<html lang="@Lang" class="h100 w100">
+<head>
+    <meta charset="UTF-8">
+    <title>登录</title>
+    <meta name="viewport" content="width=device-width,
+                                     initial-scale=1.0,
+                                     maximum-scale=1.0,
+                                     user-scalable=no">
+    <link rel="stylesheet" href="~/Content/bootstrap.css">
+    <link rel="stylesheet" href="~/Content/site.css">
+    <link rel="stylesheet" href="~/Content/reset.css">
+    <style>
+        
+        @@media screen and (max-width: 768px) {
+
+            .mChooseLang {
+                display:block;
+            }
+            .pcChooseLang{
+                display:none;
+            }
+            .contentBox {
+                left: 0;
+                width: 100%;
+            }
+        }
+        @@media screen and (min-width:768px){
+             
+            .mChooseLang {
+                display: none;
+            }
+            .pcChooseLang {
+                display: block;
+            }
+        }
+        
+         #loginBox{
+                position:absolute;
+                top:50%;
+                margin-top:-205px
+             }
+            #isShowRegister{
+                top:50%;
+                margin-top:-340px
+             }
+            #findPWKBox{
+                top:50%;
+                margin-top:-312px
+             }
+            #sendMailTip{
+            position:absolute;
+            top:50%;
+            margin-top:-200px;
+        }
+        .app {
+            height:100%;
+            position: relative;
+            left: 0;
+        }
+        .mChooseLang{
+            position:fixed;
+            top:14px;
+            right:60px;
+        }
+            .mChooseLang ul{
+                margin:10px 0 0 8px;
+            }
+            .mChooseLang ul li{
+                margin: 8px 0 0 0 !important;
+            } 
+            .pcChooseLang button {
+                position: fixed;
+                right: 16px;
+                top: 14px;
+            }
+        .pcChooseLang ul{
+            position: fixed;
+            right: 16px !important;
+            top: 50px;
+            left:inherit;
+            max-width:100px;
+        }
+        .layoutFade, .layoutShowLoading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,.3);
+            text-align: center;
+            z-index: 999;
+            display: none;
+        }
+
+            .layoutFade div, .layoutShowLoading img {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%,-50%);
+            }
+
+        [v-cloak] {
+            display: none;
+        }
+
+        select {
+            border: solid 1px #000;
+            appearance: none;
+            -moz-appearance: none;
+            -webkit-appearance: none;
+            padding-right: 14px;
+            background: url("/images/icon/selDown.png") no-repeat scroll right center transparent;
+            background-position-x: 98%;
+            border-color: #999;
+            padding-left: 10px;
+        }
+
+        select::-ms-expand {
+            display: none;
+        }
+        @@media screen and (max-height:514px){
+            #loginBox{
+                top:50px;
+                margin-top:0;
+            }
+            #sendMailTip{
+                top:50px;
+                margin-top:0;
+            }
+        }
+        @@media screen and (max-height:787px){
+            #isShowRegister{
+                top:50px;
+                margin-top:0;
+            }
+        }
+        @@media screen and (max-height:730px){
+            #findPWKBox{
+                top:50px;
+                margin-top:0;
+            }
+        }
+     </style>
+</head>
+<body class="bg-004a7c w100 h100">
+    
+        <nav class="navbar navbar-default bg-004a7c zIndex999 ps-fixed w100 t-0" id="nav" role="navigation">
+            <div class="container-fluid">
+                <div class="navbar-header ">
+                    <button type="button" class="navbar-toggle border-none" data-toggle="collapse"
+                            data-target="#example-navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar bg-255"></span>
+                        <span class="icon-bar bg-255"></span>
+                        <span class="icon-bar bg-255"></span>
+                    </button>
+                    <a class="navbar-brand" href="/zh-CN/Home/Index">
+                        <img src="/images/blockchain-wrate-text.png" class="w-127 h-14">
+                    </a>
+                    <div class="mChooseLang">
+                        <img src="/images/China-langular.png" title="中文简体" onclick="openMChooseLang()" class="m-r-6 m-t--2 w-16 pos-rel langular-title-user m-r-8 m-l-8 langular-title-mob">
+                        <ul class="m-t--24 d-s-none list-unstyled">
+                            <li class="langular-lis" style="margin:0;">
+                                <a href="/Home/SwithLang?Lang=zh-CN">
+                                    <img src="/images/China-langular.png" alt="中文简体" title="中文简体" class="m-t--2" style="margin-right:0;">
+                                </a>
+                            </li>
+                            <li class="langular-lis" style="margin:0;">
+                                <a href="/Home/SwithLang?Lang=en-US">
+                                    <img src="/images/USA-langular.png" alt="English" title="English" class="m-t--2" style="margin-right:0;">
+                                </a>
+                            </li>
+                            <li class="langular-lis" style="margin:0;">
+                                <a href="/Home/SwithLang?Lang=id-ID">
+                                    <img src="/images/Indonesia-langular.png" alt="Indonesian" title="Indonesian" class="m-t--2" style="margin-right:0;">
+                                </a>
+                            </li>
+                        </ul>
+
+                    </div>
+
+                    <div class="ps-fixed r-64 t-12 pcChooseLang">
+                        <div class="dropdown d-s-i-b m-r-22">
+                            <button class="btn dropdown-toggle p-0 border-none bg-transparent" type="button" id="dropdownMenuLang" data-toggle="dropdown">
+                                <img src="~/images/Img/chnai.png" class="w-24 h-24" alt="Alternate Text" />
+                                <span class="c-255">中文</span>
+                                @* <span class="caret c-255"></span>*@
+                            </button>
+                            <ul class="dropdown-menu p-lr-12 p-t-16 p-b-16" id="layoutLang" role="menu" aria-labelledby="dropdownMenuLang">
+                              
+                                <li role="presentation" class=" h-40">
+                                    <a class="h-30 p-0 p-t-2 p-l-6" onclick="SwithLang('zh-CN')">
+                                        <img src="~/images/Img/chnai.png" alt="" class="f-l w-24 h-24 d-s-i-b" />
+                                        <span class="f-l f-s-12 m-l-8" role="menuitem" tabindex="-1">中文</span>
+                                    </a>
+                                </li>
+                                <li role="presentation" class="h-40">
+                                    <a class="h-30 p-0 p-t-2 p-l-6" onclick="SwithLang('en-US')">
+                                        <img src="~/images/Img/america.png" alt="" class="f-l w-24 h-24 d-s-i-b" />
+                                        <span class="f-l f-s-12 m-l-8" role="menuitem" tabindex="-1">English</span>
+                                    </a>
+                                </li>
+                                <li role="presentation" class=" h-40">
+                                    <a class="h-30 p-0 p-t-2 p-l-6" onclick="SwithLang('id-ID')">
+                                        <img src="~/images/Img/id.png" alt="" class="f-l w-24 h-24 d-s-i-b" />
+                                        <span class="f-l f-s-12 m-l-8" role="menuitem" tabindex="-1">ID</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+
+
+
+
+                    </div>
+
+                </div>
+                <div class="collapse navbar-collapse" id="example-navbar-collapse">
+                    <ul class="nav navbar-nav c-255">
+                        <li><a href="#" class="c-255">图表</a></li>
+                        <li><a href="#" class="c-255">统计数据</a></li>
+                        <li><a href="#" class="c-255">市场</a></li>
+                        <li><a href="#" class="c-255">API</a></li>
+                    </ul>
+                </div>
+            </div>
+
+
+        </nav>
+
+        <div class="clear"></div>
+
+        <div class="h100 app w100" id="app">
+            @*登录*@
+            <div class="row">
+                <div v-cloak id="loginBox" class="contentBox bg-255 p-40 col-sm-6 col-sm-offset-3" v-show="isShowLogin==true">
+
+                    @if (IsLogined)
+                    {
+                        <div class="b-b-f0ecec p-b-10">
+                            @User.Identity.Name 
+                            <a href="/zh-CN/Account/General">前往我的首页</a>
+                            <a @@click="logout">退出登录</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div>
+                            <span class="f-s-24">登录</span>
+                            <span class="f-r">
+                                或者 <a class="c-10ADE4" v-on:click="goToRegister()">注册</a>
+                            </span>
+                        </div>
+                        <div class="b-b-f0ecec p-b-10">
+                            欢迎登录区块链俱乐部
+                        </div>
+                        <div class="m-t-30 m-b-15">
+                            <div class=" m-b-5">账号</div>
+                            <input type="text" class="w100 p-lr-12 p-tb-6 h-40" placeholder="请输入您的邮箱或账号" v-model="loginData.EmailOrName">
+                        </div>
+                        <div class="m-b-15">
+                            <div class=" m-b-5">密码</div>
+                            <input type="password" class="w100 p-lr-12 p-tb-6 h-40" placeholder="请输入您的密码" v-model="loginData.Password">
+                        </div>
+                        <div class="c-red  text-center m-t-10 m-b-5" id="loginAlertBox"></div>
+                        <button class="d-s-i-b w100 h-40 border-none bg-10ADE4 c-255 m-b-15 m-t-4" v-on:click="login()">登录</button>
+                        <div class="text-right">
+                            <a class="c-10ADE4 f-s-12" v-on:click="goToCheckOption()">忘记密码？</a>
+                        </div>
+
+                    }
+                </div>
+            </div>
+            
+            @*//注册*@
+            <div v-cloak class="contentBox bg-255 p-40 col-sm-6 col-sm-offset-3" id="isShowRegister" v-show="isShowRegister==true">
+                <div>
+                    <span class="f-s-24">注册</span>
+                    @if (IsLogined)
+                    {
+                        <a href="/zh-CN/Account/General" class="f-r">前往首页</a>
+                    } else{ 
+                    <span class="f-r">
+                        或者 <a class="c-10ADE4" @@click="goToLogin">登录</a>
+                    </span>
+                    }
+                    
+                </div>
+                <div class="b-b-f0ecec p-b-10">
+                    我们只需要您一点信息！
+                </div>
+                <div class="m-t-30 m-b-15">
+                    <div class=" m-b-5">推荐人</div>
+                    <div class="ps-relative">
+                        <input type="text" @@input="change('Inviter')" placeholder="请输入推荐人ID" @@blur="blur('Inviter')" class="w100 p-lr-12 p-tb-6 h-40" v-model="registerData.Inviter">
+                        <img v-bind:src="validate.inviterExistence" v-if="validate.isInviter==true" class="ps-absolute r-16 t-15 w-10 h-10">
+                    </div>
+                    <div class="c-red d-s-none" id="InviterAlertBox">请输入推荐人ID</div>
+                </div>
+                <div class="m-b-15">
+                    <div class=" m-b-5">安置人</div>
+                    <div class="ps-relative">
+                        <input type="text" @@input="change('Setter')" placeholder="请输入安置人ID" @@blur="blur('Setter')" class="w100 p-lr-12 p-tb-6 h-40" v-model="registerData.Setter">
+                        <img v-bind:src="validate.setterExistence" v-if="validate.isSetter==true" class="ps-absolute r-16 t-15 w-10 h-10">
+                    </div>
+
+                    <div class="c-red d-s-none" id="SetterAlertBox">请输入安置人ID</div>
+                </div>
+                <div class="m-b-15">
+                    <div class=" m-b-5">电子邮件</div>
+                    <div class="ps-relative">
+                        <input type="text" @@input="change('Email')" placeholder="请输入电子邮件" @@blur="blur('Email')" class="w100 p-lr-12 p-tb-6 h-40" v-model="registerData.Email">
+                        <img v-bind:src="validate.emailExistence" v-if="validate.isEmail==true" class="ps-absolute r-16 t-15 w-10 h-10">
+                    </div>
+                    <div class="c-red d-s-none" id="EmailAlertBox">请输入电子邮件</div>
+                </div>
+                <div class="m-b-15">
+                    <div class=" m-b-5">手机号码</div>
+                    <div class="ps-relative">
+                        <input type="text" @@input="change('PhoneNumber')" placeholder="请输入手机号码" @@blur="blur('PhoneNumber')" class="w100 p-lr-12 p-tb-6 h-40" v-model="registerData.PhoneNumber">
+                        <img v-bind:src="validate.phoneNumberExistence" v-if="validate.isPhoneNumber==true" class="ps-absolute r-16 t-15 w-10 h-10">
+                    </div>
+                    <div class="c-red d-s-none" id="PhoneNumberAlertBox">请输入手机号码</div>
+                </div>
+                <div class="m-b-15">
+                    <div class=" m-b-5">国家</div>
+                    <select class="w100 h-40 p-r-10" v-model="registerData.Country">
+                        <option v-for="x in countryList" v-text="x.zh_CN" v-bind:value="x.zh_CN"></option>
+                    </select>
+
+                </div>
+               
+                <label class="f-s-12">
+                    <input type="checkbox" v-model="registerData.isAgreeTerms">
+                    <span>我已阅读并且同意</span> <a class="c-10ADE4"> 服务条款</a>
+                </label>
+                  
+               
+                <div class="c-red  text-center m-t-10" id="registerAlertBox"></div>
+                <button id="registerBtn" class="d-s-i-b w100 h-40 border-none bg-10ADE4 c-255 m-b-15 m-t-20" @@click="SendRegisterEmail">发送注册邮件</button>
+            </div>
+
+            @*找回密码*@
+            <div v-cloak id="findPWKBox" class="contentBox bg-255 p-40 col-sm-6 col-sm-offset-3" v-show="isCheckOption==true">
+                <div class="b-b-f0ecec p-b-10">
+                    <span class="f-s-24">找回密码</span>
+                    <span class="f-r">
+                        或者 <a class="c-10ADE4" v-on:click="goToLogin()">登录</a>
+                    </span>
+                </div>
+                <div class="b-b-f0ecec p-b-10">
+                    我们只需要您一点信息！
+                </div>
+                <div class="m-t-30 m-b-15">
+                    <div class=" m-b-5">邮箱</div>
+                    <input type="text" class="w100 p-lr-12 p-tb-6 h-40" placeholder="请输入您的邮箱" v-model="forgotPassword.Email">
+                    <div class="c-red d-s-none" id="forgotPasswordCodeAlertBox"></div>
+                </div>
+                <div class="m-t-30 m-b-15">
+                    <div class=" m-b-5">邮箱验证码</div>
+                    <input type="text" class="p-lr-12 p-tb-6 h-40 w48" placeholder="请输入邮箱验证码" v-model="forgotPassword.Code">
+                    <button class="c-255 border-none h-40 d-s-i-b w48 f-r border-radius-4" v-bind:class="{'bg-10ADE4':isClickSendFgEmail,'bg-ccc':isClickSendFgEmailNo}"  :disabled="disabled" @@click="SendForgotPasswordEmail" v-text="forgotPasswordSendCodeText"></button>
+                </div>
+
+                <div class="m-t-30 m-b-15">
+                    <div class=" m-b-5">新密码</div>
+                    <input type="password" class="w100 p-lr-12 p-tb-6 h-40" placeholder="请输入新密码" v-model="forgotPassword.Password">
+                </div>
+                <div class="m-t-30 m-b-15">
+                    <div class=" m-b-5">确认密码</div>
+                    <input type="password" class="w100 p-lr-12 p-tb-6 h-40" placeholder="请确认新密码" v-model="forgotPassword.ConfirmPassword">
+                </div>
+                <div class="c-red  text-center m-t-10 m-b-5" id="findPasswordAlertBox"></div>
+                
+                <button class="d-s-i-b w100 h-40 border-none bg-10ADE4 c-255 m-b-15 m-t-4" v-on:click="findPassword()">找回密码</button>
+                <div class="text-right">
+                    <a class="c-10ADE4 f-s-12" v-on:click="goToRegister()">创建一个免费账户</a>
+                </div>
+            </div>
+
+
+            <div v-cloak id="sendMailTip" class="bg-255 p-40 col-sm-6 col-sm-offset-3" v-show="isSendEmail==true">
+                <div>
+                    <span class="f-s-24">欢迎加入</span>
+                    <span class="f-s-24 c-004a7c"> blockchain club</span>
+                </div>
+                <div class="b-b-f0ecec p-b-10">
+                    即将完成注册！
+                </div>
+                <div class="m-t-30 m-b-15 text-center">
+                    <img src="~/images/Img/isSendEmail.png" />
+                    <div class="m-t-30">
+                        注册邮件已发送到您的邮箱<br />
+                        请按邮箱中的提示操作，完成注册！
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="clear"></div>
+
+        </div>
+    <div class="clear"></div>
+
+    @Html.AntiForgeryToken()
+
+    <div class="layoutShowLoading" id="layoutShowLoading">
+        <img src="~/images/icon/showLoading.gif" alt="Alternate Text" />
+    </div>
+  
+
+    <script src="~/Scripts/jquery-1.10.2.js"></script>
+    <script src="~/Scripts/bootstrap.js"></script>
+    <script src="~/Scripts/vue.js"></script>
+    <script src="~/Scripts/vue-resource.js"></script>
+    <script src="~/Scripts/Simple-code.js"></script>
+    <script src="~/Scripts/server.js"></script>
+
+    <script>
+
+        //切换语言
+        function SwithLang(langCode) {
+            window.location.href = host + 'Home/SwithLang?Lang=' + langCode;
+        };
+        var isOpenMChooseLang = 'close';
+        function openMChooseLang() {
+            if (isOpenMChooseLang == 'close') {
+                isOpenMChooseLang = 'open';
+                $('.mChooseLang ul').fadeIn();
+            } else {
+                isOpenMChooseLang = 'close';
+                $('.mChooseLang ul').fadeOut();
+            }
+
+        }
+
+        var isExistence = '/images/true.png';
+        var noExistence = '/images/false.png';
+        var app=new Vue({
+            el: '#app',
+            data: {
+                indexUrl:host + '@Html.Raw(Lang+ ReturnUrl)',
+                tips: '',
+                isShowLogin: @IsShowLogin,
+                isShowRegister: @IsShowRegister,
+                isCheckOption: @IsShowForgotPassword,
+                isSendEmail: false,
+                flag: true,
+                registerData: {
+                    Inviter: @Html.Raw(InviterAccount),
+                    Setter:@Html.Raw(InviterAccount),
+                    Email: '',
+                    PhoneNumber: '',
+                    isAgreeTerms: false,
+                    Country:'中国'
+                },
+                loginData: {
+                    EmailOrName: @Html.Raw(LoginEmailAccount),
+                    Password:'',
+                },
+                forgotPassword: {
+                    Email:'',
+                    Code:'',
+                    Password: '',
+                    ConfirmPassword: ''
+                },
+                validate: {
+                    isInviter: false,//是否显示邀请人是否存在图片
+                    inviterExistence: '',//邀请人是否存在图片
+                    isPassInviter: false,//邀请人是否存在
+                    isSetter: false,//是否显示安置人是否存在图片
+                    setterExistence: '',//安置人是否存在图片
+                    isPassSetter: false,//安置人是否存在
+                    isEmail: false,//是否显示邮箱是否存在图片
+                    emailExistence: '',//邮箱是否存在图片
+                    isPassEmail: false, //邮箱是否存在
+                    isPhoneNumber: false,//是否显示手机是否存在图片
+                    PhoneNumberExistence: '',//手机是否存在图片
+                    isPassPhoneNumber: false //手机是否存在
+                },
+                forgotPasswordSendCodeText: '发送验证码',
+                disabled: false,
+                countryList: [],
+                cd: null,
+                isClickSendFgEmail: true,
+                isClickSendFgEmailNo: false,
+                registerDisable:false,
+            },
+            mounted: function () {
+                var _this = this;
+                this.$http({ url: '/Content/Json/Location.json', method: 'get' }).then(function (response) {
+                    this.countryList = response.body;
+                }, function (err) { });
+                //按enter键登录
+                $(window).keydown(function (event) {
+                    if (event.keyCode == 13) {
+                        _this.login();
+                    }
+                });
+                if (this.registerData.Inviter){
+                    this.blur('Inviter');
+                }
+                if (this.registerData.Setter) {
+                    this.blur('Setter');
+                }
+                if (this.isShowLogin === false && this.isShowRegister === false && this.isCheckOption === false) {
+                    this.isShowLogin = true;
+                }
+            },
+            methods: {
+                logout: function () {
+                    server.Logout({}, function () {
+                        window.location.href = host + 'zh-CN/Account/Entry';
+                    })
+                },
+                login: function () {
+                    var _this = this;
+                    server.SignIn(this.loginData, function (rel) {
+                        switch (rel.msg) {
+                            case 'StatusOk': {
+                               // window.location.href = host + '@Html.Raw(Lang)/' + '@Html.Raw(ViewData["ReturnUrl"])';
+                                window.location.href = host + '@Html.Raw(Lang+ ReturnUrl)';
+                                break;
+                            }
+                          case 'PasswordMismatch':
+                          case 'UserLockout':
+                          {
+                              var str = rel.data.remaintime === 0
+                                          ? '账号正处于冻结24小时期间，请耐心等待解冻。'
+                                          : '密码错误，您还有'+rel.data.remaintime+'次重试机会。'
+                              showAlertBox('loginAlertBox',str)
+                              break;
+                            }
+
+                            default: {
+                                //_this.tips = showAlertBox('loginAlertBox', getDescript(rel.msg));
+                                showAlertBox('loginAlertBox', getDescript(rel.msg));
+                            }
+                        }
+                    })
+                },
+                SendRegisterEmail: function ()  {
+                    this.flag = true
+                    var _this = this;
+                    if (!this.validate.isPassInviter) {
+                        this.validate.inviterExistence = noExistence;
+                        this.validate.isInviter = true;
+                        showAlertBox('InviterAlertBox', '用户不存在');
+                        this.flag = false;
+                    }
+                    if (!this.validate.isPassSetter) {
+                        this.validate.setterExistence = noExistence;
+                        this.validate.isSetter = true;
+                        showAlertBox('SetterAlertBox', '用户不存在');
+                        this.flag = false;
+                    }
+                    if (!ValidateValue(this.registerData.Email, 'Email')) {
+                        showAlertBox('EmailAlertBox', '请输入正确的邮箱格式');
+                        this.flag = false;
+                    } else {
+                        this.registerData.Email = this.registerData.Email.trim();
+                    }
+                    if (!this.registerData.Inviter) {
+                        showAlertBox('InviterAlertBox', '');
+                        this.flag = false;
+                    } else {
+                        this.registerData.Inviter = this.registerData.Inviter.trim();
+                    }
+                    if (!this.registerData.Setter) {
+                        showAlertBox('SetterAlertBox', '');
+                        this.flag = false;
+                    } else {
+                        this.registerData.Setter = this.registerData.Setter.trim();
+                    }
+                    if (!ValidateValue(this.registerData.PhoneNumber, 'Mobile')) {
+                        showAlertBox('PhoneNumberAlertBox', '请输入正确的手机号');
+                        this.flag = false;
+                    } else {
+                        this.registerData.PhoneNumber = this.registerData.PhoneNumber.trim();
+                    }
+                    if (!this.registerData.isAgreeTerms) {
+                        this.flag = false;
+                    }
+
+                    if (this.flag == true) {
+                        $('#registerBtn').attr('disabled','disabled')
+                        server.SendRegisterEmail(this.registerData, function (rel) {
+                            var result = rel.msg;
+                            if (result == 'StatusOk') {
+                                showAlertBox('registerAlertBox', '注册邮件已发送，请注意查收');
+                                _this.isShowLogin = false;
+                                _this.isShowRegister = false;
+                                _this.isCheckOption = false;
+                                _this.isSendEmail = true;
+                                //_this.tips = '注册邮件已发送，请注意查收';
+                            } else {
+                                showAlertBox('registerAlertBox', getDescript(rel.msg));
+                            }
+                            $('#registerBtn').removeAttr('disabled')
+                        })
+                    }
+
+                },
+                SendForgotPasswordEmail: function () {
+                    var _this = this;
+                    server.SendForgotPasswordEmail({
+                        Email: this.forgotPassword.Email,
+                        Lang:'zh-CN'
+                    }, function (rel) {
+                        switch (rel.msg) {
+                            case 'StatusOk': {
+                                _this.disabled = true;
+                                var countdown = countDown;
+                                _this.isClickSendFgEmail = false;
+                                _this.isClickSendFgEmailNo = true;
+                                _this.cd = setInterval(function () {
+                                    _this.forgotPasswordSendCodeText = countdown + 'S后重新发送';
+                                    if (countdown == 0) {
+                                        clearInterval(_this.cd);
+                                        _this.disabled = false;
+                                        _this.isClickSendFgEmail = true;
+                                        _this.isClickSendFgEmailNo = false;
+                                        _this.forgotPasswordSendCodeText = '发送验证码';
+                                    }
+                                    countdown--;
+                                },1000);
+                                break;
+                            }
+                            default: {
+                                showAlertBox('forgotPasswordCodeAlertBox', getDescript(rel.msg));
+                            }
+                        }
+                    })
+                },
+                findPassword: function () {
+                    var _this = this;
+                    server.ForgotPassword(this.forgotPassword, function (rel) {
+                        switch (rel.msg) {
+                            case 'StatusOk': {
+                                showAlertBox('findPasswordAlertBox', '密码修改成功');
+                                //_this.tips = '密码修改成功';
+                                _this.isShowLogin = true;
+                                _this.isShowRegister = false;
+                                _this.isCheckOption = false;
+                                _this.isSendEmail = false;
+                                break;
+                            }
+                            default: {
+                                showAlertBox('findPasswordAlertBox', getDescript(rel.msg));
+                            }
+                        }
+                    })
+                },
+                goToRegister: function () {
+                    this.tips = '';
+                    this.isShowLogin = false;
+                    this.isShowRegister = true;
+                    this.isCheckOption = false;
+                    window.scrollTo(0,0)
+                },
+                goToLogin: function () {
+                    this.tips = '';
+                    this.isShowLogin = true;
+                    this.isShowRegister = false;
+                    this.isCheckOption = false;
+                    window.scrollTo(0, 0)
+                },
+                goToCheckOption: function () {
+                    this.tips = '';
+                    this.isShowLogin = false;
+                    this.isShowRegister = false;
+                    this.isCheckOption = true;
+                    window.scrollTo(0, 0)
+                },
+                change: function (obj) {
+                    switch (obj) {
+                        case 'Inviter': {
+                            this.validate.isInviter = false;
+                            break;
+                        }
+                        case 'Setter': {
+                            this.validate.isSetter = false;
+                            break;
+                        }
+                        case 'Email': {
+                            this.validate.isEmail = false;
+                            break;
+                        }
+                        case 'PhoneNumber': {
+                            this.validate.isPhoneNumber = false;
+                            break;
+                        }
+                    }
+                },
+                blur: function (obj) {
+                    if (this.registerData[obj]) {
+                        var _this = this;
+                        this.registerData[obj] = this.registerData[obj].trim()
+                        if (obj == 'Email') {
+                            if (!ValidateValue(this.registerData[obj], 'Email')) {
+                                showAlertBox('EmailAlertBox', '请输入正确的邮箱格式');
+                                _this.validate.emailExistence = noExistence;
+                                this.flag = false;
+                            } else {
+                                server.FindByEmail({ 'Email': this.registerData[obj] }, function (rel) {
+                                    reqRel(rel)
+                                })
+                            }
+                        } else if (obj == 'PhoneNumber') {
+                            if (!ValidateValue(this.registerData[obj], 'Mobile')) {
+                                showAlertBox('PhoneNumberAlertBox', '请输入正确的手机号');
+                                _this.validate.emailExistence = noExistence;
+                                this.flag = false;
+                            } else {
+                                server.FindByPhoneNumber({ 'PhoneNumber': this.registerData[obj] }, function (rel) {
+                                    reqRel(rel)
+                                })
+                            }
+                        } else {
+                            if (!this.registerData[obj]) {
+                                showAlertBox(obj + 'AlertBox', '请输入正确的用户名');
+                                _this.validate.emailExistence = noExistence;
+                                this.flag = false;
+                            } else {
+                                server.FindByUserName({ 'UserName': this.registerData[obj] }, function (rel) {
+                                    reqRel(rel)
+                                })
+                            }
+                        }
+
+                        function reqRel(rel) {
+                            switch (rel.msg){
+                                case 'StatusOk':
+                                case 'EmailNotSet':
+                                case 'TelPhoneNotSet':{
+                                    rels();
+                                    break;
+                                }
+                                case 'ParameterError': {
+                                    rels();
+                                    showAlertBox(obj + 'AlertBox', getDescript(rel.msg));
+                                    break;
+                                }
+                                default: {
+                                    otherRel();
+                                    showAlertBox(obj + 'AlertBox', getDescript(rel.msg));
+                                }
+
+                            }
+                        }
+                        function rels() {
+                            switch (obj) {
+                                case 'Inviter': {
+                                    _this.validate.inviterExistence = isExistence;
+                                    _this.validate.isInviter = true;
+                                    _this.validate.isPassInviter = true;
+                                    break;
+                                }
+                                case 'Setter': {
+                                    _this.validate.setterExistence = isExistence;
+                                    _this.validate.isSetter = true;
+                                    _this.validate.isPassSetter = true;
+                                    break;
+                                }
+                                case 'Email': {
+                                    _this.validate.emailExistence = isExistence;
+                                    _this.validate.isEmail = true;
+                                    _this.validate.isPassEmail = true;
+                                    break;
+                                }
+                                case 'PhoneNumber': {
+                                    _this.validate.phoneNumberExistence = isExistence;
+                                    _this.validate.isPhoneNumber = true;
+                                    _this.validate.isPassPhoneNumber = true;
+                                    break;
+                                }
+                            }
+                        }
+                        function otherRel() {
+                            switch (obj) {
+                                case 'Inviter': {
+                                    _this.validate.inviterExistence = noExistence;
+                                    _this.validate.isInviter = true;
+                                    _this.validate.isPassInviter = false;
+                                    break;
+                                }
+                                case 'Setter': {
+                                    _this.validate.setterExistence = noExistence;
+                                    _this.validate.isSetter = true;
+                                    _this.validate.isPassSetter = false;
+                                    break;
+                                }
+                                case 'Email': {
+                                    _this.validate.emailExistence = noExistence;
+                                    _this.validate.isEmail = true;
+                                    _this.validate.isPassEmail = false;
+                                    break;
+                                }
+                                case 'PhoneNumber': {
+                                    _this.validate.phoneNumberExistence = noExistence;
+                                    _this.validate.isPhoneNumber = true;
+                                    _this.validate.isPassPhoneNumber = false;
+                                    break;
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
+        })
+
+    </script>
+
+
+</body>
+</html>

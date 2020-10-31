@@ -1,0 +1,410 @@
+﻿
+@{
+Layout = "~/Views/Shared/_en-US_ManageLayout.cshtml";
+ViewBag.Title = "联队表单";
+}
+
+<link href="~/Content/eleme-css/index.css" rel="stylesheet" />
+<script src="~/Scripts/element-ui.js"></script>
+<style>
+    ::-ms-clear, ::-ms-reveal {
+        display: none;
+    }
+
+    [v-cloak] {
+        display: none !important;
+    }
+
+    .main {
+        width: 1200px;
+        margin: 0 auto;
+        background: #eef1f6;
+    }
+
+    #showTips {
+        z-index: 9999;
+    }
+
+    .el-loading-mask {
+        z-index: 1;
+    }
+    /*tab*/
+    .main .el-tabs__active-bar {
+        background-color: #0c5786;
+    }
+
+    .main .el-tabs__item.is-active {
+        color: #0c5786;
+    }
+    /*screen*/
+    .screen {
+        padding: 10px;
+    }
+
+    /*table*/
+    .table {
+        background:#fff;
+        margin-bottom: 0 !important;
+    }
+    .table-p {
+        height: 748px;
+        overflow-y: auto;    }
+    .table tbody tr th, .table tbody tr td {
+        text-align: center;
+    }
+    /*pagin*/
+    .pagin {
+        float: right;
+        padding: 2px 33px 5px 0;
+    }
+
+    @@media screen and (max-width: 768px) {
+        .layout1 {
+            left: 590px !important;
+        }
+        .layout2 {
+            left: 506px !important;
+        }
+        .timepick1 {
+            left: 622px !important;
+        }
+
+        .timepick2 {
+            left: 538px !important;
+        }
+
+        .level {
+            left: 1062px !important;
+        }
+    }
+</style>
+<div id="app">
+    <div class="main">
+        <el-tabs v-model="activeName">
+            <el-tab-pane label="代数" name="first">
+                <div class="screen clearfix">
+                    <div style="float:left">
+                        <el-button type="primary" :disabled="layout1.length<2" size="small" icon="d-arrow-left" @@click="back1"> {{takeGenOptions.QueryName?'   当前:'+takeGenOptions.QueryName:''}}</el-button>
+                    </div>
+                    <div style="float:right">
+                        <div style="width:80px;display:inline-block">
+                            <el-select v-model="takeGenOptions.LayoutIndex" placeholder="层级" size="small" clearable popper-class="layout1">
+                                <el-option v-for="(item,index) in layout1"
+                                           :key="index+1"
+                                           :label="index+1"
+                                           :value="index+1">
+                                </el-option>
+                            </el-select>
+                        </div>
+                        <div style="width:80px;display:inline-block">
+                            <el-input v-model="takeGenOptions.LayoutIndex" placeholder="层级" size="small" ></el-input>
+                        </div>
+                        <div style="width:160px;display:inline-block">
+                            <el-input v-model="takeGenOptions.TargetName" placeholder="搜索用户ID" size="small"></el-input>
+                        </div>
+                        <el-date-picker v-model="time1" clearable
+                                        type="daterange"
+                                        size="small"
+                                        placeholder="选择日期范围"
+                                        popper-class="timepick1"
+                                        @@change="chooseTime1">
+                        </el-date-picker>
+                        <el-button type="danger" @@click="screen1" size="small">筛选</el-button>
+                    </div>
+                </div>
+                <div class="table-p">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>用户ID</th>
+                            <th>推荐人</th>
+                            <th>安置人</th>
+                            <th>新增业绩</th>
+                            <th>累计业绩</th>
+                            <th>套餐等级</th>
+                            <th>代数等级</th>
+                            <th>体系等级</th>
+                            <th>注册日期</th>
+                        </tr>
+                        <tr v-for="x in genData">
+                            <td v-text="x.UserName" style="color:#10ADE4"
+                                @@click="into1(x.UserName)">
+                            </td>
+                            <td v-text="x.InviterName"></td>
+                            <td v-text="x.LeaderName"></td>
+                            <td v-text="x.Achievement"></td>
+                            <td v-text="x.TotalAchievement"></td>
+                            <td v-text="x.Package"></td>
+                            <td v-text="x.GenerationLevel"></td>
+                            <td v-text="x.LeaderLevel"></td>
+                            <td v-text="x.SetupTime"></td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="pagin">
+                    <el-pagination @@current-change="handleCurrentChange1"
+                                   :current-page.sync="takeGenOptions.PageIndex"
+                                   :page-size="takeGenOptions.ShowNumber"
+                                   layout="total,prev, pager, next, jumper"
+                                   :total="totalGen">
+                    </el-pagination>
+                </div>
+            </el-tab-pane>
+            <el-tab-pane label="体系" name="second"><div class="screen clearfix">
+                <div style="float:left">
+                    <el-button type="primary" :disabled="layout2.length<2" size="small" icon="d-arrow-left" @@click="back2"> {{takeAllOptions.QueryName?'   当前:'+takeAllOptions.QueryName:''}}</el-button>
+                </div>
+                <div style="float:right">
+                    <div style="width:80px;display:inline-block">
+                        <el-select v-model="takeAllOptions.LayoutIndex" placeholder="层级" size="small" clearable popper-class="layout2">
+                            <el-option v-for="(item,index) in layout2"
+                                       :key="index+1"
+                                       :label="index+1"
+                                       :value="index+1">
+                            </el-option>
+                        </el-select>
+                    </div>
+                    <div style="width:80px;display:inline-block">
+                        <el-input v-model="takeAllOptions.LayoutIndex" placeholder="层级" size="small"></el-input>
+                    </div>
+                    <div style="width:160px;display:inline-block">
+                        <el-input v-model="takeAllOptions.TargetName" placeholder="搜索用户ID" size="small"></el-input>
+                    </div>
+                    <el-date-picker v-model="time1" clearable
+                                    type="daterange"
+                                    size="small"
+                                    placeholder="选择日期范围"
+                                    popper-class="timepick2"
+                                    @@change="chooseTime2">
+                    </el-date-picker>
+                    <div style="width:80px;display:inline-block">
+                        <el-select v-model="takeAllOptions.Level" placeholder="等级" size="small" clearable  popper-class="level">
+                            <el-option v-for="item in levelOptions"
+                                       :key="item"
+                                       :label="item"
+                                       :value="item">
+                            </el-option>
+                        </el-select>
+                    </div>
+                    <el-button type="danger" @@click="screen2" size="small">筛选</el-button>
+                </div>
+            </div>
+                <div class="table-p">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>用户ID</th>
+                            <th>推荐人</th>
+                            <th>安置人</th>
+                            <th>新增业绩</th>
+                            <th>累计业绩</th>
+                            <th>套餐等级</th>
+                            <th>代数等级</th>
+                            <th>体系等级</th>
+                            <th>注册日期</th>
+                        </tr>
+                        <tr v-for="x in allData">
+                            <td v-text="x.UserName" style="color:#10ADE4"
+                                @@click="into2(x.UserName)"></td>
+                            <td v-text="x.InviterName"></td>
+                            <td v-text="x.LeaderName"></td>
+                            <td v-text="x.Achievement"></td>
+                            <td v-text="x.TotalAchievement"></td>
+                            <td v-text="x.Package"></td>
+                            <td v-text="x.GenerationLevel"></td>
+                            <td v-text="x.LeaderLevel"></td>
+                            <td v-text="x.SetupTime"></td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="pagin">
+                    <el-pagination @@current-change="handleCurrentChange2"
+                                   :current-page.sync="takeAllOptions.PageIndex"
+                                   :page-size="takeAllOptions.ShowNumber"
+                                   layout="total,prev, pager, next, jumper"
+                                   :total="totalAll">
+                    </el-pagination>
+                </div>
+            </el-tab-pane>
+        </el-tabs>
+    </div>
+</div>
+@Html.AntiForgeryToken()
+<script>
+	new Vue({
+		el: '#app',
+		data: {
+			activeName: 'first',
+			pageIdx1: '1',
+			pageIdx2:'1',
+			layout1: [{ qN: '', tN: '', idx:'1' }],
+			layout2: [{ qN: '', tN: '', idx: '1' }],
+			takeGenOptions: {//gen
+				__RequestVerificationToken: getToken(),
+				QueryName: '',
+				TargetName: '',
+				LayoutIndex:'',
+				STime: '',
+				ETime: '',
+				PageIndex: 1,
+				ShowNumber: 20
+			},
+			takeAllOptions: {//all
+				__RequestVerificationToken: getToken(),
+				QueryName: '',
+				TargetName: '',
+				LayoutIndex: '',
+				Level: '',
+				STime: '',
+				ETime: '',
+				PageIndex: 1,
+				ShowNumber: 20
+			},
+			genData: '',
+			totalGen: '',
+			totalAll:'',
+			allData:'',
+			time1: '',
+			time2: '',
+			layout:'',
+			levelOptions: [1,2,3,4,5,6],
+			profitOptions1: [{
+				value: '1',
+				label: '直购分红'
+			},
+				{
+					value: '2',
+					label: '直购差分红'
+				},
+				{
+					value: '3',
+					label: '直代分红'
+				}],
+			username1: '',
+			username2:''
+		},
+		created: function () {
+			this.getGenShip();
+			this.getAllShip();
+		},
+		methods: {
+			getGenShip: function () {
+				var _this = this;
+				server.QueryGenerationRelationship(this.takeGenOptions, function (rel) {
+					if (rel.msg === 'StatusOk') {
+						_this.genData = rel.data.data;
+						_this.totalGen = rel.data.total;
+						if(rel.data.data.length<1){
+							showTips('加载完成，暂无数据')
+						}
+					} else {
+						showTips(getDescriptM(rel.msg));
+					}
+				});
+			},
+			getAllShip: function () {
+				var _this = this;
+				server.QueryAlianceRelationship(this.takeAllOptions, function (rel) {
+					if (rel.msg === 'StatusOk') {
+						_this.allData = rel.data.data;
+						_this.totalAll = rel.data.total;
+						if(rel.data.data.length<1){
+							showTips('加载完成，暂无数据')
+						}
+					} else {
+						showTips(getDescriptM(rel.msg));
+					}
+				});
+			},
+			handleCurrentChange1: function (val) {
+				this.takeGenOptions.PageIndex = val;
+				this.pageIdx1 = val;
+				this.layout1[this.layout1.length - 1].idx = val;
+				this.getGenShip();
+			},
+			handleCurrentChange2: function (val) {
+				this.takeAllOptions.PageIndex = val;
+				this.pageIdx2 = val;
+				this.layout2[this.layout2.length - 1].idx = val;
+				this.getAllShip();
+			},
+			chooseTime1: function (val) {
+				var aT = val ? val.split(' - ') : ['', ''];
+				this.takeGenOptions.STime = aT[0];
+				this.takeGenOptions.ETime = aT[1];
+			},
+			chooseTime2: function (val) {
+				var aT = val ? val.split(' - ') : ['', ''];
+				this.takeAllOptions.STime = aT[0];
+				this.takeAllOptions.ETime = aT[1];
+			},
+			into1: function (x) {
+				this.layout1.push({ qN: x, tN: '',idx:this.pageIdx1});
+				this.takeGenOptions.QueryName = x;
+				this.takeGenOptions.TargetName = '';
+				this.takeGenOptions.LayoutIndex = '';
+				this.takeGenOptions.STime = '';
+				this.takeGenOptions.ETime = '';
+				this.takeGenOptions.PageIndex = '1';
+			},
+			into2: function (x) {
+				this.layout2.push({ qN: x, tN: '', idx: this.pageIdx2 });
+				this.takeAllOptions.QueryName = x;
+				this.takeAllOptions.TargetName = '';
+				this.takeAllOptions.LayoutIndex = '';
+				this.takeAllOptions.STime = '';
+				this.takeAllOptions.ETime = '';
+				this.takeAllOptions.PageIndex = '1';
+			},
+			back1: function () {
+				this.layout1.splice(-1);
+				var arr = this.layout1[this.layout1.length - 1];
+				this.takeGenOptions.QueryName = arr.qN;
+				this.takeGenOptions.TargetName = arr.tN;
+				this.takeGenOptions.LayoutIndex = '';
+				this.takeGenOptions.STime = '';
+				this.takeGenOptions.ETime = '';
+				this.takeGenOptions.PageIndex = arr.idx.toString();
+			},
+			back2: function () {
+				this.layout2.splice(-1);
+				var arr = this.layout2[this.layout2.length - 1];
+				this.takeAllOptions.QueryName = arr.qN;
+				this.takeAllOptions.TargetName = arr.tN;
+				this.takeAllOptions.LayoutIndex = '';
+				this.takeAllOptions.STime = '';
+				this.takeAllOptions.ETime = '';
+				this.takeAllOptions.PageIndex = arr.idx.toString();
+			},
+			screen1: function () {
+				var a = this.takeGenOptions;
+				if (a.LayoutIndex == '' && a.TargetName == '' && a.STime == '') {
+					this.layout1 = [{ qN: '', tN: '', idx: '1' }];
+					a.QueryName = '';
+					this.getGenShip();
+					return;
+				}
+				if (this.takeGenOptions.PageIndex != 1) {
+					this.takeGenOptions.PageIndex = 1;
+					return;
+				}
+				this.getGenShip();
+			},
+			screen2: function () {
+				var a = this.takeAllOptions;
+				if (a.LayoutIndex == '' && a.TargetName == '' && a.Level =='' && a.STime == '') {
+					this.layout1 = [{ qN: '', tN: '', idx: '1' }];
+					a.QueryName = '';
+					this.getAllShip();
+					return;
+				}
+				if (this.takeAllOptions.PageIndex != 1) {
+					this.takeAllOptions.PageIndex = 1;
+					return;
+				}
+				this.getAllShip();
+			},
+			genValue1: function () { }
+		}
+	});
+</script>

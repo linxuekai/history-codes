@@ -1,0 +1,664 @@
+﻿﻿@{
+Layout = "~/Views/Shared/_zh-CN_ManageLayout.cshtml";
+ViewBag.Title = "角色管理";
+}
+@Html.AntiForgeryToken()
+
+
+<!--suppress CommaExpressionJS -->
+<link rel="stylesheet" href="../../Content/eleme-css/index.css">
+<script src="../../Scripts/element-ui.js"></script>
+<script src="../../Scripts/axios.min.js"></script>
+
+<style>
+
+  #navContainer {
+    height: 100%;
+    min-height: 500px;
+    background: #eef1f6;
+    position: absolute;
+    overflow: auto;
+    left: 0;
+    width: 20%;
+    min-width: 160px;
+  }
+
+  .el-menu-item{
+    font-size: 16px;
+  }
+  .el-menu-item.is-active{
+    background: lightslategray;
+    color: white;
+  }
+
+  #contentContainer {
+    height: 100%;
+    min-height: 500px;
+    background: white;
+    float: right;
+    width: 80%;
+    left: 20%;
+    padding: 20px;
+
+  }
+
+  #app {
+    height: 80%;
+    min-height: 500px;
+    width: 100%;
+    min-width: 1000px;
+    position: absolute;
+    background: white;
+    top:76px;
+    font-size: 16px;
+    font-family: "Microsoft YaHei",sans-serif;
+  }
+
+  @@media screen and (max-width: 768px) {
+    #app {
+      top: 56px;
+    }
+  }
+
+  .navTitle{
+    padding:20px 20px 0;
+    color:grey;
+    font-size: 18px;
+    line-height: 36px;
+  }
+
+  #button-bar{
+    display: inline-block;
+    position: absolute;
+    right: 20px;
+  }
+  #button-bar button{
+    margin-left: 12px;
+  }
+  #contentTop{
+    display:inline-block;
+    font-size: 18px;
+    color: grey;
+    line-height: 36px;
+  }
+  .delGroup{
+    line-height: 56px;
+    position: absolute;
+    left: 6px;
+    visibility: hidden;
+    opacity: 0;
+    transition: .3s 1s;
+  }
+  .el-menu-item:hover .delGroup{
+    visibility: visible;
+    opacity: .5;
+  }
+  #newRole{
+    padding:10px 20px;
+    visibility: hidden;
+    opacity:0;
+    transition: .3s 1s;
+  }
+
+  #newRole .el-input__icon{
+    right:20px;
+  }
+  #navContainer:hover #newRole{
+    visibility: visible;
+    opacity:.5;
+  }
+  .el-message-box{
+    max-height:90%;
+    overflow: auto;
+  }
+</style>
+
+<div class="container-fluid" id="app">
+  <div class="text-right" id="navContainer">
+    <el-menu @@select="menuSelect"  v-loading="dataLoading.roles">
+      <div class="navTitle"><span class="glyphicon glyphicon-user"></span>&nbsp;&nbsp;角色类型</div>
+      <hr>
+      <el-menu-item v-for="(role,idx) in this.menuData" :index="role" :key="idx">
+        <i class="delGroup el-icon-circle-close" @@click.stop="delRole(role)" v-show="role !== currentMenu"></i>
+        {{role}}
+      </el-menu-item>
+      <el-input v-model="newRoleName" placeholder="新建角色" icon="check" :on-icon-click="newRole" id="newRole"></el-input>
+    </el-menu>
+  </div>
+  <div id="contentContainer">
+    <div>
+      <div id="contentTop">
+        <span class="glyphicon glyphicon-random"></span>
+        <span>&nbsp;&nbsp;{{currentMenu || '角色'}}管理</span>
+      </div>
+      <div id="button-bar">
+        <el-button @@click="addBtnClick" :disabled="!currentMenu" :loading="dataLoading.addUser"> 添加用户 </el-button>
+        <el-button :disabled="!this.currentMenu" @@click="defaultPermisionBtnClick" :loading="dataLoading.defaultPermision"> 默认权限 </el-button>
+        <el-button type="warning" :disabled="!selectionVal.length" @@click='delBatchUsers' :loading="dataLoading.batchDel"> 批量删除 </el-button>
+      </div>
+    </div>
+    <hr>
+      <el-table
+        :data="users[currentMenu]||[]"
+        v-loading="dataLoading.usersTable"
+        height="85%"
+        border
+        tooltip-effect="dark"
+        ref="usersTable"
+        style="width: 100%;height: 85%;overflow: auto;"
+        @@selection-change="tableSelectionChange">
+        <el-table-column
+          type="selection"
+          width="50">
+        </el-table-column>
+        <el-table-column
+          label="角色类型"
+          prop="RoleName">
+        </el-table-column>
+        <el-table-column
+          prop="UserName"
+          label="用户名">
+        </el-table-column>
+        <el-table-column
+          prop="SetupTime"
+          label="创建时间">
+        </el-table-column>
+        <el-table-column
+          label="操作"
+          width="144">
+          <template scope="scope">
+            <el-button
+              size="small"
+              v-loading="dataLoading.userEdit === scope.$index"
+              @@click="editUser(scope.$index, scope.row)">编辑</el-button>
+            <el-button
+              size="small"
+              type="danger"
+              v-loading="dataLoading.userDel === scope.$index"
+              @@click="delUser(scope.$index, scope.row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+  </div>
+</div>
+<template id="tpl" style="display: none;">
+  <div>
+    <el-table
+      :data="permisions"
+      tooltip-effect="dark"
+      style="width: 100%;"
+      ref="permisionsTable"
+      @@selection-change="permisionsSelecitonChange">
+      <el-table-column
+        type="selection"
+        width="50">
+      </el-table-column>
+      <el-table-column
+        prop="Description"
+        label="权限描述">
+      </el-table-column>
+      <el-table-column
+        label="权限ID"
+        prop="PremissionId">
+      </el-table-column>
+    </el-table>
+  </div>
+</template>
+<script>
+  const comp = {
+    template:'#tpl',
+    props:['permisions'],
+    methods:{
+      // 绑定选择的权限到data (共用一个权限表comp组件)
+      permisionsSelecitonChange(arrPermisions){
+        app.permisionSelections = arrPermisions
+      }
+    }
+  }
+
+  // 工具函数
+  function json2FormData(json){
+    return JSON.stringify(json).replace(/:/g,'=').replace(/,/g,'&').replace(/"/g,'').slice(1,-1)
+  }
+  function arrToFormData(name,arr){
+    var str = ''
+    arr.forEach(function(item){
+      str+=`&${name}[]=${item}`
+    })
+    return str
+  }
+  function sameItem(arr1,arr2){
+    var result = []
+    arr2.forEach(function(item2){
+      arr1.some(function(item1){
+        if (item1.PremissionId === item2.PremissionId) {
+          result.push(item1)
+          return true
+        }
+      })
+    })
+    return result
+  }
+  function addPermisions(fromArr,toArr){
+    var result = []
+    toArr.forEach(function(itemTo){
+      !fromArr.some(function(itemFrom){
+        return itemFrom.PremissionId === itemTo.PremissionId
+      }) && (result.push(itemTo.PremissionId))
+    })
+    return result
+  }
+  function removePermisions(fromArr,toArr){
+    var result = []
+    fromArr.forEach(function(itemFrom){
+      !toArr.some(function(itemTo){
+        return itemFrom.PremissionId === itemTo.PremissionId
+      }) && (result.push(itemFrom.PremissionId))
+    })
+    return result
+  }
+
+  var app = new Vue({
+    el: '#app',
+    components:{
+      comp:comp
+    },
+    data(){
+      return {
+        token:getToken(),
+        selectionVal:[],
+        currentMenu:'',
+        menuData:[],
+        newRoleName:'',
+        allPermisions:[],
+        allRolesPermisions:{},
+        users:{},
+        permisionSelections:[],
+        dataLoading:{
+          defaultPermision: false,
+          roles:true,
+          usersTable:false,
+          userEdit:-1,
+          userDel:-1,
+          addUser:false,
+          batchDel:false
+        }
+      }
+    },
+    methods:{
+      // 编辑用户权限
+      editUser(i,row){
+        if (!this.allRolesPermisions[this.currentMenu]) {
+          this.dataLoading.defaultPermision = true
+          this.dataLoading.userEdit = i
+          axios.post('/console/TakeRolePremission',json2FormData({
+            __RequestVerificationToken:this.token,
+            RoleName:this.currentMenu
+          })).then(
+            function(res){
+              if (res.data.msg === 'StatusOk') {
+                this.$set(this.allRolesPermisions,this.currentMenu,res.data.data)
+                this.dataLoading.defaultPermision = false
+                this.showUserPermisions(i,row)
+              }
+            }.bind(this)
+          )
+        } else {
+          this.showUserPermisions(i,row)
+        }
+      },
+      // 验证删除用户操作
+      delUser(i,row){
+        this.$confirm(`是否确定从${this.currentMenu}角色类型删除${row.UserName}？该用户将失去所有相应权限！`,'警告').then(
+          function(){app.determinedDelUser(i,row)},
+          function(){app.$message.warning('已为您取消删除操作。')}
+        )
+      },
+      // 确定删除用户
+      determinedDelUser(i,row){
+        this.dataLoading.userDel = i
+        axios.post('/console/DeleteUserRole',json2FormData({
+          __RequestVerificationToken:this.token,
+          RoleName:this.currentMenu,
+          UserName:row.UserName
+        })).then(
+          function(res){
+            res.data.msg === 'StatusOk'
+              ? (
+              this.$message.success(`已从${this.currentMenu}角色类型删除用户${row.UserName}。`),
+                this.users[this.currentMenu].splice(i,1),
+                this.dataLoading.userDel = -1
+            )
+              : (this.$message.warning('删除有误，请重试。'),
+                this.dataLoading.userDel = -1)
+          }.bind(this),
+          function(){
+            app.$message.error('网络错误，请刷新重试。')
+            app.dataLoading.userDel = -1
+          }
+        )
+      },
+      // 批量删除用户
+      delBatchUsers(){
+        this.$confirm('确定删除吗？','警告').then(
+          function(){
+            if(app.selectionVal.length > 1){
+              app.dataLoading.batchDel = true
+              app.dataLoading.usersTable = true
+              var usersDel = app.selectionVal.map(function(user){
+                return axios.post('/console/DeleteUserRole',json2FormData({
+                  __RequestVerificationToken:app.token,
+                  RoleName:app.currentMenu,
+                  UserName:user.UserName
+                }))
+              })
+              Promise.all(usersDel).then(
+                function(arr){
+                  arr.every(function(item){
+                    return item.data.msg === 'StatusOk'
+                  })
+                    ? app.$message.success('已成功批量删除选定用户。')
+                    : app.$message.warning('批量删除有误，请重试。')
+                  app.dataLoading.batchDel = false
+                  app.users[app.currentMenu] = null
+                  app.menuSelect(app.currentMenu)
+                },
+                function(){
+                  app.$message.error('网络错误，请刷新重试。')
+                  app.selectionVal = []
+                }
+              )
+            } else if (app.selectionVal.length === 1) {
+              var user = app.selectionVal[0]
+              var i = app.users[app.currentMenu].indexOf(user)
+              app.determinedDelUser(i,user)
+              app.selectionVal = []
+            }
+          },
+          function(){
+            app.$message.warning('已为您取消删除操作。')
+          }
+        )
+      },
+      // 绑定选择的用户到data
+      tableSelectionChange(arrVal){
+        this.selectionVal = arrVal
+      },
+      // 切换角色类型
+      menuSelect(menuVal){
+        this.currentMenu = menuVal
+        if (!this.users[menuVal]) {
+          this.dataLoading.usersTable = true
+          axios.post('/console/TakeRoleUser',json2FormData({
+            __RequestVerificationToken:this.token,
+            RoleName:this.currentMenu
+          })).then(
+            function(res){
+              if (res.data.msg === 'StatusOk') {
+                this.$set(this.users,menuVal,res.data.data)
+                this.dataLoading.usersTable = false
+              } else {
+                this.$message.error(`获取${menuVal}用户列表错误，请检查。`)
+              }
+            }.bind(this),
+            function(){
+              this.$message({
+                message:`连接错误，请刷新重试。`,
+                duration:0,
+                type:'error'
+              })
+            }.bind(this)
+          )
+        }
+      },
+      // 添加角色用户
+      addBtnClick(){
+        this.$prompt(`请输入需添加到${this.currentMenu}的用户名`,'操作',{
+          inputPattern: /^[^\s].*[^\s]$/,
+          inputErrorMessage: '格式不正确，请重新输入。[ 长度不小于2，首尾不能有空格 ]'
+        }).then(
+          function(obj){
+            this.dataLoading.addUser = true
+            var UserName = obj.value
+            axios.post('/console/AddUserToRole',json2FormData({
+              __RequestVerificationToken:this.token,
+              UserName:UserName,
+              RoleName:this.currentMenu
+            })).then(
+              function(res){
+                res.data.msg === 'StatusOk'
+                  ? (
+                      this.users[this.currentMenu] = null,
+                      this.menuSelect(this.currentMenu),
+                      this.$message.success(`成功添加${UserName}到${this.currentMenu}。`)
+                    )
+                  : res.data.msg === 'UserNotExists'
+                      ? this.$message.warning('输入有误，该用户不存在。')
+                      : res.data.msg === 'UserAlreadyInRole'
+                          ? this.$message.warning(`该用户已经是${this.currentMenu}角色，不可重复添加。`)
+                          : this.$message.error('添加失败，请重试。')
+                this.dataLoading.addUser = false
+              }.bind(this),
+              function(){
+                this.$message.error('网络错误。')
+              }.bind(this)
+            )
+          }.bind(this),
+          function() {this.$message.warning('已为您取消操作。')}.bind(this)
+        )
+      },
+      // 删除角色类型
+      delRole(role){
+        this.$confirm(`是否确认删除${role}角色类型？该角色所有用户将失去相应权限！`,'警告').then(
+          function(){
+            axios.post('/console/DeleteRole',json2FormData({
+              __RequestVerificationToken:this.token,
+              RoleName:role
+            })).then(
+              function(res){
+                if (res.data.msg === 'StatusOk') {
+                  this.menuData.splice(this.menuData.indexOf(role),1)
+                  this.$message.success(`成功删除${role}角色。`)
+                } else {
+                  this.$message.error(`删除${role}角色失败，请刷新重试。`)
+                }
+              }.bind(this),
+              function(){
+                this.$message({
+                  message:`连接错误，请刷新重试。`,
+                  duration:0,
+                  type:'error'
+                })
+              }.bind(this)
+            )
+          }.bind(this),
+          function(err){this.$message.warning('已为您取消操作。')}.bind(this)
+        )
+      },
+      // 新建角色类型
+      newRole(){
+        let roleName = this.newRoleName.replace(/^\s+|\s+$/g,'')
+        if (roleName === '') {
+          this.$message.warning('请输入需创建的角色名称！')
+          return
+        } else {
+          if (this.menuData.indexOf(roleName) !== -1) {
+            this.$message.warning('该角色已存在，不可重复。')
+            return
+          } else if (roleName.length>=12){
+            this.$message.warning('角色名长度不能大于11。')
+            return
+          }
+          axios.post('/console/AddRole',json2FormData({
+            __RequestVerificationToken:this.token,
+            RoleName:roleName
+          })).then(
+            function(res){
+              if (res.data.msg === 'StatusOk') {
+                this.menuData.push(roleName)
+                this.$message.success(`${roleName}角色创建成功。`)
+                this.newRoleName = ''
+              } else {
+                this.$message.error(`${roleName}角色创建失败，请刷新重试。`)
+              }
+            }.bind(this)
+          )
+        }
+      },
+      // 展开角色类型默认权限选框，共用一个comp组件
+      showPermisionsTable(allArr,partArr,type,row,i){
+        const h = this.$createElement
+        this.$msgbox({
+          title: type === 'default' ? '设置默认权限' : type === 'user' ? '设置用户权限' : '设置权限',
+          message: h('comp',{
+            props:{permisions:allArr},
+            ref:'comp'
+          }),
+          confirmButtonText:'提交',
+          closeOnClickModal:false,
+          showCancelButton:true,
+          callback(action){
+            if (action === 'confirm'){
+              if (type === 'default') {
+                var addPermisionsArr = addPermisions(app.allRolesPermisions[app.currentMenu],app.permisionSelections)
+                var removePermisionsArr = removePermisions(app.allRolesPermisions[app.currentMenu],app.permisionSelections)
+                if (addPermisionsArr.length || removePermisionsArr.length) {
+                  app.dataLoading.defaultPermision = true
+                  var delPromise = removePermisionsArr.length
+                    ? axios.post('/console/DeleteRolePremission',json2FormData({
+                      __RequestVerificationToken:app.token,
+                      RoleName:app.currentMenu
+                    })+arrToFormData('PremissionId',removePermisionsArr))
+                    : Promise.resolve({data:{msg:'StatusOk'}})
+                  var addPromise = addPermisionsArr.length
+                    ? axios.post('/console/AddRolePremission',json2FormData({
+                      __RequestVerificationToken:app.token,
+                      RoleName:app.currentMenu
+                    })+arrToFormData('PremissionId',addPermisionsArr))
+                    : Promise.resolve({data:{msg:'StatusOk'}})
+
+                  Promise.all([delPromise,addPromise]).then(function(arr){
+                    app.users[app.currentMenu].forEach(function(u){
+                      u.permisions = null
+                    })
+                    app.allRolesPermisions[app.currentMenu] = null
+                    app.dataLoading.defaultPermision = false
+                    arr[0].data.msg === 'StatusOk' && arr[1].data.msg === 'StatusOk'
+                      ? app.$message.success('成功更新角色默认权限。')
+                      : app.$message.warning('后台数据有误，请重试。')
+                  })
+                }
+              } else if (type === 'user') {
+                var addPermisionsArr = addPermisions(row.permisions,app.permisionSelections)
+                var removePermisionsArr = removePermisions(row.permisions,app.permisionSelections)
+                if (addPermisionsArr.length || removePermisionsArr.length) {
+                  app.dataLoading.userEdit = i
+                  var delPromise = removePermisionsArr.length
+                    ? axios.post('/console/DeleteRoleUserPremission',json2FormData({
+                      __RequestVerificationToken:app.token,
+                      RoleName:app.currentMenu,
+                      UserName: row.UserName
+                    })+arrToFormData('PremissionId',removePermisionsArr))
+                    : Promise.resolve({data:{msg:'StatusOk'}})
+                  var addPromise = addPermisionsArr.length
+                    ? axios.post('/console/AddRoleUserPremission',json2FormData({
+                      __RequestVerificationToken:app.token,
+                      RoleName:app.currentMenu,
+                      UserName: row.UserName
+                    })+arrToFormData('PremissionId',addPermisionsArr))
+                    : Promise.resolve({data:{msg:'StatusOk'}})
+
+                  Promise.all([delPromise,addPromise]).then(function(arr){
+                    row.permisions = null
+                    app.dataLoading.userEdit = -1
+                    arr[0].data.msg === 'StatusOk' && arr[1].data.msg === 'StatusOk'
+                      ? app.$message.success('成功更新角色权限。')
+                      : app.$message.warning('后台数据有误，请重试。')
+                  })
+                }
+              }
+            }
+            app.$refs.comp.$refs.permisionsTable.clearSelection()
+          }
+        })
+        this.$nextTick(function(){
+          var toggleRowSelection = this.$refs.comp.$refs.permisionsTable.toggleRowSelection
+          sameItem(allArr,partArr).forEach(function(row){
+            toggleRowSelection(row)
+          })
+        })
+      },
+      // 展开角色用户权限选框，共用一个comp组件
+      showUserPermisions(i,row){
+        if (row.permisions){
+          this.showPermisionsTable(this.allRolesPermisions[this.currentMenu],row.permisions,'user',row,i)
+          this.dataLoading.userEdit === i && (this.dataLoading.userEdit = -1)
+        } else {
+          this.dataLoading.userEdit !== i && (this.dataLoading.userEdit = i)
+          axios.post('/console/TakeRoleUserPremission',json2FormData({
+            __RequestVerificationToken:this.token,
+            RoleName:this.currentMenu,
+            UserName:row.UserName
+          })).then(
+            function(res){
+              if (res.data.msg === 'StatusOk') {
+                this.$set(row,'permisions',res.data.data)
+                this.dataLoading.userEdit = -1
+                this.showPermisionsTable(this.allRolesPermisions[this.currentMenu],row.permisions,'user',row,i)
+              }
+            }.bind(this)
+          )
+        }
+      },
+      // 设置默认权限
+      defaultPermisionBtnClick(){
+        if (!this.allRolesPermisions[this.currentMenu]) {
+          this.dataLoading.defaultPermision = true
+          axios.post('/console/TakeRolePremission',json2FormData({
+            __RequestVerificationToken:this.token,
+            RoleName:this.currentMenu
+          })).then(
+            function(res){
+              if (res.data.msg === 'StatusOk') {
+               this.$set(this.allRolesPermisions,this.currentMenu,res.data.data)
+                this.dataLoading.defaultPermision = false
+                this.showPermisionsTable(this.allPermisions,this.allRolesPermisions[this.currentMenu],'default')
+              }
+            }.bind(this)
+          )
+        } else {
+          this.showPermisionsTable(this.allPermisions,this.allRolesPermisions[this.currentMenu],'default')
+        }
+      }
+    },
+    // 获取角色类型列表、和所有的权限
+    created(){
+      var _this = this
+      Promise.all([
+        axios.post('/console/takeRoles', json2FormData({__RequestVerificationToken:_this.token})),
+        axios.post('/console/takePremission', json2FormData({__RequestVerificationToken:_this.token}))
+      ]).then(
+        function(arr){
+          if (arr[0].data.msg === 'StatusOk' && arr[1].data.msg === 'StatusOk') {
+            _this.menuData = arr[0].data.data
+            _this.allPermisions = arr[1].data.data
+            _this.dataLoading.roles = false
+          } else {
+            _this.$message.error({
+              message:'获取权限列表失败，请刷新重试。',
+              type: 'error',
+              duration: 0
+            })
+          }
+        },
+        function(){
+          _this.$message({
+            message:`连接错误，请刷新重试。`,
+            duration:0,
+            type:'error'
+          })
+        }
+      )
+    }
+  })
+</script>

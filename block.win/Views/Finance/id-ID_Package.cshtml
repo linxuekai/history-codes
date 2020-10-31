@@ -1,0 +1,396 @@
+﻿
+@{
+    ViewBag.Title = "VC Exchange";
+    Layout = "~/Views/Shared/_id-ID_Layout.cshtml";
+}
+<style>
+    ::-ms-clear, ::-ms-reveal {
+        display: none;
+    }
+
+    [v-cloak] {
+        display: none !important;
+    }
+
+    #vctob {
+        padding-left: 35px;
+    }
+
+    .wp-32 {
+        width: 32%;
+        float: left
+    }
+
+    .mf-1 {
+        margin: 0 1%;
+    }
+</style>
+<link href="~/Content/package.css" rel="stylesheet" />
+<div id="app">
+    <div class="convert">
+        <div class="row">
+            <div class="main col-lg-6 col-xs-12">
+                <div class="wrapper">
+                    <div class="convert-stock row">
+                        <div class="wp-32" style="background-image: url(/images/Img/BTCBG.png);background-repeat:no-repeat;background-size:100% 100%">
+                            <div class="convert-name">BTC Stock</div>
+                            <div class="convert-balance" v-cloak>{{balance.BTC | toFix(4)}}<span class="unit">BTC</span></div>
+                        </div>
+                        <div class="wp-32 mf-1" style="background-image:url(/images/Img/LTCBG.png);background-repeat:no-repeat;background-size:100% 100%">
+                            <div class="convert-name">LTC Stock</div>
+                            <div class="convert-balance" v-cloak>{{balance.LTC | toFix(4)}}<span class="unit">LTC</span></div>
+                        </div>
+                        <div class="wp-32" style="background-image:url(/images/Img/SCBG.png);background-repeat:no-repeat;background-size:100% 100%">
+                            <div class="convert-name">SC Stock</div>
+                            <div class="convert-balance" v-cloak>{{balance.SC | toFix(4)}}<span class="unit">SC</span></div>
+                        </div>
+                    </div>
+                    <div class="vc row">
+                        <div class="col-md-6 col-xs-6">
+                            <span class="hidden-xs f-18">VC Stock:</span><span class="vc-stock" v-cloak> {{balance.VC | toFix(4)}}</span><span class="unit">VC</span>
+                            <div class="vc-name hidden-sm hidden-md hidden-lg">VC Stock</div>
+                        </div>
+                        <div class="col-md-6 col-xs-6">
+                            <span class="hidden-xs f-18" v-cloak>{{coinType}} market price:</span><span class="vc-price" v-cloak>{{balance.VCStock }}</span><span class="unit">USD</span>
+                            <div class="vc-name hidden-sm hidden-md hidden-lg" v-cloak>{{coinType}} market price</div>
+                        </div>
+                    </div>
+                </div>
+                <form class="form-horizontal wrapper">
+                    <div class="form-group">
+                        <label for="count" class="hidden-xs col-sm-3 col-md-offset-1 col-sm-offset-1 control-label">Exchange amount</label>
+                        <div class="col-sm-7  col-xs-12">
+                            <span style="position: absolute;color: #a1a1a1;top: 50%;left: 25px;transform: translateY(-50%);font-size: 12px;">VC</span>
+                            <input id="vctob" type="number" class="form-control" v-model="transferData.Total" placeholder="Please enter the quantity...">
+                            <div class="toggle-select btn-group">
+                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" v-cloak>
+                                    {{taoCan}} <span class="caret"></span>
+                                </button>
+                                <ul class="select dropdown-menu pull-right">
+                                    <li v-for="x in transferNum"><a @@click="choiceTotal(x)" v-cloak>{{x | dollarFiex}}</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="count" class="hidden-xs col-sm-3 col-md-offset-1 col-sm-offset-1 control-label">Use Currency</label>
+                        <div class="col-sm-7  col-xs-12">
+                            <input id="btovc" type="number" class="form-control" v-model="estimateTotal" placeholder="Please enter the quantity...">
+                            <div class="toggle-select btn-group">
+                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" v-cloak>
+                                    {{coinType}} <span class="caret"></span>
+                                </button>
+                                <ul class="select dropdown-menu pull-right">
+                                    <li v-for="x in coinTypezj"><a @@click="choiceCoin(x.adress,x.value,x.coin)" v-cloak>{{x.coin}}</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="count" class="hidden-xs col-sm-4  control-label">Transaction password</label>
+                        <div class="col-sm-7  col-xs-12">
+                            <input type="password" class="form-control" v-model="transferData.TradePassword" placeholder="Please enter the transaction password...">
+                            <div class="text-right cursor-pointer hidden-xs" onclick="TakeUserInfo()" data-toggle="modal" data-target="#accountModal">Set transaction password</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-10 col-md-offset-1 col-sm-offset-1">
+                            <button :disabled="xx" type="button" class="btn confirm" @@click="transfer">Confirm Exchange</button>
+                        </div>
+                    </div>
+
+                    <div class="clearfix">
+                        <a href="/en-US/Finance/MobileTransferHistory" class="check-history  hidden-md hidden-sm hidden-lg">check Exchange Record</a>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-12">
+                            <div class="panel panel-default">
+                                <div class="info panel-heading" data-toggle="collapse" href="#collapseInfo">
+                                    <a>
+                                        Exchange Instructions
+                                    </a>
+                                    <div class="toggle"></div>
+                                </div>
+                                <div id="collapseInfo" class="info-down panel-collapse collapse in">
+                                    <ol>
+                                        <li>Purchase can directly choose the corresponding package, can also enter $323 to $50000 within any amount;</li>
+                                        <li>
+                                            Direct purchase of bonus upgrades: Determined by the maximum amount of Single purchase , For example, the first purchase of $1618 corresponding is 7%, second purchase of $3236 corresponding is 8%;
+                                        </li>
+                                        <li>
+                                            Direct Generations of bonus upgrades: Determined by the amount of the accumulated subscription packages.For example, the first purchase of $1618 corresponds to the third generation,the second purchase of $3236 (equal to $8090-$1618) can be upgraded to the five generation.
+                                        </li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-lg-5 col-md-offset-1 hidden-xs hidden-sm hidden-md">
+                <h3>The Partners</h3>
+                <img src="/images/Img/company.jpg" alt="The Partners" style="max-height: 490px;">
+            </div>
+        </div>
+        <div class="hidden-xs">
+
+            <table id="history-tb" class="table table-bordered table-hover">
+                <tr>
+                    <th>Date</th>
+                    <th>Use Currency</th>
+                    <th>Get Currency </th>
+                    <th>Exchange amount</th>
+                </tr>
+                <tr v-for="item in history">
+                    <td style="color:#ec0000" v-cloak>{{item.SetupTime}}</td>
+                    <td v-cloak>{{item.SourceAmount | toFix(5)}} {{item.SouceCoin}}</td>
+                    <td v-cloak> {{item.DestCoin}}</td>
+                    <td v-cloak>{{item.DestAmount | toFix(5)}}</td>
+                </tr>
+            </table>
+            <div class="text-center" v-show="totalPage===0">No historical record</div>
+            <div class="p-b-80 text-right clearfix" v-show="totalhistory">
+                <page style="white-space:nowrap;float:right" :current="takeRecord.PageIndex" :allpage="totalPage" :showpage="5" @@next="nextPage" @@prev="prevPage" @@goto="gotoPage"></page>
+
+                <div class="btn-group flo-rig">
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" style="border:none;border-bottom:1px solid #e1e1e1;" v-cloak>
+                        {{activeNum}} <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" style="min-width:30px">
+                        <li v-for="item in showNumber"><a @@click="selectNum(item)">{{item}}</a></li>
+                    </ul>
+                </div>
+                <span style="white-space:nowrap;margin-right:30px;line-height: 34px;float:right" v-cloak>Display{{takeRecord.PageIndex>1?(takeRecord.PageIndex-1)*takeRecord.ShowNumber+1:takeRecord.PageIndex}}-{{takeRecord.PageIndex*takeRecord.ShowNumber}} data/Total {{totalhistory}} data</span>
+            </div>
+        </div>
+    </div>
+</div>
+@Html.AntiForgeryToken()
+
+
+<script src="~/Scripts/vue-page-ua.js"></script>
+<script>
+
+    var app = new Vue({
+        el: '#app',
+        data: {
+            tips: '',
+            transferNum: [323, 809, 1618, 3236, 8090, 16180],
+            coinAdress: 'sc_usd',
+            coinTypezj: [
+                { coin: 'SC', value: 5, adress: 'sc_usd' },
+                { coin: 'BTC', value: 0, adress: 'btc_usd' },
+                { coin: 'LTC', value: 1, adress: 'ltc_usd' }
+            ],
+            balance: {
+                BTC: 0.00,
+                ETH: 0.00,
+                LTC: 0.00,
+                SC: 0.00,
+                VC: 0.00,
+                VS: 0.00,
+                VT: 0.00,
+                VCStock: ''
+            },
+            transferData: {
+                __RequestVerificationToken: getToken(),
+                Total: '',
+                CoinType: 5,
+                TradePassword: '',
+                GoogleToken: '',
+            },
+            coinType: 'SC',
+            estimateTotal: 0,
+            taoCan: 323,
+            xx: false,
+            takeRecord: {
+                __RequestVerificationToken: getToken(),
+                'PageIndex': 1,
+                'ShowNumber': 10
+            },
+            activeNum: 10,
+            showNumber: [10, 20],
+            history: '',
+            totalPage: 0,
+            totalhistory: '0'
+        },
+        created: function () {
+            this.takeVcRecord();
+            this.marketTicker();
+            this.timeMarketTicker(5000);
+        },
+        mounted: function () {
+            var _this = this;
+            this.getBalance();
+            $('#vctob').keyup(function () {
+                _this.VCToCoin();
+            });
+            $('#btovc').keyup(function () {
+                _this.CoinToVC();
+            });
+        },
+        filters: {
+            toFix: function (val, decimal) {
+                if (typeof (val) === 'number' && val != 0) {
+                    return val.toFixed(decimal);
+                }
+                return val;
+            },
+            dollarFiex: function (val) {
+                return val + ' $';
+            }
+        },
+        methods: {
+            getBalance: function () {
+                var _this = this
+                server.GetBalance({
+                    __RequestVerificationToken: getToken()
+                }, function (rel) {
+                    if (rel.msg === 'StatusOk') {
+                        rel.data.forEach(function (item) {
+                            _this.balance[item.Type] = item.AvalBanlance
+                        });
+                    } else {
+                        showTips(getDescript(rel.msg));
+                    }
+                });
+            },
+            taoCanChange: function (result) {
+                var _this = this
+                var arrTail = this.transferNum.length - 1;
+                if (result >= this.transferNum[arrTail]) {
+                    _this.taoCan = this.transferNum[arrTail];
+                } else if (result < this.transferNum[0]) {
+                    _this.taoCan = 'None';
+                } else {
+                    this.transferNum.forEach(function (item, index, array) {
+                        var items = array[index + 1] - array[index];
+                        if (result >= item && result < array[index + 1]) {
+                            _this.taoCan = _this.transferNum[index];
+                        }
+                    });
+                }
+            },
+            VCToCoin: function () {
+
+                var result = this.transferData.Total / 2 / this.balance.VCStock;
+                this.taoCanChange(this.transferData.Total / 2);
+                if (result == 0) {
+                    this.estimateTotal = "";
+                }
+                this.estimateTotal = numToFixed(result, 4);
+            },
+            CoinToVC: function () {
+
+                var result = this.estimateTotal * this.balance.VCStock;
+                if (result == 0) {
+                    this.transferData.Total = "";
+                }
+                this.transferData.Total = numToFixed(result * 2, 4);
+                this.taoCanChange(result);
+            },
+            choiceTotal: function (x) {
+                this.taoCan = x;
+                this.transferData.Total = x * 2;
+                setTimeout(this.VCToCoin, 500);
+            },
+            choiceCoin: function (adress, type, coin) {
+                this.coinAdress = adress;
+                this.marketTicker();
+                this.transferData.CoinType = type;
+                this.coinType = coin;
+                setTimeout(this.CoinToVC, 500);
+            },
+            marketTicker: function () {
+                var _this = this;
+                server.MarketTicker({ symbol: _this.coinAdress }, function (rel) {
+                    var data = rel.data.buy;
+                    if (data) {
+                        _this.balance.VCStock = data;
+                    } else {
+                        showTips(getDescript(rel.msg));
+                    }
+                });
+            },
+            timeMarketTicker: function (t) {
+                var _this = this;
+                function vc() {
+                    server.MarketTicker({ symbol: _this.coinAdress }, function (rel) {
+                        var data = rel.data.buy;
+                        if (data) {
+                            _this.balance.VCStock = data;
+                        } else {
+                            showTips(getDescript(rel.msg));
+                        }
+
+                    });
+                }
+                var time = setInterval(vc, t);
+            },
+            transfer: function () {
+                var _this = this;
+                this.xx = true;
+                var typeValue = this.transferData.Total;
+                if (typeValue < 646 || typeValue == 0) {
+                    showTips('Minimum convertibility cannot be less than 323 package');
+                    _this.xx = false;
+                } else if (!ValidateValue(this.transferData.TradePassword, 'Password')) {
+                    showTips('The password entered is incorrect,Please re-enter them');
+                    _this.xx = false;
+                } else {
+                    var r = confirm("您确定使用" + this.coinType + "兑换" + this.taoCan + "套餐吗？");
+                    if (r === false) {
+                        _this.xx = false;
+                        return;
+                    }
+
+                    server.TransferToVC(this.transferData, function (rel) {
+                        _this.xx = false;
+                        if (rel.msg === 'StatusOk') {
+                            showTips('Exchange succeeded');
+                            _this.takeVcRecord();
+                            _this.getBalance();
+                        } else {
+                            showTips(getDescript(rel.msg));
+                        }
+                    });
+                }
+            },
+            selectNum: function (item) {
+                this.takeRecord.PageIndex = 1;
+                this.activeNum = item;
+                this.takeRecord.ShowNumber = item;
+                this.takeVcRecord();
+            },
+            takeVcRecord: function () {
+                var _this = this;
+                server.TakeChargeRecord(this.takeRecord, function (rel) {
+                    if (rel.msg === 'StatusOk') {
+                        _this.history = rel.data.data;
+                        _this.totalPage = rel.data.page;
+                        _this.totalhistory = rel.data.total;
+                    } else {
+                        showTips(getDescript(rel.msg));
+                    }
+                })
+            },
+            nextPage: function () {
+                this.takeRecord.PageIndex++;
+                this.takeVcRecord();
+            },
+            prevPage: function () {
+                this.takeRecord.PageIndex--;
+                this.takeVcRecord();
+            },
+            gotoPage: function (index) {
+                this.takeRecord.PageIndex = index;
+                this.takeVcRecord();
+            }
+        },
+        components: {
+            'page': page
+        }
+    })
+</script>
+
